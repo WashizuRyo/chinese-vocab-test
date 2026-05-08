@@ -47,22 +47,76 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
   return voicesLoadPromise;
 }
 
+const MALE_VOICE_NAMES = new Set([
+  "Han",
+  "Bobo",
+  "Taotao",
+  "Binbin",
+  "Li-Mu",
+  "Haohao",
+  "Microsoft Yunjian Online (Natural) - Chinese (Mainland)",
+  "Microsoft Yunyang Online (Natural) - Chinese (Mainland)",
+  "Microsoft Yunxi Online (Natural) - Chinese (Mainland)",
+  "Microsoft Kangkang - Chinese (Simplified, PRC)",
+  "Microsoft Zhiwei - Chinese (Traditional, Taiwan)",
+  "Microsoft YunJhe Online (Natural) - Chinese (Taiwan)",
+]);
+
+const MALE_ANDROID_SUBSTRINGS = ["x-ccd", "x-cce", "x-ctd", "x-cte"];
+
+const SKIP_VOICE_BASENAMES = new Set([
+  "Eddy",
+  "Flo",
+  "Grandma",
+  "Grandpa",
+  "Reed",
+  "Rocko",
+  "Sandy",
+  "Shelley",
+]);
+
+const PREFERRED_FEMALE_VOICES = [
+  "Tingting",
+  "Ting-Ting",
+  "Microsoft Xiaoxiao Online (Natural) - Chinese (Mainland)",
+  "Microsoft Xiaoyi Online (Natural) - Chinese (Mainland)",
+  "Google 普通话（中国大陆）",
+  "Microsoft Huihui - Chinese (Simplified, PRC)",
+  "Microsoft Yaoyao - Chinese (Simplified, PRC)",
+];
+
+function getVoiceBasename(name: string): string {
+  const idx = name.indexOf(" (");
+  return (idx === -1 ? name : name.slice(0, idx)).trim();
+}
+
+function shouldSkip(v: SpeechSynthesisVoice): boolean {
+  if (MALE_VOICE_NAMES.has(v.name)) return true;
+  if (MALE_ANDROID_SUBSTRINGS.some((s) => v.name.includes(s))) return true;
+  if (/男/.test(v.name)) return true;
+  if (SKIP_VOICE_BASENAMES.has(getVoiceBasename(v.name))) return true;
+  return false;
+}
+
 function pickChineseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
   const langMatch = (lang: string) => lang.toLowerCase().replace("_", "-");
-  const candidates = voices.filter((v) => {
-    const lang = langMatch(v.lang);
-    return lang.startsWith("zh");
-  });
+  const zhVoices = voices.filter((v) => langMatch(v.lang).startsWith("zh"));
+  if (zhVoices.length === 0) return null;
 
-  if (candidates.length === 0) return null;
+  const female = zhVoices.filter((v) => !shouldSkip(v));
 
-  const cn = candidates.find((v) => langMatch(v.lang).startsWith("zh-cn"));
+  for (const name of PREFERRED_FEMALE_VOICES) {
+    const hit = female.find((v) => v.name === name);
+    if (hit) return hit;
+  }
+
+  const cn = female.find((v) => langMatch(v.lang).startsWith("zh-cn"));
   if (cn) return cn;
 
-  const hans = candidates.find((v) => langMatch(v.lang).includes("hans"));
+  const hans = female.find((v) => langMatch(v.lang).includes("hans"));
   if (hans) return hans;
 
-  return candidates[0];
+  return female[0] ?? zhVoices[0];
 }
 
 export async function getSpeechAvailability(): Promise<SpeechAvailability> {
