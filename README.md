@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 中国語 単語テスト
 
-## Getting Started
+スマホに最適化した、大学の中国語単語テスト対策アプリ。
 
-First, run the development server:
+中国語の発音が再生されるので、それを聞いて **漢字** と **ピンイン** を手書きで答えます。
+1 問ごとに正解が表示され、自分の答えを見比べて ○ / × で自己採点します。
+
+## 技術スタック
+
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS v4
+- Biome (lint + format)
+- Web Speech API (中国語の発音再生、`zh-CN`)
+- Canvas API (手書き入力)
+- pnpm
+- Vercel (デプロイ先)
+
+## 開発
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev          # 開発サーバ http://localhost:3000
+pnpm build        # 本番ビルド
+pnpm lint         # Biome check
+pnpm format       # Biome format
+pnpm check        # Biome check + 自動修正
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 新しい課を追加する手順
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. `src/data/lessons/lessonNN.ts` を作成（既存ファイルをコピーするのが楽）
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```ts
+   import type { Lesson } from "@/lib/types";
 
-## Learn More
+   export const lesson03: Lesson = {
+     id: "lesson03",
+     title: "第3課",
+     words: [
+       { hanzi: "新しい単語", pinyin: "xīn de dāncí", japanese: "新しい単語" },
+       // ...
+     ],
+   };
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. `src/data/lessons/index.ts` の `lessons` 配列に追加。
+3. `git push` すれば Vercel が自動でビルド & デプロイします。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ブラウザ対応
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+中国語の音声合成 (`zh-CN`) に対応しているブラウザが必要です。
+iOS Safari / macOS Safari / Chrome / Edge は対応しています。
+非対応の場合は画面上部に警告メッセージが表示されます。
 
-## Deploy on Vercel
+## デプロイ (Vercel)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+GitHub にこのリポジトリを push 後、Vercel の "Import Project" で取り込むだけです。
+追加の環境変数や設定は不要です。
