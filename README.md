@@ -46,6 +46,24 @@ pnpm check        # Biome check + 自動修正
 2. `src/data/lessons/index.ts` の `lessons` 配列に追加。
 3. `git push` すれば Vercel が自動でビルド & デプロイします。
 
+## あいことば（パスワード保護）
+
+クラス内などに限定共有するため、パスワード認証を実装しています。
+
+- 環境変数 `APP_PASSWORD` を設定すると、未認証ユーザーは `/login` にリダイレクトされます。
+- 設定しない場合 (`APP_PASSWORD` 未設定 or 空) は認証スキップ（ローカル開発で便利）。
+- ログイン成功時は cookie `app_auth` (httpOnly / secure / 60日) が発行されます。
+
+ローカル開発:
+
+```bash
+cp .env.local.example .env.local
+# .env.local を編集して APP_PASSWORD=xxxxx を設定
+pnpm dev
+```
+
+Vercel 側では「Project → Settings → Environment Variables」で `APP_PASSWORD` を追加。
+
 ## ブラウザ対応
 
 中国語の音声合成 (`zh-CN`) に対応しているブラウザが必要です。
