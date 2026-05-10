@@ -28,7 +28,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function LessonRunner({ lesson }: Props) {
   const [phase, setPhase] = useState<Phase>("setup");
-  const [count, setCount] = useState(Math.min(10, lesson.words.length));
+  const [count, setCount] = useState(lesson.words.length);
   const [shuffleOn, setShuffleOn] = useState(true);
   const [questions, setQuestions] = useState<Word[]>([]);
   const [index, setIndex] = useState(0);
