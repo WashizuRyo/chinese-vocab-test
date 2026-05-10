@@ -287,7 +287,7 @@ function TestView({
 
       <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} gridType="rice" aspectRatio={1} />
 
-      <div className="mt-3">
+      <div className="mt-6">
         <CanvasBlock
           label="ピンイン"
           canvasRef={pinyinCanvasRef}
