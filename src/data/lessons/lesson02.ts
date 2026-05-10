@@ -16,5 +16,7 @@ export const lesson02: Lesson = {
     { hanzi: "生日", pinyin: "shēngrì", japanese: "誕生日" },
     { hanzi: "祝", pinyin: "zhù", japanese: "祝う" },
     { hanzi: "快乐", pinyin: "kuàilè", japanese: "楽しい" },
+    { hanzi: "谢谢", pinyin: "xièxie", japanese: "ありがとう" },
+    { hanzi: "不客气", pinyin: "bú kèqi", japanese: "どういたしまして" },
   ],
 };
