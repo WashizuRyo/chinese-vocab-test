@@ -545,19 +545,21 @@ function TestView({
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
 }) {
   return (
-    <div className="mt-4 flex flex-col gap-4">
+    <div className="handwriting-practice mt-4 flex flex-col gap-4">
       <div className="flex justify-center pt-1 pb-2">
         <WordPlayer text={word.hanzi} autoPlayOnChange={autoPlay} />
       </div>
 
       <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} gridType="rice" aspectRatio={1} />
 
-      <CanvasBlock
-        label="ピンイン"
-        canvasRef={pinyinCanvasRef}
-        gridType="baseline"
-        aspectRatio={0.32}
-      />
+      <div className="mt-10">
+        <CanvasBlock
+          label="ピンイン"
+          canvasRef={pinyinCanvasRef}
+          gridType="baseline"
+          aspectRatio={0.32}
+        />
+      </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <button
