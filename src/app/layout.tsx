@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "中国語 単語テスト",
-  description: "中国語の単語テスト対策アプリ",
+  title: "中国語 単語学習",
+  description: "中国語の単語を暗記してテストできる学習アプリ",
 };
 
 export const viewport: Viewport = {
