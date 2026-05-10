@@ -11,7 +11,7 @@ import { getSpeechAvailability, primeSpeechEngine, type SpeechAvailability } fro
 import { saveLessonScore } from "@/lib/storage";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
-type Phase = "setup" | "test" | "answer" | "result";
+type Phase = "mode" | "setup" | "learn" | "learnComplete" | "test" | "answer" | "result";
 
 type Props = {
   lesson: Lesson;
@@ -27,11 +27,12 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function LessonRunner({ lesson }: Props) {
-  const [phase, setPhase] = useState<Phase>("setup");
+  const [phase, setPhase] = useState<Phase>("mode");
   const [count, setCount] = useState(Math.min(10, lesson.words.length));
   const [shuffleOn, setShuffleOn] = useState(true);
   const [questions, setQuestions] = useState<Word[]>([]);
   const [index, setIndex] = useState(0);
+  const [learnIndex, setLearnIndex] = useState(0);
   const [results, setResults] = useState<WordResult[]>([]);
   const [hanziImage, setHanziImage] = useState<string | null>(null);
   const [pinyinImage, setPinyinImage] = useState<string | null>(null);
@@ -65,6 +66,20 @@ export function LessonRunner({ lesson }: Props) {
 
   const handleStart = () => {
     startWith(lesson.words);
+  };
+
+  const handleStartLearning = () => {
+    setLearnIndex(0);
+    hanziCanvasRef.current?.clear();
+    pinyinCanvasRef.current?.clear();
+    primeSpeechEngine();
+    setPhase("learn");
+  };
+
+  const handleOpenTestSetup = () => {
+    hanziCanvasRef.current?.clear();
+    pinyinCanvasRef.current?.clear();
+    setPhase("setup");
   };
 
   const handleSubmit = () => {
@@ -117,6 +132,18 @@ export function LessonRunner({ lesson }: Props) {
 
   const currentWord = questions[index];
   const currentResult = results[index];
+  const currentLearnWord = lesson.words[learnIndex];
+
+  if (phase === "mode") {
+    return (
+      <ModeSelectView
+        lesson={lesson}
+        onStartLearning={handleStartLearning}
+        onOpenTestSetup={handleOpenTestSetup}
+        speechStatus={speechStatus}
+      />
+    );
+  }
 
   if (phase === "setup") {
     return (
@@ -127,7 +154,47 @@ export function LessonRunner({ lesson }: Props) {
         shuffleOn={shuffleOn}
         setShuffleOn={setShuffleOn}
         onStart={handleStart}
+        onBack={() => setPhase("mode")}
         speechStatus={speechStatus}
+      />
+    );
+  }
+
+  if (phase === "learn" && currentLearnWord) {
+    return (
+      <LearningView
+        word={currentLearnWord}
+        current={learnIndex + 1}
+        total={lesson.words.length}
+        autoPlay={speechStatus === "available"}
+        hanziCanvasRef={hanziCanvasRef}
+        pinyinCanvasRef={pinyinCanvasRef}
+        onBackToMode={() => setPhase("mode")}
+        onPrev={() => {
+          if (learnIndex === 0) return;
+          hanziCanvasRef.current?.clear();
+          pinyinCanvasRef.current?.clear();
+          setLearnIndex((i) => i - 1);
+        }}
+        onNext={() => {
+          hanziCanvasRef.current?.clear();
+          pinyinCanvasRef.current?.clear();
+          if (learnIndex + 1 >= lesson.words.length) {
+            setPhase("learnComplete");
+            return;
+          }
+          setLearnIndex((i) => i + 1);
+        }}
+      />
+    );
+  }
+
+  if (phase === "learnComplete") {
+    return (
+      <LearningCompleteView
+        lesson={lesson}
+        onTest={handleOpenTestSetup}
+        onRestartLearning={handleStartLearning}
       />
     );
   }
@@ -187,6 +254,61 @@ export function LessonRunner({ lesson }: Props) {
   );
 }
 
+function ModeSelectView({
+  lesson,
+  onStartLearning,
+  onOpenTestSetup,
+  speechStatus,
+}: {
+  lesson: Lesson;
+  onStartLearning: () => void;
+  onOpenTestSetup: () => void;
+  speechStatus: SpeechAvailability | null;
+}) {
+  return (
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
+      <div className="mb-4 flex items-center justify-between">
+        <Link href="/" className="text-sm text-zinc-500" aria-label="トップへ">
+          ← トップ
+        </Link>
+        <div className="text-xs text-zinc-400">{lesson.words.length} 単語</div>
+      </div>
+
+      <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
+      <p className="mt-1 text-sm text-zinc-500">覚えてから、テストで確認できます</p>
+
+      <section className="mt-6 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={onStartLearning}
+          className="w-full rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-5 text-left text-white shadow-sm active:opacity-90"
+        >
+          <span className="block text-lg font-semibold">暗記する</span>
+          <span className="mt-1 block text-sm text-zinc-300">
+            見て、聞いて、書きながら単語を覚える
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenTestSetup}
+          className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
+        >
+          <span className="block text-lg font-semibold text-zinc-900">テストする</span>
+          <span className="mt-1 block text-sm text-zinc-500">
+            発音を聞いて、漢字とピンインを書く
+          </span>
+        </button>
+      </section>
+
+      {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
+        <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
 function SetupView({
   lesson,
   count,
@@ -194,6 +316,7 @@ function SetupView({
   shuffleOn,
   setShuffleOn,
   onStart,
+  onBack,
   speechStatus,
 }: {
   lesson: Lesson;
@@ -202,15 +325,16 @@ function SetupView({
   shuffleOn: boolean;
   setShuffleOn: (b: boolean) => void;
   onStart: () => void;
+  onBack: () => void;
   speechStatus: SpeechAvailability | null;
 }) {
   const max = lesson.words.length;
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
-        <Link href="/" className="text-sm text-zinc-500" aria-label="トップへ">
-          ← トップ
-        </Link>
+        <button type="button" onClick={onBack} className="text-sm text-zinc-500">
+          ← モード選択
+        </button>
         <div className="text-xs text-zinc-400">{lesson.words.length} 単語</div>
       </div>
 
@@ -262,6 +386,147 @@ function SetupView({
       >
         スタート
       </button>
+    </main>
+  );
+}
+
+function LearningView({
+  word,
+  current,
+  total,
+  autoPlay,
+  hanziCanvasRef,
+  pinyinCanvasRef,
+  onBackToMode,
+  onPrev,
+  onNext,
+}: {
+  word: Word;
+  current: number;
+  total: number;
+  autoPlay: boolean;
+  hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
+  pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
+  onBackToMode: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+      <div className="mb-3 flex items-center justify-between">
+        <button type="button" onClick={onBackToMode} className="text-sm text-zinc-500">
+          ← モード選択
+        </button>
+        <div className="text-xs font-medium text-zinc-500">
+          {current} / {total}
+        </div>
+      </div>
+
+      <ProgressBar current={current} total={total} />
+
+      <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">漢字</div>
+            <div className="mt-2 break-words font-serif text-5xl leading-tight text-zinc-900">
+              {word.hanzi}
+            </div>
+            <div className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+              ピンイン
+            </div>
+            <div className="mt-1 break-words text-2xl leading-snug text-zinc-900">
+              {word.pinyin}
+            </div>
+            <div className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+              日本語訳
+            </div>
+            <div className="mt-1 text-base leading-relaxed text-zinc-700">{word.japanese}</div>
+          </div>
+          <div className="shrink-0">
+            <WordPlayer text={word.hanzi} autoPlayOnChange={autoPlay} />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-4 flex flex-col gap-4">
+        <CanvasBlock
+          label="漢字を練習"
+          canvasRef={hanziCanvasRef}
+          gridType="rice"
+          aspectRatio={1}
+        />
+        <CanvasBlock
+          label="ピンインを練習"
+          canvasRef={pinyinCanvasRef}
+          gridType="baseline"
+          aspectRatio={0.32}
+        />
+      </section>
+
+      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+        <div className="mx-auto flex max-w-screen-sm gap-2">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={current === 1}
+            className="h-14 w-24 rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            前へ
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            className="h-14 flex-1 rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+          >
+            {current === total ? "完了" : "次へ"}
+          </button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function LearningCompleteView({
+  lesson,
+  onTest,
+  onRestartLearning,
+}: {
+  lesson: Lesson;
+  onTest: () => void;
+  onRestartLearning: () => void;
+}) {
+  return (
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
+      <header className="mb-6">
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">暗記完了</div>
+        <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lesson.title}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+          {lesson.words.length} 単語を一周しました。続けてテストで確認できます。
+        </p>
+      </header>
+
+      <section className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onTest}
+          className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+        >
+          この課をテストする
+        </button>
+        <button
+          type="button"
+          onClick={onRestartLearning}
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+        >
+          もう一周する
+        </button>
+        <Link
+          href="/"
+          className="flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-zinc-600"
+        >
+          トップへ戻る
+        </Link>
+      </section>
     </main>
   );
 }
