@@ -26,14 +26,10 @@ type Props = {
 };
 
 type Point = { x: number; y: number };
-type PendingStroke = { pointerId: number; start: Point };
 
 const STROKE_COLOR = "#111111";
 const GRID_COLOR = "#dcdcdc";
 const STROKE_WIDTH = 3.5;
-const DRAW_THRESHOLD_PX = 6;
-const SCROLL_THRESHOLD_PX = 14;
-const VERTICAL_SCROLL_RATIO = 1.8;
 
 function drawGrid(
   ctx: CanvasRenderingContext2D,
@@ -80,7 +76,6 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
     const containerRef = useRef<HTMLDivElement | null>(null);
     const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    const pendingStrokeRef = useRef<PendingStroke | null>(null);
     const drawingRef = useRef(false);
     const lastPointRef = useRef<Point | null>(null);
     const hasInkRef = useRef(false);
@@ -157,7 +152,15 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     };
 
-    const drawDot = (p: Point) => {
+    const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+      e.preventDefault();
+      const c = inkCanvasRef.current;
+      if (!c) return;
+      c.setPointerCapture(e.pointerId);
+      const p = eventToPoint(e);
+      if (!p) return;
+      drawingRef.current = true;
+      lastPointRef.current = p;
       const ctx = getCtx();
       if (!ctx) return;
       ctx.beginPath();
@@ -168,65 +171,13 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
       hasInkRef.current = true;
     };
 
-    const beginStroke = (pointerId: number, start: Point, next: Point) => {
-      const c = inkCanvasRef.current;
-      const ctx = getCtx();
-      if (!c || !ctx) return;
-      c.setPointerCapture(pointerId);
-      drawingRef.current = true;
-      lastPointRef.current = next;
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(next.x, next.y);
-      ctx.stroke();
-      hasInkRef.current = true;
-    };
-
-    const finishStroke = (e: React.PointerEvent<HTMLCanvasElement>) => {
-      drawingRef.current = false;
-      pendingStrokeRef.current = null;
-      lastPointRef.current = null;
-      const c = inkCanvasRef.current;
-      if (c?.hasPointerCapture(e.pointerId)) c.releasePointerCapture(e.pointerId);
-    };
-
-    const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-      const p = eventToPoint(e);
-      if (!p) return;
-      pendingStrokeRef.current = { pointerId: e.pointerId, start: p };
-      drawingRef.current = false;
-      lastPointRef.current = null;
-    };
-
     const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-      const p = eventToPoint(e);
-      if (!p) return;
-
-      const pendingStroke = pendingStrokeRef.current;
-      if (pendingStroke && pendingStroke.pointerId === e.pointerId && !drawingRef.current) {
-        const dx = p.x - pendingStroke.start.x;
-        const dy = p.y - pendingStroke.start.y;
-        const absX = Math.abs(dx);
-        const absY = Math.abs(dy);
-        const distance = Math.hypot(dx, dy);
-
-        if (distance < DRAW_THRESHOLD_PX) return;
-
-        if (absY >= SCROLL_THRESHOLD_PX && absY > absX * VERTICAL_SCROLL_RATIO) {
-          pendingStrokeRef.current = null;
-          return;
-        }
-
-        e.preventDefault();
-        beginStroke(e.pointerId, pendingStroke.start, p);
-        pendingStrokeRef.current = null;
-        return;
-      }
-
       if (!drawingRef.current) return;
       e.preventDefault();
       const ctx = getCtx();
       if (!ctx) return;
+      const p = eventToPoint(e);
+      if (!p) return;
       const last = lastPointRef.current;
       ctx.beginPath();
       if (last) ctx.moveTo(last.x, last.y);
@@ -237,21 +188,12 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
     };
 
     const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-      const pendingStroke = pendingStrokeRef.current;
-      if (pendingStroke?.pointerId === e.pointerId) {
-        const p = eventToPoint(e);
-        if (p) drawDot(pendingStroke.start);
-        finishStroke(e);
-        return;
-      }
-
       if (!drawingRef.current) return;
       e.preventDefault();
-      finishStroke(e);
-    };
-
-    const onPointerCancel = (e: React.PointerEvent<HTMLCanvasElement>) => {
-      finishStroke(e);
+      drawingRef.current = false;
+      lastPointRef.current = null;
+      const c = inkCanvasRef.current;
+      if (c?.hasPointerCapture(e.pointerId)) c.releasePointerCapture(e.pointerId);
     };
 
     useImperativeHandle(
@@ -295,7 +237,7 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
       <div
         ref={containerRef}
         className={`relative w-full select-none ${className ?? ""}`}
-        style={{ touchAction: "pan-y" }}
+        style={{ touchAction: "none" }}
       >
         <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
         <canvas
@@ -305,7 +247,7 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          onPointerCancel={onPointerCancel}
+          onPointerCancel={onPointerUp}
         />
       </div>
     );
