@@ -35,7 +35,7 @@ export function LessonCard({ lesson }: Props) {
               <div className="text-xs text-zinc-400">{formatTakenAt(score.takenAt)}</div>
             </>
           ) : (
-            <span className="text-xs text-zinc-400">未受験</span>
+            <span className="text-xs text-zinc-400">テスト未実施</span>
           )}
         </div>
       </div>
