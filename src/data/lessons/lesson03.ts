@@ -1,0 +1,30 @@
+import type { Lesson } from "@/lib/types";
+
+export const lesson03: Lesson = {
+  id: "lesson03",
+  title: "第3課",
+  words: [
+    { hanzi: "现在", pinyin: "xiànzài", japanese: "現在；今" },
+    { hanzi: "点", pinyin: "diǎn", japanese: "時" },
+    { hanzi: "半", pinyin: "bàn", japanese: "半" },
+    { hanzi: "下午", pinyin: "xiàwǔ", japanese: "午後" },
+    { hanzi: "打工", pinyin: "dǎ gōng", japanese: "アルバイトする" },
+    { hanzi: "不", pinyin: "bù", japanese: "否定を示す" },
+    { hanzi: "呢", pinyin: "ne", japanese: "〜の場合はどう" },
+    { hanzi: "从", pinyin: "cóng", japanese: "から" },
+    { hanzi: "到", pinyin: "dào", japanese: "まで" },
+    { hanzi: "晚上", pinyin: "wǎnshang", japanese: "夜" },
+    { hanzi: "辛苦", pinyin: "xīnkǔ", japanese: "お疲れ様；大変" },
+    { hanzi: "在", pinyin: "zài", japanese: "で" },
+    { hanzi: "哪儿", pinyin: "nǎr", japanese: "どこ" },
+    { hanzi: "车站", pinyin: "chēzhàn", japanese: "駅" },
+    { hanzi: "奶茶店", pinyin: "nǎichádiàn", japanese: "ミルクティー専門店" },
+    { hanzi: "大学", pinyin: "dàxué", japanese: "大学" },
+    { hanzi: "附近", pinyin: "fùjìn", japanese: "近く" },
+    { hanzi: "便利店", pinyin: "biànlìdiàn", japanese: "コンビニ" },
+    { hanzi: "客人", pinyin: "kèrén", japanese: "客" },
+    { hanzi: "多", pinyin: "duō", japanese: "多い" },
+    { hanzi: "很", pinyin: "hěn", japanese: "とても" },
+    { hanzi: "也", pinyin: "yě", japanese: "も" },
+  ],
+};
