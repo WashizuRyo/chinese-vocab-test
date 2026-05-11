@@ -439,13 +439,18 @@ function SetupView({
       </section>
 
       <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
-        <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700">最後に数字問題を出す</span>
+        <label className="flex items-start justify-between gap-4">
+          <span>
+            <span className="block text-sm font-medium text-zinc-700">最後に数字問題を出す</span>
+            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+              オンにすると、最後の2問が1〜40の数字問題になります。
+            </span>
+          </span>
           <input
             type="checkbox"
             checked={numberQuestionsOn}
             onChange={(e) => setNumberQuestionsOn(e.target.checked)}
-            className="h-5 w-5"
+            className="mt-0.5 h-5 w-5 shrink-0"
           />
         </label>
       </section>
