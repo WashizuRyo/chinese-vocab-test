@@ -87,7 +87,7 @@ function buildQuestions(
 export function LessonRunner({ lesson }: Props) {
   const [phase, setPhase] = useState<Phase>("mode");
   const [count, setCount] = useState(Math.min(10, lesson.words.length));
-  const [shuffleOn, setShuffleOn] = useState(true);
+  const [shuffleOn, setShuffleOn] = useState(false);
   const [numberQuestionsOn, setNumberQuestionsOn] = useState(false);
   const [questions, setQuestions] = useState<Word[]>([]);
   const [index, setIndex] = useState(0);
