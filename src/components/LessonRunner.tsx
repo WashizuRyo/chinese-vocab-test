@@ -17,6 +17,49 @@ type Props = {
   lesson: Lesson;
 };
 
+const numberWords: Word[] = [
+  { hanzi: "一", pinyin: "yī", japanese: "1" },
+  { hanzi: "二", pinyin: "èr", japanese: "2" },
+  { hanzi: "三", pinyin: "sān", japanese: "3" },
+  { hanzi: "四", pinyin: "sì", japanese: "4" },
+  { hanzi: "五", pinyin: "wǔ", japanese: "5" },
+  { hanzi: "六", pinyin: "liù", japanese: "6" },
+  { hanzi: "七", pinyin: "qī", japanese: "7" },
+  { hanzi: "八", pinyin: "bā", japanese: "8" },
+  { hanzi: "九", pinyin: "jiǔ", japanese: "9" },
+  { hanzi: "十", pinyin: "shí", japanese: "10" },
+  { hanzi: "十一", pinyin: "shíyī", japanese: "11" },
+  { hanzi: "十二", pinyin: "shí'èr", japanese: "12" },
+  { hanzi: "十三", pinyin: "shísān", japanese: "13" },
+  { hanzi: "十四", pinyin: "shísì", japanese: "14" },
+  { hanzi: "十五", pinyin: "shíwǔ", japanese: "15" },
+  { hanzi: "十六", pinyin: "shíliù", japanese: "16" },
+  { hanzi: "十七", pinyin: "shíqī", japanese: "17" },
+  { hanzi: "十八", pinyin: "shíbā", japanese: "18" },
+  { hanzi: "十九", pinyin: "shíjiǔ", japanese: "19" },
+  { hanzi: "二十", pinyin: "èrshí", japanese: "20" },
+  { hanzi: "二十一", pinyin: "èrshíyī", japanese: "21" },
+  { hanzi: "二十二", pinyin: "èrshí'èr", japanese: "22" },
+  { hanzi: "二十三", pinyin: "èrshísān", japanese: "23" },
+  { hanzi: "二十四", pinyin: "èrshísì", japanese: "24" },
+  { hanzi: "二十五", pinyin: "èrshíwǔ", japanese: "25" },
+  { hanzi: "二十六", pinyin: "èrshíliù", japanese: "26" },
+  { hanzi: "二十七", pinyin: "èrshíqī", japanese: "27" },
+  { hanzi: "二十八", pinyin: "èrshíbā", japanese: "28" },
+  { hanzi: "二十九", pinyin: "èrshíjiǔ", japanese: "29" },
+  { hanzi: "三十", pinyin: "sānshí", japanese: "30" },
+  { hanzi: "三十一", pinyin: "sānshíyī", japanese: "31" },
+  { hanzi: "三十二", pinyin: "sānshí'èr", japanese: "32" },
+  { hanzi: "三十三", pinyin: "sānshísān", japanese: "33" },
+  { hanzi: "三十四", pinyin: "sānshísì", japanese: "34" },
+  { hanzi: "三十五", pinyin: "sānshíwǔ", japanese: "35" },
+  { hanzi: "三十六", pinyin: "sānshíliù", japanese: "36" },
+  { hanzi: "三十七", pinyin: "sānshíqī", japanese: "37" },
+  { hanzi: "三十八", pinyin: "sānshíbā", japanese: "38" },
+  { hanzi: "三十九", pinyin: "sānshíjiǔ", japanese: "39" },
+  { hanzi: "四十", pinyin: "sìshí", japanese: "40" },
+];
+
 function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
@@ -26,10 +69,26 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
+function buildQuestions(
+  words: Word[],
+  count: number,
+  shuffleOn: boolean,
+  numberQuestionsOn: boolean,
+) {
+  const totalCount = Math.min(count, words.length);
+  const numberCount = numberQuestionsOn ? Math.min(2, totalCount) : 0;
+  const wordCount = totalCount - numberCount;
+  const regularQuestions = (shuffleOn ? shuffle(words) : words).slice(0, wordCount);
+  const numberQuestions = shuffle(numberWords).slice(0, numberCount);
+
+  return [...regularQuestions, ...numberQuestions];
+}
+
 export function LessonRunner({ lesson }: Props) {
   const [phase, setPhase] = useState<Phase>("mode");
-  const [count, setCount] = useState(Math.min(10, lesson.words.length));
-  const [shuffleOn, setShuffleOn] = useState(true);
+  const [count, setCount] = useState(lesson.words.length);
+  const [shuffleOn, setShuffleOn] = useState(false);
+  const [numberQuestionsOn, setNumberQuestionsOn] = useState(false);
   const [questions, setQuestions] = useState<Word[]>([]);
   const [index, setIndex] = useState(0);
   const [learnIndex, setLearnIndex] = useState(0);
@@ -46,8 +105,8 @@ export function LessonRunner({ lesson }: Props) {
   }, []);
 
   const startWith = useCallback(
-    (words: Word[]) => {
-      const subset = (shuffleOn ? shuffle(words) : words).slice(0, Math.min(count, words.length));
+    (words: Word[], includeNumberQuestions = numberQuestionsOn) => {
+      const subset = buildQuestions(words, count, shuffleOn, includeNumberQuestions);
       const initialResults: WordResult[] = subset.map((w) => ({
         word: w,
         hanziCorrect: null,
@@ -61,7 +120,7 @@ export function LessonRunner({ lesson }: Props) {
       setPinyinImage(null);
       setPhase("test");
     },
-    [count, shuffleOn],
+    [count, shuffleOn, numberQuestionsOn],
   );
 
   const handleStart = () => {
@@ -153,6 +212,8 @@ export function LessonRunner({ lesson }: Props) {
         setCount={setCount}
         shuffleOn={shuffleOn}
         setShuffleOn={setShuffleOn}
+        numberQuestionsOn={numberQuestionsOn}
+        setNumberQuestionsOn={setNumberQuestionsOn}
         onStart={handleStart}
         onBack={() => setPhase("mode")}
         speechStatus={speechStatus}
@@ -210,7 +271,7 @@ export function LessonRunner({ lesson }: Props) {
             .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
             .map((r) => r.word);
           if (wrongWords.length === 0) return;
-          startWith(wrongWords);
+          startWith(wrongWords, false);
         }}
       />
     );
@@ -315,6 +376,8 @@ function SetupView({
   setCount,
   shuffleOn,
   setShuffleOn,
+  numberQuestionsOn,
+  setNumberQuestionsOn,
   onStart,
   onBack,
   speechStatus,
@@ -324,6 +387,8 @@ function SetupView({
   setCount: (n: number) => void;
   shuffleOn: boolean;
   setShuffleOn: (b: boolean) => void;
+  numberQuestionsOn: boolean;
+  setNumberQuestionsOn: (b: boolean) => void;
   onStart: () => void;
   onBack: () => void;
   speechStatus: SpeechAvailability | null;
@@ -369,6 +434,23 @@ function SetupView({
             checked={shuffleOn}
             onChange={(e) => setShuffleOn(e.target.checked)}
             className="h-5 w-5"
+          />
+        </label>
+      </section>
+
+      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+        <label className="flex items-start justify-between gap-4">
+          <span>
+            <span className="block text-sm font-medium text-zinc-700">最後に数字問題を出す</span>
+            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+              オンにすると、最後の2問が1〜40の数字問題になります。
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={numberQuestionsOn}
+            onChange={(e) => setNumberQuestionsOn(e.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0"
           />
         </label>
       </section>
