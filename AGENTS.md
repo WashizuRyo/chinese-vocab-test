@@ -26,6 +26,15 @@
 - Canvas API for handwriting input
 - Cookie-based password protection via `APP_PASSWORD`
 
+## Common Commands
+
+- `pnpm install` - 依存関係をインストール
+- `pnpm dev` - 開発サーバーを起動
+- `pnpm build` - 本番ビルド
+- `pnpm test` - Vitest を一度だけ実行
+- `pnpm check-types` - TypeScript の型チェック
+- `pnpm format` - Biome check を自動修正つきで実行
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 

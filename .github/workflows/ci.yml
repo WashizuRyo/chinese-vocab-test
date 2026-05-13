@@ -32,11 +32,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+
       - name: Run Biome
-        run: pnpm lint:ci
+        run: biome ci .
 
       - name: Run tests
-        run: pnpm test:run
+        run: pnpm test
 
       - name: Build
         run: pnpm build

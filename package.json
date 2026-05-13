@@ -6,12 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "lint": "biome check .",
-    "lint:ci": "biome ci .",
-    "format": "biome format --write .",
-    "check": "biome check --write ."
+    "test": "vitest run",
+    "check-types": "tsc --noEmit",
+    "format": "biome check --write ."
   },
   "dependencies": {
     "next": "16.2.6",
