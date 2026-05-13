@@ -7,6 +7,7 @@ import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/Ha
 import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
+import { number } from "@/data/lessons/number";
 import { getSpeechAvailability, primeSpeechEngine, type SpeechAvailability } from "@/lib/speech";
 import { saveLessonScore } from "@/lib/storage";
 import type { Lesson, Word, WordResult } from "@/lib/types";
@@ -43,49 +44,6 @@ type LessonRunnerState =
       results: WordResult[];
     };
 
-const numberWords: Word[] = [
-  { hanzi: "一", pinyin: "yī", japanese: "1" },
-  { hanzi: "二", pinyin: "èr", japanese: "2" },
-  { hanzi: "三", pinyin: "sān", japanese: "3" },
-  { hanzi: "四", pinyin: "sì", japanese: "4" },
-  { hanzi: "五", pinyin: "wǔ", japanese: "5" },
-  { hanzi: "六", pinyin: "liù", japanese: "6" },
-  { hanzi: "七", pinyin: "qī", japanese: "7" },
-  { hanzi: "八", pinyin: "bā", japanese: "8" },
-  { hanzi: "九", pinyin: "jiǔ", japanese: "9" },
-  { hanzi: "十", pinyin: "shí", japanese: "10" },
-  { hanzi: "十一", pinyin: "shíyī", japanese: "11" },
-  { hanzi: "十二", pinyin: "shí'èr", japanese: "12" },
-  { hanzi: "十三", pinyin: "shísān", japanese: "13" },
-  { hanzi: "十四", pinyin: "shísì", japanese: "14" },
-  { hanzi: "十五", pinyin: "shíwǔ", japanese: "15" },
-  { hanzi: "十六", pinyin: "shíliù", japanese: "16" },
-  { hanzi: "十七", pinyin: "shíqī", japanese: "17" },
-  { hanzi: "十八", pinyin: "shíbā", japanese: "18" },
-  { hanzi: "十九", pinyin: "shíjiǔ", japanese: "19" },
-  { hanzi: "二十", pinyin: "èrshí", japanese: "20" },
-  { hanzi: "二十一", pinyin: "èrshíyī", japanese: "21" },
-  { hanzi: "二十二", pinyin: "èrshí'èr", japanese: "22" },
-  { hanzi: "二十三", pinyin: "èrshísān", japanese: "23" },
-  { hanzi: "二十四", pinyin: "èrshísì", japanese: "24" },
-  { hanzi: "二十五", pinyin: "èrshíwǔ", japanese: "25" },
-  { hanzi: "二十六", pinyin: "èrshíliù", japanese: "26" },
-  { hanzi: "二十七", pinyin: "èrshíqī", japanese: "27" },
-  { hanzi: "二十八", pinyin: "èrshíbā", japanese: "28" },
-  { hanzi: "二十九", pinyin: "èrshíjiǔ", japanese: "29" },
-  { hanzi: "三十", pinyin: "sānshí", japanese: "30" },
-  { hanzi: "三十一", pinyin: "sānshíyī", japanese: "31" },
-  { hanzi: "三十二", pinyin: "sānshí'èr", japanese: "32" },
-  { hanzi: "三十三", pinyin: "sānshísān", japanese: "33" },
-  { hanzi: "三十四", pinyin: "sānshísì", japanese: "34" },
-  { hanzi: "三十五", pinyin: "sānshíwǔ", japanese: "35" },
-  { hanzi: "三十六", pinyin: "sānshíliù", japanese: "36" },
-  { hanzi: "三十七", pinyin: "sānshíqī", japanese: "37" },
-  { hanzi: "三十八", pinyin: "sānshíbā", japanese: "38" },
-  { hanzi: "三十九", pinyin: "sānshíjiǔ", japanese: "39" },
-  { hanzi: "四十", pinyin: "sìshí", japanese: "40" },
-];
-
 function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
@@ -109,7 +67,7 @@ function buildQuestions(
   const numberCount = numberQuestionsOn ? Math.min(2, totalCount) : 0;
   const wordCount = totalCount - numberCount;
   const regularQuestions = (shuffleOn ? shuffle(words) : words).slice(0, wordCount);
-  const numberQuestions = shuffle(numberWords).slice(0, numberCount);
+  const numberQuestions = shuffle(number.words).slice(0, numberCount);
 
   return [...regularQuestions, ...numberQuestions];
 }
