@@ -172,7 +172,7 @@ describe("LessonRunner", () => {
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
         fireEvent.click(screen.getByRole("button", { name: "答え合わせ" }));
 
-        expect(screen.getByRole("button", { name: "○ / × を選んでください" })).toBeVisible();
+        expect(screen.getByRole("button", { name: "次へ" })).toBeVisible();
       });
     });
 
