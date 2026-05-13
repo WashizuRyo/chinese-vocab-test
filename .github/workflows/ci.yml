@@ -38,11 +38,11 @@ jobs:
       - name: Run Biome
         run: biome ci .
 
-      - name: Check types
-        run: pnpm check-types
-
       - name: Run tests
         run: pnpm test
 
       - name: Build
         run: pnpm build
+
+      - name: Check types
+        run: pnpm check-types
