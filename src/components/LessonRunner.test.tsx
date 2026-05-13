@@ -40,11 +40,6 @@ const lesson: Lesson = {
   ],
 };
 
-function requireElement<T>(value: T | undefined): T {
-  if (!value) throw new Error("Expected element to exist");
-  return value;
-}
-
 function completeLearning() {
   fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
   expect(screen.getByText("nǐ")).toBeVisible();
@@ -74,8 +69,15 @@ function answerCurrentQuestion({
     name: pinyinCorrect ? "正解" : "不正解",
   });
 
-  fireEvent.click(requireElement(hanziJudgeButtons[0]));
-  fireEvent.click(requireElement(pinyinJudgeButtons[1]));
+  const hanziJudgeButton = hanziJudgeButtons[0];
+  const pinyinJudgeButton = pinyinJudgeButtons[1];
+
+  if (!hanziJudgeButton || !pinyinJudgeButton) {
+    throw new Error("Expected judge buttons to exist");
+  }
+
+  fireEvent.click(hanziJudgeButton);
+  fireEvent.click(pinyinJudgeButton);
 }
 
 describe("LessonRunner", () => {
