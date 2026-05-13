@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/AnswerReveal";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { number } from "@/data/lessons/number";
-import { getSpeechAvailability, primeSpeechEngine, type SpeechAvailability } from "@/lib/speech";
-import { saveLessonScore } from "@/lib/storage";
+import { primeSpeechEngine } from "@/lib/speech";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
 interface Props {
@@ -76,14 +75,9 @@ export function LessonRunner({ lesson }: Props) {
   const [state, setState] = useState<LessonRunnerState>(() => ({
     status: "mode",
   }));
-  const [speechStatus, setSpeechStatus] = useState<SpeechAvailability | null>(null);
 
   const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
   const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
-
-  useEffect(() => {
-    void getSpeechAvailability().then(setSpeechStatus);
-  }, []);
 
   const handleChangeSettings = (settings: Partial<TestSettings>) => {
     setState((prev) => {
@@ -201,20 +195,6 @@ export function LessonRunner({ lesson }: Props) {
     });
   };
 
-  useEffect(() => {
-    if (state.status !== "result") return;
-    const total = state.results.length;
-    if (total === 0) return;
-    const hanziCorrect = state.results.filter((r) => r.hanziCorrect === true).length;
-    const pinyinCorrect = state.results.filter((r) => r.pinyinCorrect === true).length;
-    saveLessonScore(lesson.id, {
-      hanziCorrect,
-      pinyinCorrect,
-      total,
-      takenAt: new Date().toISOString(),
-    });
-  }, [state, lesson.id]);
-
   switch (state.status) {
     case "mode":
       return (
@@ -222,7 +202,6 @@ export function LessonRunner({ lesson }: Props) {
           lesson={lesson}
           onStartLearning={handleStartLearning}
           onOpenTestSetup={handleOpenTestSetup}
-          speechStatus={speechStatus}
         />
       );
 
@@ -234,7 +213,6 @@ export function LessonRunner({ lesson }: Props) {
           onChangeSettings={handleChangeSettings}
           onStart={handleStart}
           onBack={() => setState({ status: "mode" })}
-          speechStatus={speechStatus}
         />
       );
 
@@ -242,7 +220,6 @@ export function LessonRunner({ lesson }: Props) {
       return (
         <LearningView
           words={lesson.words}
-          autoPlay={speechStatus === "available"}
           hanziCanvasRef={hanziCanvasRef}
           pinyinCanvasRef={pinyinCanvasRef}
           onBackToMode={() => setState({ status: "mode" })}
@@ -280,16 +257,10 @@ export function LessonRunner({ lesson }: Props) {
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
           <ProgressBar current={state.index + 1} total={state.results.length} />
-          {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
-            <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
-            </div>
-          ) : null}
 
           {currentResult ? (
             <TestView
               word={currentResult.word}
-              autoPlay={speechStatus === "available"}
               onSubmit={handleSubmit}
               hanziCanvasRef={hanziCanvasRef}
               pinyinCanvasRef={pinyinCanvasRef}
@@ -304,11 +275,6 @@ export function LessonRunner({ lesson }: Props) {
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
           <ProgressBar current={state.index + 1} total={state.results.length} />
-          {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
-            <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
-            </div>
-          ) : null}
 
           {currentResult ? (
             <div className="mt-4">
@@ -335,12 +301,10 @@ function ModeSelectView({
   lesson,
   onStartLearning,
   onOpenTestSetup,
-  speechStatus,
 }: {
   lesson: Lesson;
   onStartLearning: () => void;
   onOpenTestSetup: () => void;
-  speechStatus: SpeechAvailability | null;
 }) {
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -376,12 +340,6 @@ function ModeSelectView({
           </span>
         </button>
       </section>
-
-      {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
-        <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
-        </div>
-      ) : null}
     </main>
   );
 }
@@ -392,14 +350,12 @@ function SetupView({
   onChangeSettings,
   onStart,
   onBack,
-  speechStatus,
 }: {
   lesson: Lesson;
   settings: TestSettings;
   onChangeSettings: (settings: Partial<TestSettings>) => void;
   onStart: () => void;
   onBack: () => void;
-  speechStatus: SpeechAvailability | null;
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
@@ -464,13 +420,6 @@ function SetupView({
           />
         </label>
       </section>
-
-      {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
-        <div className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
-        </div>
-      ) : null}
-
       <button
         type="button"
         onClick={onStart}
@@ -484,14 +433,12 @@ function SetupView({
 
 function LearningView({
   words,
-  autoPlay,
   hanziCanvasRef,
   pinyinCanvasRef,
   onBackToMode,
   onComplete,
 }: {
   words: Word[];
-  autoPlay: boolean;
   hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   onBackToMode: () => void;
@@ -556,7 +503,7 @@ function LearningView({
             <div className="mt-1 text-base leading-relaxed text-zinc-700">{word.japanese}</div>
           </div>
           <div className="shrink-0">
-            <WordPlayer text={word.hanzi} autoPlayOnChange={autoPlay} />
+            <WordPlayer text={word.hanzi} />
           </div>
         </div>
       </section>
@@ -646,13 +593,11 @@ function LearningCompleteView({
 
 function TestView({
   word,
-  autoPlay,
   onSubmit,
   hanziCanvasRef,
   pinyinCanvasRef,
 }: {
   word: Word;
-  autoPlay: boolean;
   onSubmit: () => void;
   hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
@@ -660,7 +605,7 @@ function TestView({
   return (
     <div className="handwriting-practice mt-4 flex flex-col gap-4">
       <div className="flex justify-center pt-1 pb-2">
-        <WordPlayer text={word.hanzi} autoPlayOnChange={autoPlay} />
+        <WordPlayer text={word.hanzi} />
       </div>
 
       <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} gridType="rice" aspectRatio={1} />

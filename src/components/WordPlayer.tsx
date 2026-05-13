@@ -1,24 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { speakChinese } from "@/lib/speech";
 
 interface Props {
   text: string;
-  autoPlayOnChange: boolean;
 }
 
-export function WordPlayer({ text, autoPlayOnChange }: Props) {
+export function WordPlayer({ text }: Props) {
   const [speaking, setSpeaking] = useState(false);
-  const lastTextRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!autoPlayOnChange) return;
-    if (lastTextRef.current === text) return;
-    lastTextRef.current = text;
-    setSpeaking(true);
-    void speakChinese(text).finally(() => setSpeaking(false));
-  }, [text, autoPlayOnChange]);
 
   const handleReplay = () => {
     setSpeaking(true);
