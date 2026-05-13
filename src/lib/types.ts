@@ -12,6 +12,6 @@ export type Lesson = {
 
 export type WordResult = {
   word: Word;
-  hanziCorrect: boolean | null;
-  pinyinCorrect: boolean | null;
+  hanziCorrect: boolean;
+  pinyinCorrect: boolean;
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnswerReveal } from "@/components/AnswerReveal";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -11,11 +11,37 @@ import { getSpeechAvailability, primeSpeechEngine, type SpeechAvailability } fro
 import { saveLessonScore } from "@/lib/storage";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
-type Phase = "mode" | "setup" | "learn" | "learnComplete" | "test" | "answer" | "result";
-
 type Props = {
   lesson: Lesson;
 };
+
+type TestSettings = {
+  count: number;
+  shuffleOn: boolean;
+  numberQuestionsOn: boolean;
+};
+
+type LessonRunnerState =
+  | { status: "mode" }
+  | { status: "setup"; settings: TestSettings }
+  | { status: "learn" }
+  | { status: "learnComplete" }
+  | {
+      status: "test";
+      results: WordResult[];
+      index: number;
+    }
+  | {
+      status: "answer";
+      results: WordResult[];
+      index: number;
+      hanziImage: string | null;
+      pinyinImage: string | null;
+    }
+  | {
+      status: "result";
+      results: WordResult[];
+    };
 
 const numberWords: Word[] = [
   { hanzi: "一", pinyin: "yī", japanese: "1" },
@@ -85,16 +111,9 @@ function buildQuestions(
 }
 
 export function LessonRunner({ lesson }: Props) {
-  const [phase, setPhase] = useState<Phase>("mode");
-  const [count, setCount] = useState(lesson.words.length);
-  const [shuffleOn, setShuffleOn] = useState(false);
-  const [numberQuestionsOn, setNumberQuestionsOn] = useState(false);
-  const [questions, setQuestions] = useState<Word[]>([]);
-  const [index, setIndex] = useState(0);
-  const [learnIndex, setLearnIndex] = useState(0);
-  const [results, setResults] = useState<WordResult[]>([]);
-  const [hanziImage, setHanziImage] = useState<string | null>(null);
-  const [pinyinImage, setPinyinImage] = useState<string | null>(null);
+  const [state, setState] = useState<LessonRunnerState>(() => ({
+    status: "mode",
+  }));
   const [speechStatus, setSpeechStatus] = useState<SpeechAvailability | null>(null);
 
   const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
@@ -104,215 +123,249 @@ export function LessonRunner({ lesson }: Props) {
     void getSpeechAvailability().then(setSpeechStatus);
   }, []);
 
-  const startWith = useCallback(
-    (words: Word[], includeNumberQuestions = numberQuestionsOn) => {
-      const subset = buildQuestions(words, count, shuffleOn, includeNumberQuestions);
-      const initialResults: WordResult[] = subset.map((w) => ({
-        word: w,
-        hanziCorrect: null,
-        pinyinCorrect: null,
-      }));
-      primeSpeechEngine();
-      setQuestions(subset);
-      setResults(initialResults);
-      setIndex(0);
-      setHanziImage(null);
-      setPinyinImage(null);
-      setPhase("test");
-    },
-    [count, shuffleOn, numberQuestionsOn],
-  );
+  const handleChangeSettings = (settings: Partial<TestSettings>) => {
+    setState((prev) => {
+      if (prev.status !== "setup") return prev;
+      return {
+        ...prev,
+        settings: {
+          ...prev.settings,
+          ...settings,
+        },
+      };
+    });
+  };
+
+  const clearCanvases = () => {
+    hanziCanvasRef.current?.clear();
+    pinyinCanvasRef.current?.clear();
+  };
+
+  const initialSettings = (): TestSettings => ({
+    count: lesson.words.length,
+    shuffleOn: false,
+    numberQuestionsOn: false,
+  });
+
+  const startWithSettings = (
+    words: Word[],
+    settings: TestSettings,
+    includeNumberQuestions = settings.numberQuestionsOn,
+  ) => {
+    const subset = buildQuestions(
+      words,
+      settings.count,
+      settings.shuffleOn,
+      includeNumberQuestions,
+    );
+    startWithWords(subset);
+  };
+
+  const startWithWords = (words: Word[]) => {
+    const initialResults: WordResult[] = words.map((w) => ({
+      word: w,
+      hanziCorrect: false,
+      pinyinCorrect: false,
+    }));
+    primeSpeechEngine();
+    setState({
+      status: "test",
+      results: initialResults,
+      index: 0,
+    });
+  };
 
   const handleStart = () => {
-    startWith(lesson.words);
+    if (state.status !== "setup") return;
+    startWithSettings(lesson.words, state.settings);
   };
 
   const handleStartLearning = () => {
-    setLearnIndex(0);
-    hanziCanvasRef.current?.clear();
-    pinyinCanvasRef.current?.clear();
+    clearCanvases();
     primeSpeechEngine();
-    setPhase("learn");
+    setState({ status: "learn" });
   };
 
   const handleOpenTestSetup = () => {
-    hanziCanvasRef.current?.clear();
-    pinyinCanvasRef.current?.clear();
-    setPhase("setup");
+    clearCanvases();
+    setState({ status: "setup", settings: initialSettings() });
   };
 
   const handleSubmit = () => {
+    if (state.status !== "test") return;
     const h = hanziCanvasRef.current?.getDataURL() ?? null;
     const p = pinyinCanvasRef.current?.getDataURL() ?? null;
-    setHanziImage(h);
-    setPinyinImage(p);
-    setPhase("answer");
+    setState({
+      status: "answer",
+      results: state.results,
+      index: state.index,
+      hanziImage: h,
+      pinyinImage: p,
+    });
   };
 
   const handleJudge = (field: "hanzi" | "pinyin", correct: boolean) => {
-    setResults((prev) => {
-      const next = [...prev];
-      const cur = next[index];
-      next[index] = {
+    setState((prev) => {
+      if (prev.status !== "answer") return prev;
+      const next = [...prev.results];
+      const cur = next[prev.index];
+      next[prev.index] = {
         ...cur,
         hanziCorrect: field === "hanzi" ? correct : cur.hanziCorrect,
         pinyinCorrect: field === "pinyin" ? correct : cur.pinyinCorrect,
       };
-      return next;
+      return {
+        ...prev,
+        results: next,
+      };
     });
   };
 
   const handleNext = () => {
-    if (index + 1 >= questions.length) {
-      setPhase("result");
+    if (state.status !== "answer") return;
+    if (state.index + 1 >= state.results.length) {
+      setState({
+        status: "result",
+        results: state.results,
+      });
       return;
     }
-    hanziCanvasRef.current?.clear();
-    pinyinCanvasRef.current?.clear();
-    setHanziImage(null);
-    setPinyinImage(null);
-    setIndex((i) => i + 1);
-    setPhase("test");
+    clearCanvases();
+    setState({
+      status: "test",
+      results: state.results,
+      index: state.index + 1,
+    });
   };
 
   useEffect(() => {
-    if (phase !== "result") return;
-    const total = results.length;
+    if (state.status !== "result") return;
+    const total = state.results.length;
     if (total === 0) return;
-    const hanziCorrect = results.filter((r) => r.hanziCorrect === true).length;
-    const pinyinCorrect = results.filter((r) => r.pinyinCorrect === true).length;
+    const hanziCorrect = state.results.filter((r) => r.hanziCorrect === true).length;
+    const pinyinCorrect = state.results.filter((r) => r.pinyinCorrect === true).length;
     saveLessonScore(lesson.id, {
       hanziCorrect,
       pinyinCorrect,
       total,
       takenAt: new Date().toISOString(),
     });
-  }, [phase, results, lesson.id]);
+  }, [state, lesson.id]);
 
-  const currentWord = questions[index];
-  const currentResult = results[index];
-  const currentLearnWord = lesson.words[learnIndex];
+  switch (state.status) {
+    case "mode":
+      return (
+        <ModeSelectView
+          lesson={lesson}
+          onStartLearning={handleStartLearning}
+          onOpenTestSetup={handleOpenTestSetup}
+          speechStatus={speechStatus}
+        />
+      );
 
-  if (phase === "mode") {
-    return (
-      <ModeSelectView
-        lesson={lesson}
-        onStartLearning={handleStartLearning}
-        onOpenTestSetup={handleOpenTestSetup}
-        speechStatus={speechStatus}
-      />
-    );
-  }
+    case "setup":
+      return (
+        <SetupView
+          lesson={lesson}
+          settings={state.settings}
+          onChangeSettings={handleChangeSettings}
+          onStart={handleStart}
+          onBack={() => setState({ status: "mode" })}
+          speechStatus={speechStatus}
+        />
+      );
 
-  if (phase === "setup") {
-    return (
-      <SetupView
-        lesson={lesson}
-        count={count}
-        setCount={setCount}
-        shuffleOn={shuffleOn}
-        setShuffleOn={setShuffleOn}
-        numberQuestionsOn={numberQuestionsOn}
-        setNumberQuestionsOn={setNumberQuestionsOn}
-        onStart={handleStart}
-        onBack={() => setPhase("mode")}
-        speechStatus={speechStatus}
-      />
-    );
-  }
-
-  if (phase === "learn" && currentLearnWord) {
-    return (
-      <LearningView
-        word={currentLearnWord}
-        current={learnIndex + 1}
-        total={lesson.words.length}
-        autoPlay={speechStatus === "available"}
-        hanziCanvasRef={hanziCanvasRef}
-        pinyinCanvasRef={pinyinCanvasRef}
-        onBackToMode={() => setPhase("mode")}
-        onPrev={() => {
-          if (learnIndex === 0) return;
-          hanziCanvasRef.current?.clear();
-          pinyinCanvasRef.current?.clear();
-          setLearnIndex((i) => i - 1);
-        }}
-        onNext={() => {
-          hanziCanvasRef.current?.clear();
-          pinyinCanvasRef.current?.clear();
-          if (learnIndex + 1 >= lesson.words.length) {
-            setPhase("learnComplete");
-            return;
-          }
-          setLearnIndex((i) => i + 1);
-        }}
-      />
-    );
-  }
-
-  if (phase === "learnComplete") {
-    return (
-      <LearningCompleteView
-        lesson={lesson}
-        onTest={handleOpenTestSetup}
-        onRestartLearning={handleStartLearning}
-      />
-    );
-  }
-
-  if (phase === "result") {
-    return (
-      <ResultSummary
-        results={results}
-        lessonTitle={lesson.title}
-        onRetry={() => startWith(lesson.words)}
-        onRetryWrongOnly={() => {
-          const wrongWords = results
-            .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
-            .map((r) => r.word);
-          if (wrongWords.length === 0) return;
-          startWith(wrongWords, false);
-        }}
-      />
-    );
-  }
-
-  return (
-    <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
-      <ProgressBar current={index + 1} total={questions.length} />
-      {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
-        <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
-        </div>
-      ) : null}
-
-      {phase === "test" && currentWord ? (
-        <TestView
-          word={currentWord}
+    case "learn":
+      return (
+        <LearningView
+          words={lesson.words}
           autoPlay={speechStatus === "available"}
-          onSubmit={handleSubmit}
           hanziCanvasRef={hanziCanvasRef}
           pinyinCanvasRef={pinyinCanvasRef}
+          onBackToMode={() => setState({ status: "mode" })}
+          onComplete={() => setState({ status: "learnComplete" })}
         />
-      ) : null}
+      );
 
-      {phase === "answer" && currentWord && currentResult ? (
-        <div className="mt-4">
-          <AnswerReveal
-            word={currentWord}
-            hanziImage={hanziImage}
-            pinyinImage={pinyinImage}
-            hanziCorrect={currentResult.hanziCorrect}
-            pinyinCorrect={currentResult.pinyinCorrect}
-            onJudgeHanzi={(c) => handleJudge("hanzi", c)}
-            onJudgePinyin={(c) => handleJudge("pinyin", c)}
-            onNext={handleNext}
-            isLast={index + 1 >= questions.length}
-          />
-        </div>
-      ) : null}
-    </main>
-  );
+    case "learnComplete":
+      return (
+        <LearningCompleteView
+          lesson={lesson}
+          onTest={handleOpenTestSetup}
+          onRestartLearning={handleStartLearning}
+        />
+      );
+
+    case "result":
+      return (
+        <ResultSummary
+          results={state.results}
+          lessonTitle={lesson.title}
+          onRetry={() => startWithWords(state.results.map((r) => r.word))}
+          onRetryWrongOnly={() => {
+            const wrongWords = state.results
+              .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
+              .map((r) => r.word);
+            if (wrongWords.length === 0) return;
+            startWithWords(wrongWords);
+          }}
+        />
+      );
+
+    case "test": {
+      const currentResult = state.results[state.index];
+      return (
+        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+          <ProgressBar current={state.index + 1} total={state.results.length} />
+          {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
+            <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
+            </div>
+          ) : null}
+
+          {currentResult ? (
+            <TestView
+              word={currentResult.word}
+              autoPlay={speechStatus === "available"}
+              onSubmit={handleSubmit}
+              hanziCanvasRef={hanziCanvasRef}
+              pinyinCanvasRef={pinyinCanvasRef}
+            />
+          ) : null}
+        </main>
+      );
+    }
+
+    case "answer": {
+      const currentResult = state.results[state.index];
+      return (
+        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+          <ProgressBar current={state.index + 1} total={state.results.length} />
+          {speechStatus === "unsupported" || speechStatus === "no-zh-voice" ? (
+            <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              このブラウザは中国語の音声合成に対応していません。Safari / Chrome をお試しください。
+            </div>
+          ) : null}
+
+          {currentResult ? (
+            <div className="mt-4">
+              <AnswerReveal
+                word={currentResult.word}
+                hanziImage={state.hanziImage}
+                pinyinImage={state.pinyinImage}
+                hanziCorrect={currentResult.hanziCorrect}
+                pinyinCorrect={currentResult.pinyinCorrect}
+                onJudgeHanzi={(c) => handleJudge("hanzi", c)}
+                onJudgePinyin={(c) => handleJudge("pinyin", c)}
+                onNext={handleNext}
+                isLast={state.index + 1 >= state.results.length}
+              />
+            </div>
+          ) : null}
+        </main>
+      );
+    }
+  }
 }
 
 function ModeSelectView({
@@ -372,28 +425,22 @@ function ModeSelectView({
 
 function SetupView({
   lesson,
-  count,
-  setCount,
-  shuffleOn,
-  setShuffleOn,
-  numberQuestionsOn,
-  setNumberQuestionsOn,
+  settings,
+  onChangeSettings,
   onStart,
   onBack,
   speechStatus,
 }: {
   lesson: Lesson;
-  count: number;
-  setCount: (n: number) => void;
-  shuffleOn: boolean;
-  setShuffleOn: (b: boolean) => void;
-  numberQuestionsOn: boolean;
-  setNumberQuestionsOn: (b: boolean) => void;
+  settings: TestSettings;
+  onChangeSettings: (settings: Partial<TestSettings>) => void;
   onStart: () => void;
   onBack: () => void;
   speechStatus: SpeechAvailability | null;
 }) {
   const max = lesson.words.length;
+  const { count, shuffleOn, numberQuestionsOn } = settings;
+
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
@@ -417,7 +464,7 @@ function SetupView({
             min={1}
             max={max}
             value={Math.min(count, max)}
-            onChange={(e) => setCount(Number(e.target.value))}
+            onChange={(e) => onChangeSettings({ count: Number(e.target.value) })}
             className="flex-1"
           />
           <span className="w-10 text-right text-base font-semibold tabular-nums">
@@ -432,7 +479,7 @@ function SetupView({
           <input
             type="checkbox"
             checked={shuffleOn}
-            onChange={(e) => setShuffleOn(e.target.checked)}
+            onChange={(e) => onChangeSettings({ shuffleOn: e.target.checked })}
             className="h-5 w-5"
           />
         </label>
@@ -449,7 +496,7 @@ function SetupView({
           <input
             type="checkbox"
             checked={numberQuestionsOn}
-            onChange={(e) => setNumberQuestionsOn(e.target.checked)}
+            onChange={(e) => onChangeSettings({ numberQuestionsOn: e.target.checked })}
             className="mt-0.5 h-5 w-5 shrink-0"
           />
         </label>
@@ -473,26 +520,47 @@ function SetupView({
 }
 
 function LearningView({
-  word,
-  current,
-  total,
+  words,
   autoPlay,
   hanziCanvasRef,
   pinyinCanvasRef,
   onBackToMode,
-  onPrev,
-  onNext,
+  onComplete,
 }: {
-  word: Word;
-  current: number;
-  total: number;
+  words: Word[];
   autoPlay: boolean;
   hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   onBackToMode: () => void;
-  onPrev: () => void;
-  onNext: () => void;
+  onComplete: () => void;
 }) {
+  const [index, setIndex] = useState(0);
+  const word = words[index];
+  const current = index + 1;
+  const total = words.length;
+
+  if (!word) return null;
+
+  const clearCanvases = () => {
+    hanziCanvasRef.current?.clear();
+    pinyinCanvasRef.current?.clear();
+  };
+
+  const handlePrev = () => {
+    if (index === 0) return;
+    clearCanvases();
+    setIndex((i) => i - 1);
+  };
+
+  const handleNext = () => {
+    clearCanvases();
+    if (index + 1 >= words.length) {
+      onComplete();
+      return;
+    }
+    setIndex((i) => i + 1);
+  };
+
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
       <div className="mb-3 flex items-center justify-between">
@@ -549,7 +617,7 @@ function LearningView({
         <div className="mx-auto flex max-w-screen-sm gap-2">
           <button
             type="button"
-            onClick={onPrev}
+            onClick={handlePrev}
             disabled={current === 1}
             className="h-14 w-24 rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-30"
           >
@@ -557,7 +625,7 @@ function LearningView({
           </button>
           <button
             type="button"
-            onClick={onNext}
+            onClick={handleNext}
             className="h-14 flex-1 rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
           >
             {current === total ? "完了" : "次へ"}
