@@ -90,7 +90,11 @@ function shuffle<T>(arr: T[]): T[] {
   const out = [...arr];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
+    const item = out[i];
+    const swap = out[j];
+    if (item === undefined || swap === undefined) continue;
+    out[i] = swap;
+    out[j] = item;
   }
   return out;
 }
@@ -209,6 +213,7 @@ export function LessonRunner({ lesson }: Props) {
       if (prev.status !== "answer") return prev;
       const next = [...prev.results];
       const cur = next[prev.index];
+      if (!cur) return prev;
       next[prev.index] = {
         ...cur,
         hanziCorrect: field === "hanzi" ? correct : cur.hanziCorrect,
