@@ -11,10 +11,6 @@ import { number } from "@/data/lessons/number";
 import { primeSpeechEngine, speakChinese } from "@/lib/speech";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
-interface Props {
-  lesson: Lesson;
-}
-
 interface TestSettings {
   count: number;
   shuffleOn: boolean;
@@ -71,18 +67,18 @@ function buildQuestions(
   return [...regularQuestions, ...numberQuestions];
 }
 
-function playWord(word: Word | undefined) {
-  if (!word) return;
-  void speakChinese(word.hanzi);
-}
-
-export function LessonRunner({ lesson }: Props) {
-  const [state, setState] = useState<LessonRunnerState>(() => ({
+export function LessonRunner({ lesson }: { lesson: Lesson }) {
+  const [state, setState] = useState<LessonRunnerState>({
     status: "mode",
-  }));
+  });
 
   const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
   const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
+  const initialSettings = {
+    count: lesson.words.length,
+    shuffleOn: false,
+    numberQuestionsOn: false,
+  };
 
   const handleChangeSettings = (settings: Partial<TestSettings>) => {
     setState((prev) => {
@@ -101,12 +97,6 @@ export function LessonRunner({ lesson }: Props) {
     hanziCanvasRef.current?.clear();
     pinyinCanvasRef.current?.clear();
   };
-
-  const initialSettings = (): TestSettings => ({
-    count: lesson.words.length,
-    shuffleOn: false,
-    numberQuestionsOn: false,
-  });
 
   const startWithSettings = (
     words: Word[],
@@ -134,7 +124,8 @@ export function LessonRunner({ lesson }: Props) {
       results: initialResults,
       index: 0,
     });
-    playWord(words[0]);
+    const firstWord = words[0];
+    if (firstWord) speakChinese(firstWord.hanzi);
   };
 
   const handleStart = () => {
@@ -146,12 +137,13 @@ export function LessonRunner({ lesson }: Props) {
     clearCanvases();
     primeSpeechEngine();
     setState({ status: "learn" });
-    playWord(lesson.words[0]);
+    const firstWord = lesson.words[0];
+    if (firstWord) speakChinese(firstWord.hanzi);
   };
 
   const handleOpenTestSetup = () => {
     clearCanvases();
-    setState({ status: "setup", settings: initialSettings() });
+    setState({ status: "setup", settings: initialSettings });
   };
 
   const handleSubmit = () => {
@@ -201,7 +193,7 @@ export function LessonRunner({ lesson }: Props) {
       results: state.results,
       index: state.index + 1,
     });
-    playWord(nextResult?.word);
+    if (nextResult) speakChinese(nextResult.word.hanzi);
   };
 
   switch (state.status) {
@@ -302,6 +294,11 @@ export function LessonRunner({ lesson }: Props) {
           ) : null}
         </main>
       );
+    }
+
+    default: {
+      const _exhaustiveCheck: never = state;
+      throw new Error(`Unhandled lesson runner state: ${JSON.stringify(_exhaustiveCheck)}`);
     }
   }
 }
@@ -470,7 +467,7 @@ function LearningView({
     if (!previousWord) return;
     clearCanvases();
     setIndex((i) => i - 1);
-    playWord(previousWord);
+    speakChinese(previousWord.hanzi);
   };
 
   const handleNext = () => {
@@ -481,7 +478,7 @@ function LearningView({
       return;
     }
     setIndex((i) => i + 1);
-    playWord(nextWord);
+    speakChinese(nextWord.hanzi);
   };
 
   return (
