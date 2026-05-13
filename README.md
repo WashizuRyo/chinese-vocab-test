@@ -22,9 +22,9 @@
 pnpm install
 pnpm dev          # 開発サーバ http://localhost:3000
 pnpm build        # 本番ビルド
-pnpm lint         # Biome check
-pnpm format       # Biome format
-pnpm check        # Biome check + 自動修正
+pnpm test         # テスト実行
+pnpm check-types  # TypeScript 型チェック
+pnpm format       # Biome check + 自動修正
 ```
 
 ## 新しい課を追加する手順
