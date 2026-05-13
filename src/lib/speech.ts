@@ -1,5 +1,3 @@
-export type SpeechAvailability = "available" | "no-zh-voice" | "unsupported";
-
 let cachedVoices: SpeechSynthesisVoice[] | null = null;
 let voicesLoadPromise: Promise<SpeechSynthesisVoice[]> | null = null;
 
@@ -117,14 +115,6 @@ function pickChineseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice 
   if (hans) return hans;
 
   return female[0] ?? zhVoices[0] ?? null;
-}
-
-export async function getSpeechAvailability(): Promise<SpeechAvailability> {
-  if (!isSpeechSupported()) return "unsupported";
-  const voices = await loadVoices();
-  if (voices.length === 0) return "no-zh-voice";
-  const zh = pickChineseVoice(voices);
-  return zh ? "available" : "no-zh-voice";
 }
 
 export async function speakChinese(text: string, rate = 0.85): Promise<void> {
