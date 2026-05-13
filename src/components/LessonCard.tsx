@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { formatTakenAt, type LessonScore, loadLessonScore } from "@/lib/storage";
 import type { Lesson } from "@/lib/types";
 
-type Props = {
+interface Props {
   lesson: Lesson;
-};
+}
 
 export function LessonCard({ lesson }: Props) {
   const [score, setScore] = useState<LessonScore | null>(null);

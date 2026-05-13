@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { speakChinese } from "@/lib/speech";
 
-type Props = {
+interface Props {
   text: string;
   autoPlayOnChange: boolean;
-};
+}
 
 export function WordPlayer({ text, autoPlayOnChange }: Props) {
   const [speaking, setSpeaking] = useState(false);

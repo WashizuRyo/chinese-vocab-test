@@ -2,7 +2,7 @@
 
 import type { Word } from "@/lib/types";
 
-type Props = {
+interface Props {
   word: Word;
   hanziImage: string | null;
   pinyinImage: string | null;
@@ -12,7 +12,7 @@ type Props = {
   onJudgePinyin: (correct: boolean) => void;
   onNext: () => void;
   isLast: boolean;
-};
+}
 
 function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (

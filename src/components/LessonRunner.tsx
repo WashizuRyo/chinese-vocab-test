@@ -11,15 +11,15 @@ import { getSpeechAvailability, primeSpeechEngine, type SpeechAvailability } fro
 import { saveLessonScore } from "@/lib/storage";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
-type Props = {
+interface Props {
   lesson: Lesson;
-};
+}
 
-type TestSettings = {
+interface TestSettings {
   count: number;
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
-};
+}
 
 type LessonRunnerState =
   | { status: "mode" }

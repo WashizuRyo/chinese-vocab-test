@@ -1,17 +1,17 @@
-export type Word = {
+export interface Word {
   hanzi: string;
   pinyin: string;
   japanese: string;
-};
+}
 
-export type Lesson = {
+export interface Lesson {
   id: string;
   title: string;
   words: Word[];
-};
+}
 
-export type WordResult = {
+export interface WordResult {
   word: Word;
   hanziCorrect: boolean;
   pinyinCorrect: boolean;
-};
+}

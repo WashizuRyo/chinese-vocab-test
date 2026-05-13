@@ -1,11 +1,11 @@
 const STORAGE_PREFIX = "chinese-vocab:lesson:";
 
-export type LessonScore = {
+export interface LessonScore {
   hanziCorrect: number;
   pinyinCorrect: number;
   total: number;
   takenAt: string;
-};
+}
 
 export function loadLessonScore(lessonId: string): LessonScore | null {
   if (typeof window === "undefined") return null;
