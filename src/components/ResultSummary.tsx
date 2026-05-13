@@ -3,12 +3,12 @@
 import Link from "next/link";
 import type { WordResult } from "@/lib/types";
 
-type Props = {
+interface Props {
   results: WordResult[];
   lessonTitle: string;
   onRetry: () => void;
   onRetryWrongOnly: () => void;
-};
+}
 
 export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly }: Props) {
   const total = results.length;

@@ -12,20 +12,23 @@ import {
 
 export type GridType = "rice" | "baseline" | "none";
 
-export type HandwritingCanvasHandle = {
+export interface HandwritingCanvasHandle {
   clear: () => void;
   getDataURL: () => string | null;
   hasInk: () => boolean;
-};
+}
 
-type Props = {
+interface Props {
   gridType: GridType;
   aspectRatio: number;
   className?: string;
   ariaLabel?: string;
-};
+}
 
-type Point = { x: number; y: number };
+interface Point {
+  x: number;
+  y: number;
+}
 
 const STROKE_COLOR = "#111111";
 const GRID_COLOR = "#dcdcdc";

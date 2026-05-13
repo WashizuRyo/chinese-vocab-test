@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_COOKIE_NAME, computeAuthToken, timingSafeEqual } from "@/lib/auth";
 
-export type LoginState = { error?: string };
+export interface LoginState {
+  error?: string;
+}
 
 const SAFE_NEXT = /^\/(?!\/)[\w/\-?=&%.]*$/;
 

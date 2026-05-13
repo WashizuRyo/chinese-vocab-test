@@ -116,7 +116,7 @@ function pickChineseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice 
   const hans = female.find((v) => langMatch(v.lang).includes("hans"));
   if (hans) return hans;
 
-  return female[0] ?? zhVoices[0];
+  return female[0] ?? zhVoices[0] ?? null;
 }
 
 export async function getSpeechAvailability(): Promise<SpeechAvailability> {

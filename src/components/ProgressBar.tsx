@@ -1,7 +1,7 @@
-type Props = {
+interface Props {
   current: number;
   total: number;
-};
+}
 
 export function ProgressBar({ current, total }: Props) {
   const pct = total === 0 ? 0 : Math.min(100, Math.round((current / total) * 100));

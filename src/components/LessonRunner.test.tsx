@@ -69,8 +69,15 @@ function answerCurrentQuestion({
     name: pinyinCorrect ? "正解" : "不正解",
   });
 
-  fireEvent.click(hanziJudgeButtons[0]);
-  fireEvent.click(pinyinJudgeButtons[1]);
+  const hanziJudgeButton = hanziJudgeButtons[0];
+  const pinyinJudgeButton = pinyinJudgeButtons[1];
+
+  if (!hanziJudgeButton || !pinyinJudgeButton) {
+    throw new Error("Expected judge buttons to exist");
+  }
+
+  fireEvent.click(hanziJudgeButton);
+  fireEvent.click(pinyinJudgeButton);
 }
 
 describe("LessonRunner", () => {
