@@ -6,21 +6,15 @@ type Props = {
   word: Word;
   hanziImage: string | null;
   pinyinImage: string | null;
-  hanziCorrect: boolean | null;
-  pinyinCorrect: boolean | null;
+  hanziCorrect: boolean;
+  pinyinCorrect: boolean;
   onJudgeHanzi: (correct: boolean) => void;
   onJudgePinyin: (correct: boolean) => void;
   onNext: () => void;
   isLast: boolean;
 };
 
-function JudgeButtons({
-  value,
-  onChange,
-}: {
-  value: boolean | null;
-  onChange: (v: boolean) => void;
-}) {
+function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex gap-2">
       <button
@@ -62,8 +56,6 @@ export function AnswerReveal({
   onNext,
   isLast,
 }: Props) {
-  const canAdvance = hanziCorrect !== null && pinyinCorrect !== null;
-
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
@@ -118,10 +110,9 @@ export function AnswerReveal({
       <button
         type="button"
         onClick={onNext}
-        disabled={!canAdvance}
-        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-30"
+        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity"
       >
-        {canAdvance ? (isLast ? "結果を見る" : "次へ") : "○ / × を選んでください"}
+        {isLast ? "結果を見る" : "次へ"}
       </button>
     </div>
   );
