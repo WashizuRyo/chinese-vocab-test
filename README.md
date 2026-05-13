@@ -70,8 +70,3 @@ Vercel 側では「Project → Settings → Environment Variables」で `APP_PAS
 中国語の音声合成 (`zh-CN`) に対応しているブラウザが必要です。
 iOS Safari / macOS Safari / Chrome / Edge は対応しています。
 非対応の場合は画面上部に警告メッセージが表示されます。
-
-## デプロイ (Vercel)
-
-GitHub にこのリポジトリを push 後、Vercel の "Import Project" で取り込むだけです。
-追加の環境変数や設定は不要です。
