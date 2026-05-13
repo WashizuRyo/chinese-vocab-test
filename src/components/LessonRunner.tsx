@@ -8,7 +8,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { number } from "@/data/lessons/number";
-import { primeSpeechEngine } from "@/lib/speech";
+import { primeSpeechEngine, speakChinese } from "@/lib/speech";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 
 interface Props {
@@ -71,6 +71,11 @@ function buildQuestions(
   return [...regularQuestions, ...numberQuestions];
 }
 
+function playWord(word: Word | undefined) {
+  if (!word) return;
+  void speakChinese(word.hanzi);
+}
+
 export function LessonRunner({ lesson }: Props) {
   const [state, setState] = useState<LessonRunnerState>(() => ({
     status: "mode",
@@ -129,6 +134,7 @@ export function LessonRunner({ lesson }: Props) {
       results: initialResults,
       index: 0,
     });
+    playWord(words[0]);
   };
 
   const handleStart = () => {
@@ -140,6 +146,7 @@ export function LessonRunner({ lesson }: Props) {
     clearCanvases();
     primeSpeechEngine();
     setState({ status: "learn" });
+    playWord(lesson.words[0]);
   };
 
   const handleOpenTestSetup = () => {
@@ -187,12 +194,14 @@ export function LessonRunner({ lesson }: Props) {
       });
       return;
     }
+    const nextResult = state.results[state.index + 1];
     clearCanvases();
     setState({
       status: "test",
       results: state.results,
       index: state.index + 1,
     });
+    playWord(nextResult?.word);
   };
 
   switch (state.status) {
@@ -457,18 +466,22 @@ function LearningView({
   };
 
   const handlePrev = () => {
-    if (index === 0) return;
+    const previousWord = words[index - 1];
+    if (!previousWord) return;
     clearCanvases();
     setIndex((i) => i - 1);
+    playWord(previousWord);
   };
 
   const handleNext = () => {
     clearCanvases();
-    if (index + 1 >= words.length) {
+    const nextWord = words[index + 1];
+    if (!nextWord) {
       onComplete();
       return;
     }
     setIndex((i) => i + 1);
+    playWord(nextWord);
   };
 
   return (
