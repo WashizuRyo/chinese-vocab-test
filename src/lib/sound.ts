@@ -33,8 +33,8 @@ export function playCorrectSound(): void {
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    playTone(ctx, now, 880, 0.09);
-    playTone(ctx, now + 0.08, 1320, 0.12);
+    playTone(ctx, now, 1175, 0.08);
+    playTone(ctx, now + 0.07, 1760, 0.11);
   } catch {
     // Sound effects are optional feedback.
   }
