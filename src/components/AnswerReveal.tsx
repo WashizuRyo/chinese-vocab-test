@@ -6,6 +6,8 @@ interface Props {
   word: Word;
   hanziImage: string | null;
   pinyinImage: string | null;
+  hanziOcrImage: string | null;
+  pinyinOcrImage: string | null;
   ocr: OcrGradeState;
   onNext: () => void;
   isLast: boolean;
@@ -42,7 +44,32 @@ function OcrResult({ result }: { result: OcrFieldResult }) {
   );
 }
 
-export function AnswerReveal({ word, hanziImage, pinyinImage, ocr, onNext, isLast }: Props) {
+function OcrDebugImage({ label, src }: { label: string; src: string | null }) {
+  if (process.env.NODE_ENV === "production" || !src) return null;
+
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+      <div className="mb-1 text-xs font-medium text-amber-800">{label} OCR送信用画像</div>
+      {/* biome-ignore lint/performance/noImgElement: data URL debug image */}
+      <img
+        src={src}
+        alt={`${label}のOCR送信用画像`}
+        className="w-full rounded-lg border border-amber-200 bg-white"
+      />
+    </div>
+  );
+}
+
+export function AnswerReveal({
+  word,
+  hanziImage,
+  pinyinImage,
+  hanziOcrImage,
+  pinyinOcrImage,
+  ocr,
+  onNext,
+  isLast,
+}: Props) {
   const isLoading = ocr.status === "loading";
 
   return (
@@ -85,6 +112,7 @@ export function AnswerReveal({ word, hanziImage, pinyinImage, ocr, onNext, isLas
             />
           </div>
         ) : null}
+        <OcrDebugImage label="漢字" src={hanziOcrImage} />
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-4">
@@ -109,6 +137,7 @@ export function AnswerReveal({ word, hanziImage, pinyinImage, ocr, onNext, isLas
             />
           </div>
         ) : null}
+        <OcrDebugImage label="ピンイン" src={pinyinOcrImage} />
       </div>
 
       <button

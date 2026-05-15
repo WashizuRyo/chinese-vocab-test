@@ -38,6 +38,8 @@ type LessonRunnerState =
       index: number;
       hanziImage: string | null;
       pinyinImage: string | null;
+      hanziOcrImage: string | null;
+      pinyinOcrImage: string | null;
       ocr: OcrGradeState;
     }
   | {
@@ -244,6 +246,8 @@ export function LessonRunner({ lesson }: Props) {
       index: state.index,
       hanziImage,
       pinyinImage,
+      hanziOcrImage,
+      pinyinOcrImage,
       ocr: { status: "loading" },
     });
     void runOcrGrade({
@@ -360,6 +364,8 @@ export function LessonRunner({ lesson }: Props) {
                 word={currentResult.word}
                 hanziImage={state.hanziImage}
                 pinyinImage={state.pinyinImage}
+                hanziOcrImage={state.hanziOcrImage}
+                pinyinOcrImage={state.pinyinOcrImage}
                 ocr={state.ocr}
                 onNext={handleNext}
                 isLast={state.index + 1 >= state.results.length}
