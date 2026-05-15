@@ -113,6 +113,13 @@ export async function handleGradeRequest(
     const message = error instanceof Error ? error.message : "OCRに失敗しました";
     const response: GradeErrorResponse = { ok: false, error: message };
     const status = error instanceof GradeRequestError ? 400 : 502;
+
+    console.error("[ocr-grade] failed", {
+      message,
+      status,
+      error,
+    });
+
     return Response.json(response, { status });
   }
 }
