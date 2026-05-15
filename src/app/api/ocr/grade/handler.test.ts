@@ -18,6 +18,8 @@ describe("OCR grade handler", () => {
     const detectText = vi.fn().mockResolvedValue({
       hanziText: " 你。",
       pinyinText: "ＮǏ ",
+      provider: "azure-vision",
+      feature: "READ",
     });
 
     const response = await handleGradeRequest(
@@ -37,6 +39,8 @@ describe("OCR grade handler", () => {
     });
     expect(data.hanzi.correct).toBe(true);
     expect(data.pinyin.correct).toBe(true);
+    expect(data.provider).toBe("azure-vision");
+    expect(data.feature).toBe("READ");
   });
 
   test("不正なData URLは400を返すこと", async () => {

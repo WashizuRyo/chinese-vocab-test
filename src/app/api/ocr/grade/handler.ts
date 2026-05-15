@@ -11,8 +11,8 @@ interface GradeRequestBody {
 
 export interface GradeSuccessResponse {
   ok: true;
-  provider: "google-vision";
-  feature: "TEXT_DETECTION";
+  provider: "azure-vision" | "google-vision";
+  feature: "READ" | "TEXT_DETECTION";
   hanzi: OcrFieldResult;
   pinyin: OcrFieldResult;
 }
@@ -27,7 +27,12 @@ export type GradeResponse = GradeSuccessResponse | GradeErrorResponse;
 export type DetectText = (images: {
   hanziImageBase64: string;
   pinyinImageBase64: string;
-}) => Promise<{ hanziText: string; pinyinText: string }>;
+}) => Promise<{
+  hanziText: string;
+  pinyinText: string;
+  provider: GradeSuccessResponse["provider"];
+  feature: GradeSuccessResponse["feature"];
+}>;
 
 class GradeRequestError extends Error {}
 
@@ -102,8 +107,8 @@ export async function handleGradeRequest(
     const detected = await detectText({ hanziImageBase64, pinyinImageBase64 });
     const response: GradeSuccessResponse = {
       ok: true,
-      provider: "google-vision",
-      feature: "TEXT_DETECTION",
+      provider: detected.provider,
+      feature: detected.feature,
       hanzi: gradeField(detected.hanziText, expected.hanzi, "hanzi"),
       pinyin: gradeField(detected.pinyinText, expected.pinyin, "pinyin"),
     };

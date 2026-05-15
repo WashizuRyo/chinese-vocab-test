@@ -76,5 +76,7 @@ export const detectTextWithGoogleVision: DetectText = async ({
   return {
     hanziText: firstTextDescription(hanziResponse),
     pinyinText: firstTextDescription(pinyinResponse),
+    provider: "google-vision",
+    feature: "TEXT_DETECTION",
   };
 };

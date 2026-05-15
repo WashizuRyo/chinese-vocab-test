@@ -73,8 +73,10 @@ iOS Safari / macOS Safari / Chrome / Edge は対応しています。
 
 ## OCR 自動判定
 
-テストの答え合わせでは、Google Cloud Vision API の `DOCUMENT_TEXT_DETECTION` で手書き回答を読み取り、正解と照合します。
+テストの答え合わせでは、OCR API で手書き回答を読み取り、正解と照合します。Azure AI Vision と Google Cloud Vision を切り替えできます。
 
-- 環境変数 `GOOGLE_CLOUD_CREDENTIALS_JSON` に Google Cloud サービスアカウントJSONを1行文字列で設定してください。
+- Azure を使う場合は、環境変数 `OCR_PROVIDER=azure`, `AZURE_VISION_ENDPOINT`, `AZURE_VISION_KEY` を設定してください。
+- Google を使う場合は、環境変数 `OCR_PROVIDER=google`, `GOOGLE_CLOUD_CREDENTIALS_JSON` を設定してください。
+- `OCR_PROVIDER` 未設定時は、Azure の環境変数があれば Azure、なければ Google を使います。
 - 認証情報はサーバー側のRoute Handlerだけで使い、ブラウザには送信しません。
 - 手書き画像はOCRリクエストにのみ使い、アプリ側では保存しません。
