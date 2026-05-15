@@ -34,6 +34,7 @@ function getClient() {
   const credentials = getCredentials();
   client = new ImageAnnotatorClient({
     credentials,
+    fallback: true,
     projectId: credentials.project_id,
   });
   return client;
