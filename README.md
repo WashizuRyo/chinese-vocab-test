@@ -70,3 +70,11 @@ Vercel 側では「Project → Settings → Environment Variables」で `APP_PAS
 中国語の音声合成 (`zh-CN`) に対応しているブラウザが必要です。
 iOS Safari / macOS Safari / Chrome / Edge は対応しています。
 非対応の場合は画面上部に警告メッセージが表示されます。
+
+## OCR 自動判定
+
+テストの答え合わせでは、Google Cloud Vision API の `DOCUMENT_TEXT_DETECTION` で手書き回答を読み取り、正解と照合します。
+
+- 環境変数 `GOOGLE_CLOUD_CREDENTIALS_JSON` に Google Cloud サービスアカウントJSONを1行文字列で設定してください。
+- 認証情報はサーバー側のRoute Handlerだけで使い、ブラウザには送信しません。
+- 手書き画像はOCRリクエストにのみ使い、アプリ側では保存しません。

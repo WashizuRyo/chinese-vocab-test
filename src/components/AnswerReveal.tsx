@@ -1,61 +1,50 @@
 "use client";
 
-import type { Word } from "@/lib/types";
+import type { OcrFieldResult, OcrGradeState, Word } from "@/lib/types";
 
 interface Props {
   word: Word;
   hanziImage: string | null;
   pinyinImage: string | null;
-  hanziCorrect: boolean;
-  pinyinCorrect: boolean;
-  onJudgeHanzi: (correct: boolean) => void;
-  onJudgePinyin: (correct: boolean) => void;
+  ocr: OcrGradeState;
   onNext: () => void;
   isLast: boolean;
 }
 
-function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function ResultBadge({ correct }: { correct: boolean }) {
   return (
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => onChange(true)}
-        className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
-          value === true
-            ? "border-emerald-600 bg-emerald-600 text-white"
-            : "border-zinc-300 bg-white text-zinc-400"
-        }`}
-        aria-label="正解"
-      >
-        ○
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange(false)}
-        className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
-          value === false
-            ? "border-rose-600 bg-rose-600 text-white"
-            : "border-zinc-300 bg-white text-zinc-400"
-        }`}
-        aria-label="不正解"
-      >
-        ×
-      </button>
+    <span
+      className={`rounded-full px-3 py-1 text-sm font-bold ${
+        correct ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+      }`}
+    >
+      {correct ? "○" : "×"}
+    </span>
+  );
+}
+
+function OcrResult({ result }: { result: OcrFieldResult }) {
+  return (
+    <div className="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs font-medium text-zinc-500">OCR結果</div>
+        <ResultBadge correct={result.correct} />
+      </div>
+      <div className="mt-2 grid grid-cols-[4.5rem_1fr] gap-x-2 gap-y-1 text-sm">
+        <div className="text-zinc-500">読み取り</div>
+        <div className="break-words font-medium text-zinc-900">
+          {result.rawText || "読み取れませんでした"}
+        </div>
+        <div className="text-zinc-500">正規化</div>
+        <div className="break-words text-zinc-700">{result.normalizedText || "なし"}</div>
+      </div>
     </div>
   );
 }
 
-export function AnswerReveal({
-  word,
-  hanziImage,
-  pinyinImage,
-  hanziCorrect,
-  pinyinCorrect,
-  onJudgeHanzi,
-  onJudgePinyin,
-  onNext,
-  isLast,
-}: Props) {
+export function AnswerReveal({ word, hanziImage, pinyinImage, ocr, onNext, isLast }: Props) {
+  const isLoading = ocr.status === "loading";
+
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
@@ -63,16 +52,30 @@ export function AnswerReveal({
         <div className="mt-1 text-base text-zinc-800">{word.japanese}</div>
       </div>
 
+      {isLoading ? (
+        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm font-medium text-sky-800">
+          OCR解析中...
+        </div>
+      ) : null}
+
+      {ocr.status === "error" ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+          <div className="text-sm font-semibold text-rose-800">OCR失敗</div>
+          <div className="mt-1 text-sm leading-relaxed text-rose-700">{ocr.message}</div>
+        </div>
+      ) : null}
+
       <div className="rounded-2xl border border-zinc-200 bg-white p-4">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">漢字</div>
             <div className="mt-1 font-serif text-5xl text-zinc-900">{word.hanzi}</div>
           </div>
-          <JudgeButtons value={hanziCorrect} onChange={onJudgeHanzi} />
+          {ocr.status === "success" ? <ResultBadge correct={ocr.hanzi.correct} /> : null}
         </div>
+        {ocr.status === "success" ? <OcrResult result={ocr.hanzi} /> : null}
         {hanziImage ? (
-          <div>
+          <div className="mt-3">
             <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
             {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
             <img
@@ -92,10 +95,11 @@ export function AnswerReveal({
             </div>
             <div className="mt-1 text-2xl tracking-wide text-zinc-900">{word.pinyin}</div>
           </div>
-          <JudgeButtons value={pinyinCorrect} onChange={onJudgePinyin} />
+          {ocr.status === "success" ? <ResultBadge correct={ocr.pinyin.correct} /> : null}
         </div>
+        {ocr.status === "success" ? <OcrResult result={ocr.pinyin} /> : null}
         {pinyinImage ? (
-          <div>
+          <div className="mt-3">
             <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
             {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
             <img
@@ -110,9 +114,10 @@ export function AnswerReveal({
       <button
         type="button"
         onClick={onNext}
-        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity"
+        disabled={isLoading}
+        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {isLast ? "結果を見る" : "次へ"}
+        {isLoading ? "OCR解析中" : isLast ? "結果を見る" : "次へ"}
       </button>
     </div>
   );

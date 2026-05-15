@@ -15,3 +15,22 @@ export interface WordResult {
   hanziCorrect: boolean;
   pinyinCorrect: boolean;
 }
+
+export interface OcrFieldResult {
+  rawText: string;
+  normalizedText: string;
+  expectedText: string;
+  correct: boolean;
+}
+
+export type OcrGradeState =
+  | { status: "loading" }
+  | {
+      status: "success";
+      hanzi: OcrFieldResult;
+      pinyin: OcrFieldResult;
+    }
+  | {
+      status: "error";
+      message: string;
+    };

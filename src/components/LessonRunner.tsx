@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import type { GradeResponse } from "@/app/api/ocr/grade/handler";
 import { AnswerReveal } from "@/components/AnswerReveal";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -9,7 +10,7 @@ import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { number } from "@/data/lessons/number";
 import { primeSpeechEngine, speakChinese } from "@/lib/speech";
-import type { Lesson, Word, WordResult } from "@/lib/types";
+import type { Lesson, OcrGradeState, Word, WordResult } from "@/lib/types";
 
 interface Props {
   lesson: Lesson;
@@ -37,6 +38,7 @@ type LessonRunnerState =
       index: number;
       hanziImage: string | null;
       pinyinImage: string | null;
+      ocr: OcrGradeState;
     }
   | {
       status: "result";
@@ -154,34 +156,99 @@ export function LessonRunner({ lesson }: Props) {
     setState({ status: "setup", settings: initialSettings() });
   };
 
+  const runOcrGrade = async ({
+    hanziImage,
+    pinyinImage,
+    word,
+    index,
+  }: {
+    hanziImage: string | null;
+    pinyinImage: string | null;
+    word: Word;
+    index: number;
+  }) => {
+    try {
+      const response = await fetch("/api/ocr/grade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hanziImage,
+          pinyinImage,
+          expected: {
+            hanzi: word.hanzi,
+            pinyin: word.pinyin,
+          },
+        }),
+      });
+      const data = (await response.json()) as GradeResponse;
+
+      if (!response.ok || data.ok !== true) {
+        throw new Error(data.ok === false ? data.error : "OCRに失敗しました");
+      }
+
+      setState((prev) => {
+        if (prev.status !== "answer" || prev.index !== index) return prev;
+        const next = [...prev.results];
+        const cur = next[index];
+        if (!cur) return prev;
+        next[index] = {
+          ...cur,
+          hanziCorrect: data.hanzi.correct,
+          pinyinCorrect: data.pinyin.correct,
+        };
+        return {
+          ...prev,
+          results: next,
+          ocr: {
+            status: "success",
+            hanzi: data.hanzi,
+            pinyin: data.pinyin,
+          },
+        };
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "OCRに失敗しました";
+      setState((prev) => {
+        if (prev.status !== "answer" || prev.index !== index) return prev;
+        const next = [...prev.results];
+        const cur = next[index];
+        if (!cur) return prev;
+        next[index] = {
+          ...cur,
+          hanziCorrect: false,
+          pinyinCorrect: false,
+        };
+        return {
+          ...prev,
+          results: next,
+          ocr: {
+            status: "error",
+            message,
+          },
+        };
+      });
+    }
+  };
+
   const handleSubmit = () => {
     if (state.status !== "test") return;
-    const h = hanziCanvasRef.current?.getDataURL() ?? null;
-    const p = pinyinCanvasRef.current?.getDataURL() ?? null;
+    const currentResult = state.results[state.index];
+    if (!currentResult) return;
+    const hanziImage = hanziCanvasRef.current?.getDataURL() ?? null;
+    const pinyinImage = pinyinCanvasRef.current?.getDataURL() ?? null;
     setState({
       status: "answer",
       results: state.results,
       index: state.index,
-      hanziImage: h,
-      pinyinImage: p,
+      hanziImage,
+      pinyinImage,
+      ocr: { status: "loading" },
     });
-  };
-
-  const handleJudge = (field: "hanzi" | "pinyin", correct: boolean) => {
-    setState((prev) => {
-      if (prev.status !== "answer") return prev;
-      const next = [...prev.results];
-      const cur = next[prev.index];
-      if (!cur) return prev;
-      next[prev.index] = {
-        ...cur,
-        hanziCorrect: field === "hanzi" ? correct : cur.hanziCorrect,
-        pinyinCorrect: field === "pinyin" ? correct : cur.pinyinCorrect,
-      };
-      return {
-        ...prev,
-        results: next,
-      };
+    void runOcrGrade({
+      hanziImage,
+      pinyinImage,
+      word: currentResult.word,
+      index: state.index,
     });
   };
 
@@ -291,10 +358,7 @@ export function LessonRunner({ lesson }: Props) {
                 word={currentResult.word}
                 hanziImage={state.hanziImage}
                 pinyinImage={state.pinyinImage}
-                hanziCorrect={currentResult.hanziCorrect}
-                pinyinCorrect={currentResult.pinyinCorrect}
-                onJudgeHanzi={(c) => handleJudge("hanzi", c)}
-                onJudgePinyin={(c) => handleJudge("pinyin", c)}
+                ocr={state.ocr}
                 onNext={handleNext}
                 isLast={state.index + 1 >= state.results.length}
               />

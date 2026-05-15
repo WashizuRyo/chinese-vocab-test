@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { LessonRunner } from "@/components/LessonRunner";
 import type { Lesson } from "@/lib/types";
@@ -31,6 +31,9 @@ vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(canvasContextMock);
 vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/png;base64,test");
 
+const fetchMock = vi.fn();
+vi.stubGlobal("fetch", fetchMock);
+
 const lesson: Lesson = {
   id: "transition-test",
   title: "状態遷移課",
@@ -53,31 +56,50 @@ function completeLearning() {
   expect(screen.getByText("暗記完了")).toBeVisible();
 }
 
-function answerCurrentQuestion({
+function mockNextOcrResult({
   hanziCorrect,
   pinyinCorrect,
 }: {
   hanziCorrect: boolean;
   pinyinCorrect: boolean;
 }) {
+  fetchMock.mockResolvedValueOnce(
+    new Response(
+      JSON.stringify({
+        ok: true,
+        provider: "google-vision",
+        feature: "DOCUMENT_TEXT_DETECTION",
+        hanzi: {
+          rawText: hanziCorrect ? "你" : "不",
+          normalizedText: hanziCorrect ? "你" : "不",
+          expectedText: "你",
+          correct: hanziCorrect,
+        },
+        pinyin: {
+          rawText: pinyinCorrect ? "nǐ" : "ni",
+          normalizedText: pinyinCorrect ? "nǐ" : "ni",
+          expectedText: "nǐ",
+          correct: pinyinCorrect,
+        },
+      }),
+      { status: 200 },
+    ),
+  );
+}
+
+async function answerCurrentQuestion({
+  hanziCorrect,
+  pinyinCorrect,
+}: {
+  hanziCorrect: boolean;
+  pinyinCorrect: boolean;
+}) {
+  mockNextOcrResult({ hanziCorrect, pinyinCorrect });
   fireEvent.click(screen.getByRole("button", { name: "答え合わせ" }));
 
-  const hanziJudgeButtons = screen.getAllByRole("button", {
-    name: hanziCorrect ? "正解" : "不正解",
+  await waitFor(() => {
+    expect(screen.queryByText("OCR解析中...")).not.toBeInTheDocument();
   });
-  const pinyinJudgeButtons = screen.getAllByRole("button", {
-    name: pinyinCorrect ? "正解" : "不正解",
-  });
-
-  const hanziJudgeButton = hanziJudgeButtons[0];
-  const pinyinJudgeButton = pinyinJudgeButtons[1];
-
-  if (!hanziJudgeButton || !pinyinJudgeButton) {
-    throw new Error("Expected judge buttons to exist");
-  }
-
-  fireEvent.click(hanziJudgeButton);
-  fireEvent.click(pinyinJudgeButton);
 }
 
 describe("LessonRunner", () => {
@@ -172,40 +194,45 @@ describe("LessonRunner", () => {
     });
 
     describe("テスト画面から", () => {
-      test("答え合わせ画面へ遷移できること", () => {
+      test("答え合わせ画面へ遷移できること", async () => {
         render(<LessonRunner lesson={lesson} />);
 
         fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+        mockNextOcrResult({ hanziCorrect: true, pinyinCorrect: true });
         fireEvent.click(screen.getByRole("button", { name: "答え合わせ" }));
 
-        expect(screen.getByRole("button", { name: "次へ" })).toBeVisible();
+        expect(screen.getByText("OCR解析中...")).toBeVisible();
+        await waitFor(() => {
+          expect(screen.getByRole("button", { name: "次へ" })).toBeEnabled();
+        });
+        expect(screen.getAllByText("OCR結果")).toHaveLength(2);
       });
     });
 
     describe("答え合わせ画面から", () => {
-      test("判定を選ぶことで次の問題へ進めること", () => {
+      test("OCR判定後に次の問題へ進めること", async () => {
         render(<LessonRunner lesson={lesson} />);
 
         fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
 
         expect(screen.getByText("2 / 2")).toBeVisible();
         expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
       });
 
-      test("最終問題で結果を表示できること", () => {
+      test("最終問題で結果を表示できること", async () => {
         render(<LessonRunner lesson={lesson} />);
 
         fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
         fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
 
         expect(screen.getByText("結果")).toBeVisible();
@@ -214,15 +241,15 @@ describe("LessonRunner", () => {
     });
 
     describe("結果画面から", () => {
-      test("同じ範囲で再テストできること", () => {
+      test("同じ範囲で再テストできること", async () => {
         render(<LessonRunner lesson={lesson} />);
 
         fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
         fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
 
         fireEvent.click(screen.getByRole("button", { name: "もう一度（同じ範囲）" }));
@@ -231,15 +258,15 @@ describe("LessonRunner", () => {
         expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
       });
 
-      test("間違えたものだけで再テストできること", () => {
+      test("間違えたものだけで再テストできること", async () => {
         render(<LessonRunner lesson={lesson} />);
 
         fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
-        answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+        await answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
         fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
 
         fireEvent.click(screen.getByRole("button", { name: "間違えたものだけ復習 (1)" }));
