@@ -236,6 +236,8 @@ export function LessonRunner({ lesson }: Props) {
     if (!currentResult) return;
     const hanziImage = hanziCanvasRef.current?.getDataURL() ?? null;
     const pinyinImage = pinyinCanvasRef.current?.getDataURL() ?? null;
+    const hanziOcrImage = hanziCanvasRef.current?.getOcrDataURL() ?? hanziImage;
+    const pinyinOcrImage = pinyinCanvasRef.current?.getOcrDataURL() ?? pinyinImage;
     setState({
       status: "answer",
       results: state.results,
@@ -245,8 +247,8 @@ export function LessonRunner({ lesson }: Props) {
       ocr: { status: "loading" },
     });
     void runOcrGrade({
-      hanziImage,
-      pinyinImage,
+      hanziImage: hanziOcrImage,
+      pinyinImage: pinyinOcrImage,
       word: currentResult.word,
       index: state.index,
     });

@@ -15,6 +15,7 @@ export type GridType = "rice" | "baseline" | "none";
 export interface HandwritingCanvasHandle {
   clear: () => void;
   getDataURL: () => string | null;
+  getOcrDataURL: () => string | null;
   hasInk: () => boolean;
 }
 
@@ -228,6 +229,19 @@ export const HandwritingCanvas = forwardRef<HandwritingCanvasHandle, Props>(
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(0, 0, out.width, out.height);
           ctx.drawImage(grid, 0, 0);
+          ctx.drawImage(ink, 0, 0);
+          return out.toDataURL("image/png");
+        },
+        getOcrDataURL: () => {
+          const ink = inkCanvasRef.current;
+          if (!ink) return null;
+          const out = document.createElement("canvas");
+          out.width = ink.width;
+          out.height = ink.height;
+          const ctx = out.getContext("2d");
+          if (!ctx) return null;
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, out.width, out.height);
           ctx.drawImage(ink, 0, 0);
           return out.toDataURL("image/png");
         },
