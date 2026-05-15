@@ -836,6 +836,7 @@ function ChoiceCheckView({
   const answered = selectedChoice !== null;
   const isCorrect = selectedChoice === question.answer;
   const title = question.kind === "hanzi" ? "漢字を選ぶ" : "ピンインを選ぶ";
+  const choiceTextClass = question.kind === "pinyin" ? "text-2xl leading-snug" : "text-xl";
 
   const choiceClassName = (choice: string) => {
     if (!answered) {
@@ -870,7 +871,7 @@ function ChoiceCheckView({
             aria-label={`選択肢: ${choice}`}
             onClick={() => onSelect(choice)}
             disabled={answered}
-            className={`min-h-16 rounded-2xl border-2 px-4 py-3 text-center text-xl font-semibold transition-colors ${choiceClassName(
+            className={`min-h-16 rounded-2xl border-2 px-4 py-3 text-center font-semibold transition-colors ${choiceTextClass} ${choiceClassName(
               choice,
             )}`}
           >
