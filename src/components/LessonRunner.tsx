@@ -10,6 +10,7 @@ import { WordPlayer } from "@/components/WordPlayer";
 import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
 import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
+import { playCorrectSound } from "@/lib/sound";
 import { primeSpeechEngine, speakChinese } from "@/lib/speech";
 import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
 
@@ -322,6 +323,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       selectedChoice: choice,
       correct: choice === question.answer,
     };
+    if (result.correct) playCorrectSound();
     setState({
       ...state,
       selectedChoice: choice,
