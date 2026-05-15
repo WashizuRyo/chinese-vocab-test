@@ -18,7 +18,7 @@ function playTone(ctx: AudioContext, startTime: number, frequency: number, durat
   oscillator.type = "triangle";
   oscillator.frequency.setValueAtTime(frequency, startTime);
   gain.gain.setValueAtTime(0.0001, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.075, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.13, startTime + 0.008);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
   oscillator.connect(gain);
@@ -33,9 +33,9 @@ export function playCorrectSound(): void {
     if (!ctx) return;
 
     const now = ctx.currentTime;
-    playTone(ctx, now, 988, 0.07);
-    playTone(ctx, now + 0.045, 1319, 0.075);
-    playTone(ctx, now + 0.095, 1568, 0.12);
+    playTone(ctx, now, 1760, 0.06);
+    playTone(ctx, now + 0.04, 2349, 0.07);
+    playTone(ctx, now + 0.085, 3136, 0.11);
   } catch {
     // Sound effects are optional feedback.
   }
