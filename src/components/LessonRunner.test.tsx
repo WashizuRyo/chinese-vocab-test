@@ -68,7 +68,7 @@ function mockNextOcrResult({
       JSON.stringify({
         ok: true,
         provider: "google-vision",
-        feature: "DOCUMENT_TEXT_DETECTION",
+        feature: "TEXT_DETECTION",
         hanzi: {
           rawText: hanziCorrect ? "你" : "不",
           normalizedText: hanziCorrect ? "你" : "不",

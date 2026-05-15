@@ -12,7 +12,7 @@ interface GradeRequestBody {
 export interface GradeSuccessResponse {
   ok: true;
   provider: "google-vision";
-  feature: "DOCUMENT_TEXT_DETECTION";
+  feature: "TEXT_DETECTION";
   hanzi: OcrFieldResult;
   pinyin: OcrFieldResult;
 }
@@ -103,7 +103,7 @@ export async function handleGradeRequest(
     const response: GradeSuccessResponse = {
       ok: true,
       provider: "google-vision",
-      feature: "DOCUMENT_TEXT_DETECTION",
+      feature: "TEXT_DETECTION",
       hanzi: gradeField(detected.hanziText, expected.hanzi, "hanzi"),
       pinyin: gradeField(detected.pinyinText, expected.pinyin, "pinyin"),
     };

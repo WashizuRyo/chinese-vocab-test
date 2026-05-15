@@ -54,12 +54,12 @@ export const detectTextWithGoogleVision: DetectText = async ({
     requests: [
       {
         image: { content: hanziImageBase64 },
-        features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+        features: [{ type: "TEXT_DETECTION" }],
         imageContext: { languageHints: ["zh-Hans"] },
       },
       {
         image: { content: pinyinImageBase64 },
-        features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+        features: [{ type: "TEXT_DETECTION" }],
         imageContext: { languageHints: ["en"] },
       },
     ],
