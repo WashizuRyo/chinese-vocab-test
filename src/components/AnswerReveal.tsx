@@ -45,7 +45,7 @@ function OcrResult({ result }: { result: OcrFieldResult }) {
 }
 
 function OcrDebugImage({ label, src }: { label: string; src: string | null }) {
-  if (process.env.NODE_ENV === "production" || !src) return null;
+  if (!src) return null;
 
   return (
     <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
