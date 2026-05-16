@@ -4,6 +4,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { LessonRunner } from "@/components/LessonRunner";
 import type { Lesson } from "@/lib/types";
 
+vi.mock("@/lib/sound", () => ({
+  playCorrectSound: vi.fn(),
+}));
+
 const ResizeObserverMock = vi.fn(
   class {
     disconnect = vi.fn();
