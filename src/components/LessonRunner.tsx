@@ -864,7 +864,7 @@ function ChoiceCheckView({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-3">
+      <section className="grid grid-cols-2 gap-3">
         {question.choices.map((choice) => (
           <button
             key={choice}
@@ -872,7 +872,7 @@ function ChoiceCheckView({
             aria-label={`選択肢: ${choice}`}
             onClick={() => onSelect(choice)}
             disabled={answered}
-            className={`min-h-16 rounded-2xl border-2 px-4 py-3 text-center text-2xl leading-snug font-semibold transition-colors ${choiceClassName(
+            className={`flex min-h-24 items-center justify-center rounded-2xl border-2 px-3 py-3 text-center text-2xl leading-snug font-semibold break-words transition-colors ${choiceClassName(
               choice,
             )}`}
           >
