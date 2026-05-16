@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnswerReveal } from "@/components/AnswerReveal";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
@@ -10,7 +10,7 @@ import { WordPlayer } from "@/components/WordPlayer";
 import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
 import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
-import { playCorrectSound } from "@/lib/sound";
+import { playCorrectSound, preloadCorrectSound } from "@/lib/sound";
 import { primeSpeechEngine, speakChinese } from "@/lib/speech";
 import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
 
@@ -160,6 +160,10 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     numberQuestionsOn: false,
   };
 
+  useEffect(() => {
+    preloadCorrectSound();
+  }, []);
+
   const handleChangeSettings = (settings: Partial<TestSettings>) => {
     setState((prev) => {
       if (prev.status !== "setup") return prev;
@@ -224,6 +228,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const startChoiceWithWords = (words: Word[]) => {
     const questions = buildChoiceQuestions(words, lesson.words);
+    preloadCorrectSound();
     primeSpeechEngine();
     setState({
       status: "choice",

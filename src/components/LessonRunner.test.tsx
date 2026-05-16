@@ -6,6 +6,7 @@ import type { Lesson } from "@/lib/types";
 
 vi.mock("@/lib/sound", () => ({
   playCorrectSound: vi.fn(),
+  preloadCorrectSound: vi.fn(),
 }));
 
 const ResizeObserverMock = vi.fn(
