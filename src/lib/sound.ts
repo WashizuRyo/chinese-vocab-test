@@ -1,4 +1,4 @@
-const CORRECT_SOUND_PATH = "/sounds/correct-answer.mp3";
+const CORRECT_SOUND_PATH = "/sounds/correct-answer.wav";
 const CORRECT_SOUND_VOLUME = 1;
 
 let audioContext: AudioContext | null = null;
