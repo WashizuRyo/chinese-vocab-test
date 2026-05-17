@@ -7,9 +7,12 @@ import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/Ha
 import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
+import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
+import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
+import { playCorrectSound } from "@/lib/sound";
 import { primeSpeechEngine, speakChinese } from "@/lib/speech";
-import type { Lesson, Word, WordResult } from "@/lib/types";
+import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
 
 interface TestSettings {
   count: number;
@@ -17,11 +20,26 @@ interface TestSettings {
   numberQuestionsOn: boolean;
 }
 
+type SetupMode = "choice" | "test";
+
 type LessonRunnerState =
   | { status: "mode" }
-  | { status: "setup"; settings: TestSettings }
+  | { status: "setup"; mode: SetupMode; settings: TestSettings }
   | { status: "learn" }
   | { status: "learnComplete" }
+  | {
+      status: "choice";
+      words: Word[];
+      questions: ChoiceQuestion[];
+      results: ChoiceResult[];
+      index: number;
+      selectedChoice: string | null;
+    }
+  | {
+      status: "choiceResult";
+      words: Word[];
+      results: ChoiceResult[];
+    }
   | {
       status: "test";
       results: WordResult[];
@@ -65,6 +83,68 @@ function buildQuestions(
   const numberQuestions = shuffle(number.words).slice(0, numberCount);
 
   return [...regularQuestions, ...numberQuestions];
+}
+
+function wordKey(word: Word): string {
+  return `${word.hanzi}\u0000${word.pinyin}`;
+}
+
+function uniqueWords(words: Word[]): Word[] {
+  const seen = new Set<string>();
+  const unique: Word[] = [];
+
+  for (const word of words) {
+    const key = wordKey(word);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(word);
+  }
+
+  return unique;
+}
+
+function buildFallbackWords(target: Word, sources: Word[][]): Word[] {
+  const targetKey = wordKey(target);
+  return uniqueWords(sources.flat()).filter((word) => wordKey(word) !== targetKey);
+}
+
+function buildHanziChoices(target: Word, selectedWords: Word[], lessonWords: Word[]): string[] {
+  const fallbackWords = buildFallbackWords(target, [
+    selectedWords,
+    lessonWords,
+    lessons.flatMap((lesson) => lesson.words),
+  ]);
+  return [target.hanzi, ...fallbackWords.map((word) => word.hanzi)]
+    .filter((value, index, values) => values.indexOf(value) === index)
+    .slice(0, 4);
+}
+
+function buildPinyinChoices(target: Word, selectedWords: Word[], lessonWords: Word[]): string[] {
+  const fallbackPinyins = buildFallbackWords(target, [
+    selectedWords,
+    lessonWords,
+    lessons.flatMap((lesson) => lesson.words),
+  ]).map((word) => word.pinyin);
+  return buildPinyinToneChoices(target.pinyin, fallbackPinyins, 4);
+}
+
+function buildChoiceQuestions(selectedWords: Word[], lessonWords: Word[]): ChoiceQuestion[] {
+  const questions = selectedWords.flatMap((word) => [
+    {
+      kind: "hanzi" as const,
+      word,
+      answer: word.hanzi,
+      choices: shuffle(buildHanziChoices(word, selectedWords, lessonWords)),
+    },
+    {
+      kind: "pinyin" as const,
+      word,
+      answer: word.pinyin,
+      choices: shuffle(buildPinyinChoices(word, selectedWords, lessonWords)),
+    },
+  ]);
+
+  return shuffle(questions);
 }
 
 export function LessonRunner({ lesson }: { lesson: Lesson }) {
@@ -112,6 +192,20 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     startWithWords(subset);
   };
 
+  const startChoiceWithSettings = (
+    words: Word[],
+    settings: TestSettings,
+    includeNumberQuestions = settings.numberQuestionsOn,
+  ) => {
+    const subset = buildQuestions(
+      words,
+      settings.count,
+      settings.shuffleOn,
+      includeNumberQuestions,
+    );
+    startChoiceWithWords(subset);
+  };
+
   const startWithWords = (words: Word[]) => {
     const initialResults: WordResult[] = words.map((w) => ({
       word: w,
@@ -128,8 +222,27 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (firstWord) speakChinese(firstWord.hanzi);
   };
 
+  const startChoiceWithWords = (words: Word[]) => {
+    const questions = buildChoiceQuestions(words, lesson.words);
+    primeSpeechEngine();
+    setState({
+      status: "choice",
+      words,
+      questions,
+      results: [],
+      index: 0,
+      selectedChoice: null,
+    });
+    const firstQuestion = questions[0];
+    if (firstQuestion) speakChinese(firstQuestion.word.hanzi);
+  };
+
   const handleStart = () => {
     if (state.status !== "setup") return;
+    if (state.mode === "choice") {
+      startChoiceWithSettings(lesson.words, state.settings);
+      return;
+    }
     startWithSettings(lesson.words, state.settings);
   };
 
@@ -143,7 +256,12 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const handleOpenTestSetup = () => {
     clearCanvases();
-    setState({ status: "setup", settings: initialSettings });
+    setState({ status: "setup", mode: "test", settings: initialSettings });
+  };
+
+  const handleOpenChoiceSetup = () => {
+    clearCanvases();
+    setState({ status: "setup", mode: "choice", settings: initialSettings });
   };
 
   const handleSubmit = () => {
@@ -196,12 +314,50 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (nextResult) speakChinese(nextResult.word.hanzi);
   };
 
+  const handleChoiceSelect = (choice: string) => {
+    if (state.status !== "choice" || state.selectedChoice !== null) return;
+    const question = state.questions[state.index];
+    if (!question) return;
+    const result: ChoiceResult = {
+      question,
+      selectedChoice: choice,
+      correct: choice === question.answer,
+    };
+    if (result.correct) playCorrectSound();
+    setState({
+      ...state,
+      selectedChoice: choice,
+      results: [...state.results, result],
+    });
+  };
+
+  const handleChoiceNext = () => {
+    if (state.status !== "choice" || state.selectedChoice === null) return;
+    if (state.index + 1 >= state.questions.length) {
+      setState({
+        status: "choiceResult",
+        words: state.words,
+        results: state.results,
+      });
+      return;
+    }
+
+    const nextQuestion = state.questions[state.index + 1];
+    setState({
+      ...state,
+      index: state.index + 1,
+      selectedChoice: null,
+    });
+    if (nextQuestion) speakChinese(nextQuestion.word.hanzi);
+  };
+
   switch (state.status) {
     case "mode":
       return (
         <ModeSelectView
           lesson={lesson}
           onStartLearning={handleStartLearning}
+          onOpenChoiceSetup={handleOpenChoiceSetup}
           onOpenTestSetup={handleOpenTestSetup}
         />
       );
@@ -210,6 +366,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <SetupView
           lesson={lesson}
+          mode={state.mode}
           settings={state.settings}
           onChangeSettings={handleChangeSettings}
           onStart={handleStart}
@@ -232,8 +389,47 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <LearningCompleteView
           lesson={lesson}
+          onChoiceCheck={handleOpenChoiceSetup}
           onTest={handleOpenTestSetup}
           onRestartLearning={handleStartLearning}
+        />
+      );
+
+    case "choice": {
+      const currentQuestion = state.questions[state.index];
+      return (
+        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+          <ProgressBar current={state.index + 1} total={state.questions.length} />
+          {currentQuestion ? (
+            <ChoiceCheckView
+              question={currentQuestion}
+              selectedChoice={state.selectedChoice}
+              onSelect={handleChoiceSelect}
+              onNext={handleChoiceNext}
+              isLast={state.index + 1 >= state.questions.length}
+            />
+          ) : null}
+        </main>
+      );
+    }
+
+    case "choiceResult":
+      return (
+        <ChoiceResultSummary
+          results={state.results}
+          lessonTitle={lesson.title}
+          onRetry={() => startChoiceWithWords(state.words)}
+          onRetryWrongOnly={() => {
+            const wrongWords = uniqueWords(
+              state.results
+                .filter((result) => !result.correct)
+                .map((result) => result.question.word),
+            );
+            if (wrongWords.length === 0) return;
+            startChoiceWithWords(wrongWords);
+          }}
+          onStartTest={() => startWithWords(state.words)}
+          onBackToMode={() => setState({ status: "mode" })}
         />
       );
 
@@ -306,10 +502,12 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 function ModeSelectView({
   lesson,
   onStartLearning,
+  onOpenChoiceSetup,
   onOpenTestSetup,
 }: {
   lesson: Lesson;
   onStartLearning: () => void;
+  onOpenChoiceSetup: () => void;
   onOpenTestSetup: () => void;
 }) {
   return (
@@ -337,6 +535,16 @@ function ModeSelectView({
         </button>
         <button
           type="button"
+          onClick={onOpenChoiceSetup}
+          className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
+        >
+          <span className="block text-lg font-semibold text-zinc-900">選択式チェック</span>
+          <span className="mt-1 block text-sm text-zinc-500">
+            発音を聞いて、漢字とピンインを4択で確認する
+          </span>
+        </button>
+        <button
+          type="button"
           onClick={onOpenTestSetup}
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
@@ -352,12 +560,14 @@ function ModeSelectView({
 
 function SetupView({
   lesson,
+  mode,
   settings,
   onChangeSettings,
   onStart,
   onBack,
 }: {
   lesson: Lesson;
+  mode: SetupMode;
   settings: TestSettings;
   onChangeSettings: (settings: Partial<TestSettings>) => void;
   onStart: () => void;
@@ -365,6 +575,8 @@ function SetupView({
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
+  const modeLabel = mode === "choice" ? "選択式チェック設定" : "出題設定";
+  const startLabel = mode === "choice" ? "選択式チェックを始める" : "スタート";
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -376,7 +588,7 @@ function SetupView({
       </div>
 
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">出題設定</p>
+      <p className="mt-1 text-sm text-zinc-500">{modeLabel}</p>
 
       <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
         <label htmlFor="count" className="text-sm font-medium text-zinc-700">
@@ -431,7 +643,7 @@ function SetupView({
         onClick={onStart}
         className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
       >
-        スタート
+        {startLabel}
       </button>
     </main>
   );
@@ -558,10 +770,12 @@ function LearningView({
 
 function LearningCompleteView({
   lesson,
+  onChoiceCheck,
   onTest,
   onRestartLearning,
 }: {
   lesson: Lesson;
+  onChoiceCheck: () => void;
   onTest: () => void;
   onRestartLearning: () => void;
 }) {
@@ -578,8 +792,15 @@ function LearningCompleteView({
       <section className="flex flex-col gap-2">
         <button
           type="button"
-          onClick={onTest}
+          onClick={onChoiceCheck}
           className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+        >
+          選択式チェックする
+        </button>
+        <button
+          type="button"
+          onClick={onTest}
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
         >
           この課をテストする
         </button>
@@ -598,6 +819,228 @@ function LearningCompleteView({
         </Link>
       </section>
     </main>
+  );
+}
+
+function ChoiceCheckView({
+  question,
+  selectedChoice,
+  onSelect,
+  onNext,
+  isLast,
+}: {
+  question: ChoiceQuestion;
+  selectedChoice: string | null;
+  onSelect: (choice: string) => void;
+  onNext: () => void;
+  isLast: boolean;
+}) {
+  const answered = selectedChoice !== null;
+  const isCorrect = selectedChoice === question.answer;
+  const title = question.kind === "hanzi" ? "漢字を選ぶ" : "ピンインを選ぶ";
+
+  const choiceClassName = (choice: string) => {
+    if (!answered) {
+      return "border-zinc-200 bg-white text-zinc-900 active:bg-zinc-50";
+    }
+    if (choice === question.answer) {
+      return "border-emerald-600 bg-emerald-50 text-emerald-800";
+    }
+    if (choice === selectedChoice) {
+      return "border-rose-600 bg-rose-50 text-rose-800";
+    }
+    return "border-zinc-200 bg-zinc-50 text-zinc-400";
+  };
+
+  return (
+    <div className="mt-4 flex flex-col gap-4">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          選択式チェック
+        </div>
+        <h1 className="mt-1 text-xl font-bold text-zinc-900">{title}</h1>
+        <div className="mt-4 flex justify-center">
+          <WordPlayer text={question.word.hanzi} />
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3">
+        {question.choices.map((choice) => (
+          <button
+            key={choice}
+            type="button"
+            aria-label={`選択肢: ${choice}`}
+            onClick={() => onSelect(choice)}
+            disabled={answered}
+            className={`flex min-h-24 items-center justify-center rounded-2xl border-2 px-3 py-3 text-center text-2xl leading-snug font-semibold break-words transition-colors ${choiceClassName(
+              choice,
+            )}`}
+          >
+            {choice}
+          </button>
+        ))}
+      </section>
+
+      {answered ? (
+        <section
+          className={`rounded-2xl border p-4 ${
+            isCorrect ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"
+          }`}
+        >
+          <div
+            className={`text-sm font-semibold ${isCorrect ? "text-emerald-800" : "text-rose-800"}`}
+          >
+            {isCorrect ? "正解" : "不正解"}
+          </div>
+          <div className="mt-2 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 text-sm">
+            <div className="text-zinc-500">正解</div>
+            <div className="font-semibold text-zinc-900">{question.answer}</div>
+            <div className="text-zinc-500">意味</div>
+            <div className="text-zinc-800">{question.word.japanese}</div>
+          </div>
+        </section>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={!answered}
+        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {isLast ? "結果を見る" : "次へ"}
+      </button>
+    </div>
+  );
+}
+
+function ChoiceResultSummary({
+  results,
+  lessonTitle,
+  onRetry,
+  onRetryWrongOnly,
+  onStartTest,
+  onBackToMode,
+}: {
+  results: ChoiceResult[];
+  lessonTitle: string;
+  onRetry: () => void;
+  onRetryWrongOnly: () => void;
+  onStartTest: () => void;
+  onBackToMode: () => void;
+}) {
+  const total = results.length;
+  const correct = results.filter((result) => result.correct).length;
+  const hanziResults = results.filter((result) => result.question.kind === "hanzi");
+  const pinyinResults = results.filter((result) => result.question.kind === "pinyin");
+  const hanziCorrect = hanziResults.filter((result) => result.correct).length;
+  const pinyinCorrect = pinyinResults.filter((result) => result.correct).length;
+  const wrongWords = uniqueWords(
+    results.filter((result) => !result.correct).map((result) => result.question.word),
+  );
+
+  return (
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+      <header className="mb-4">
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          選択式チェック結果
+        </div>
+        <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
+      </header>
+
+      <section className="grid grid-cols-3 gap-2">
+        <ChoiceScoreTile label="総合" correct={correct} total={total} accent="zinc" />
+        <ChoiceScoreTile
+          label="漢字"
+          correct={hanziCorrect}
+          total={hanziResults.length}
+          accent="emerald"
+        />
+        <ChoiceScoreTile
+          label="ピンイン"
+          correct={pinyinCorrect}
+          total={pinyinResults.length}
+          accent="sky"
+        />
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold text-zinc-700">間違えた単語 ({wrongWords.length})</h2>
+        {wrongWords.length === 0 ? (
+          <p className="mt-2 text-sm text-zinc-500">全問正解です。</p>
+        ) : (
+          <ul className="mt-2 flex flex-col gap-2">
+            {wrongWords.map((word) => (
+              <li key={wordKey(word)} className="rounded-xl border border-zinc-200 bg-white p-3">
+                <div className="font-serif text-2xl text-zinc-900">{word.hanzi}</div>
+                <div className="mt-0.5 text-sm text-zinc-700">{word.pinyin}</div>
+                <div className="text-xs text-zinc-500">{word.japanese}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-6 flex flex-col gap-2">
+        {wrongWords.length > 0 ? (
+          <button
+            type="button"
+            onClick={onRetryWrongOnly}
+            className="h-12 w-full rounded-2xl bg-zinc-900 text-sm font-semibold text-white shadow-sm"
+          >
+            間違えたものだけもう一度 ({wrongWords.length})
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onRetry}
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+        >
+          同じ範囲でもう一度
+        </button>
+        <button
+          type="button"
+          onClick={onStartTest}
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+        >
+          本番形式テストへ進む
+        </button>
+        <button
+          type="button"
+          onClick={onBackToMode}
+          className="h-12 w-full rounded-2xl text-sm font-semibold text-zinc-600"
+        >
+          モード選択へ戻る
+        </button>
+      </section>
+    </main>
+  );
+}
+
+function ChoiceScoreTile({
+  label,
+  correct,
+  total,
+  accent,
+}: {
+  label: string;
+  correct: number;
+  total: number;
+  accent: "emerald" | "sky" | "zinc";
+}) {
+  const accentClass = {
+    emerald: "text-emerald-600",
+    sky: "text-sky-600",
+    zinc: "text-zinc-900",
+  }[accent];
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-3 text-center">
+      <div className="text-xs font-medium text-zinc-500">{label}</div>
+      <div className={`mt-1 text-2xl font-bold ${accentClass}`}>
+        {correct}
+        <span className="text-sm text-zinc-400"> / {total}</span>
+      </div>
+    </div>
   );
 }
 

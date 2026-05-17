@@ -15,3 +15,18 @@ export interface WordResult {
   hanziCorrect: boolean;
   pinyinCorrect: boolean;
 }
+
+export type ChoiceQuestionKind = "hanzi" | "pinyin";
+
+export interface ChoiceQuestion {
+  kind: ChoiceQuestionKind;
+  word: Word;
+  answer: string;
+  choices: string[];
+}
+
+export interface ChoiceResult {
+  question: ChoiceQuestion;
+  selectedChoice: string;
+  correct: boolean;
+}
