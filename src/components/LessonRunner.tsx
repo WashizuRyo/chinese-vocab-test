@@ -402,7 +402,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
           <button
             type="button"
             onClick={() => setState({ status: "mode" })}
-            className="w-fit text-sm text-zinc-500"
+            className="mb-3 w-fit text-sm text-zinc-500"
           >
             ← モード選択
           </button>
