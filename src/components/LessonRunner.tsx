@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/AnswerReveal";
@@ -539,6 +540,16 @@ function ModeSelectView({
           <span className="mt-1 block text-sm text-zinc-300">
             見て、聞いて、書きながら単語を覚える
           </span>
+          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-white/15 bg-white">
+            <Image
+              src="/images/mode-memorize.jpg"
+              alt=""
+              width={1179}
+              height={1024}
+              sizes="(max-width: 640px) calc(100vw - 64px), 640px"
+              className="h-full w-full object-cover object-top"
+            />
+          </span>
         </button>
         <button
           type="button"
@@ -548,6 +559,16 @@ function ModeSelectView({
           <span className="block text-lg font-semibold text-zinc-900">選択式チェック</span>
           <span className="mt-1 block text-sm text-zinc-500">
             発音を聞いて、漢字とピンインを4択で確認する
+          </span>
+          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
+            <Image
+              src="/images/mode-choice-check.jpg"
+              alt=""
+              width={1179}
+              height={1610}
+              sizes="(max-width: 640px) calc(100vw - 64px), 640px"
+              className="h-full w-full object-cover object-top"
+            />
           </span>
         </button>
         <button
