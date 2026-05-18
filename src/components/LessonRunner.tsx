@@ -209,8 +209,8 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
   const startWithWords = (words: Word[]) => {
     const initialResults: WordResult[] = words.map((w) => ({
       word: w,
-      hanziCorrect: false,
-      pinyinCorrect: false,
+      hanziCorrect: true,
+      pinyinCorrect: true,
     }));
     primeSpeechEngine();
     setState({
