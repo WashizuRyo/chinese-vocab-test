@@ -407,6 +407,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
               onSelect={handleChoiceSelect}
               onNext={handleChoiceNext}
               isLast={state.index + 1 >= state.questions.length}
+              onBackToMode={() => setState({ status: "mode" })}
             />
           ) : null}
         </main>
@@ -828,12 +829,14 @@ function ChoiceCheckView({
   onSelect,
   onNext,
   isLast,
+  onBackToMode,
 }: {
   question: ChoiceQuestion;
   selectedChoice: string | null;
   onSelect: (choice: string) => void;
   onNext: () => void;
   isLast: boolean;
+  onBackToMode: () => void;
 }) {
   const answered = selectedChoice !== null;
   const isCorrect = selectedChoice === question.answer;
@@ -854,6 +857,9 @@ function ChoiceCheckView({
 
   return (
     <div className="mt-4 flex flex-col gap-4">
+      <button type="button" onClick={onBackToMode} className="w-fit text-sm text-zinc-500">
+        ← モード選択
+      </button>
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
         <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
           選択式チェック
@@ -1009,7 +1015,7 @@ function ChoiceResultSummary({
           onClick={onBackToMode}
           className="h-12 w-full rounded-2xl text-sm font-semibold text-zinc-600"
         >
-          モード選択へ戻る
+          モード選択
         </button>
       </section>
     </main>
