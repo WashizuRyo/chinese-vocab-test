@@ -399,6 +399,13 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       const currentQuestion = state.questions[state.index];
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+          <button
+            type="button"
+            onClick={() => setState({ status: "mode" })}
+            className="mb-3 w-fit text-sm text-zinc-500"
+          >
+            ← モード選択
+          </button>
           <ProgressBar current={state.index + 1} total={state.questions.length} />
           {currentQuestion ? (
             <ChoiceCheckView
@@ -1006,7 +1013,7 @@ function ChoiceResultSummary({
           onClick={onBackToMode}
           className="h-12 w-full rounded-2xl text-sm font-semibold text-zinc-600"
         >
-          モード選択へ戻る
+          モード選択
         </button>
       </section>
     </main>
