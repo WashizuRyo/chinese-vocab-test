@@ -699,9 +699,6 @@ function LearningView({
         <button type="button" onClick={onBackToMode} className="text-sm text-zinc-500">
           ← モード選択
         </button>
-        <div className="text-xs font-medium text-zinc-500">
-          {current} / {total}
-        </div>
       </div>
 
       <ProgressBar current={current} total={total} />
