@@ -837,12 +837,7 @@ function LearningView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock
-          label="手書き練習"
-          canvasRef={hanziCanvasRef}
-          gridType="baseline"
-          aspectRatio={0.32}
-        />
+        <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
       </section>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
@@ -1209,13 +1204,12 @@ function TestView({
         <WordPlayer text={word.hanzi} />
       </div>
 
-      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} gridType="baseline" aspectRatio={0.32} />
+      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
 
       <div className="mt-10">
         <CanvasBlock
           label="ピンイン"
           canvasRef={pinyinCanvasRef}
-          gridType="baseline"
           aspectRatio={0.32}
         />
       </div>
@@ -1236,12 +1230,10 @@ function TestView({
 function CanvasBlock({
   label,
   canvasRef,
-  gridType,
   aspectRatio,
 }: {
   label: string;
   canvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  gridType: "rice" | "baseline";
   aspectRatio: number;
 }) {
   return (
@@ -1258,7 +1250,7 @@ function CanvasBlock({
       </div>
       <HandwritingCanvas
         ref={canvasRef}
-        gridType={gridType}
+        gridType="baseline"
         aspectRatio={aspectRatio}
         ariaLabel={`${label}の手書き`}
       />
