@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/AnswerReveal";
@@ -540,16 +539,7 @@ function ModeSelectView({
           <span className="mt-1 block text-sm text-zinc-500">
             見て、聞いて、書きながら単語を覚える
           </span>
-          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
-            <Image
-              src="/images/mode-memorize.jpg"
-              alt=""
-              width={1179}
-              height={1024}
-              sizes="(max-width: 640px) calc(100vw - 64px), 640px"
-              className="h-full w-full object-cover object-top"
-            />
-          </span>
+          <MemorizeModePreview />
         </button>
         <button
           type="button"
@@ -560,16 +550,7 @@ function ModeSelectView({
           <span className="mt-1 block text-sm text-zinc-500">
             発音を聞いて、漢字とピンインを4択で確認する
           </span>
-          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
-            <Image
-              src="/images/mode-choice-check.jpg"
-              alt=""
-              width={1179}
-              height={1610}
-              sizes="(max-width: 640px) calc(100vw - 64px), 640px"
-              className="h-full w-full object-cover object-top"
-            />
-          </span>
+          <ChoiceModePreview />
         </button>
         <button
           type="button"
@@ -583,6 +564,66 @@ function ModeSelectView({
         </button>
       </section>
     </main>
+  );
+}
+
+function PreviewPlayIcon() {
+  return (
+    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-white shadow-sm">
+      <span className="ml-1 h-0 w-0 border-y-[9px] border-y-transparent border-l-[15px] border-l-white" />
+    </span>
+  );
+}
+
+function MemorizeModePreview() {
+  return (
+    <span
+      aria-hidden="true"
+      className="mx-auto mt-4 block w-full max-w-sm rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+    >
+      <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <span className="flex items-start justify-between gap-4">
+          <span className="block">
+            <span className="block text-xs font-semibold text-zinc-500">漢字</span>
+            <span className="mt-1 block text-5xl leading-none text-zinc-950">你</span>
+          </span>
+          <PreviewPlayIcon />
+        </span>
+        <span className="mt-4 block text-xs font-semibold text-zinc-500">ピンイン</span>
+        <span className="mt-1 block text-2xl font-semibold text-zinc-950">nǐ</span>
+        <span className="mt-3 block text-xs font-semibold text-zinc-500">日本語訳</span>
+        <span className="mt-1 block text-lg text-zinc-900">あなた</span>
+      </span>
+    </span>
+  );
+}
+
+function ChoiceModePreview() {
+  const choices = ["shí", "shī", "shǐ", "shì"];
+
+  return (
+    <span
+      aria-hidden="true"
+      className="mx-auto mt-4 block w-full max-w-sm rounded-xl border border-zinc-200 bg-zinc-50 p-3"
+    >
+      <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <span className="block text-xs font-semibold text-zinc-500">選択式チェック</span>
+        <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
+        <span className="mt-4 flex justify-center">
+          <PreviewPlayIcon />
+        </span>
+        <span className="mt-4 grid grid-cols-2 gap-2">
+          {choices.map((choice) => (
+            <span
+              key={choice}
+              className="flex h-12 items-center justify-center rounded-lg border border-zinc-200 bg-white text-xl font-semibold text-zinc-950"
+            >
+              {choice}
+            </span>
+          ))}
+        </span>
+      </span>
+    </span>
   );
 }
 
