@@ -534,13 +534,13 @@ function ModeSelectView({
         <button
           type="button"
           onClick={onStartLearning}
-          className="w-full rounded-2xl border border-zinc-900 bg-zinc-900 px-4 py-5 text-left text-white shadow-sm active:opacity-90"
+          className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
-          <span className="block text-lg font-semibold">暗記する</span>
-          <span className="mt-1 block text-sm text-zinc-300">
+          <span className="block text-lg font-semibold text-zinc-900">暗記する</span>
+          <span className="mt-1 block text-sm text-zinc-500">
             見て、聞いて、書きながら単語を覚える
           </span>
-          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-white/15 bg-white">
+          <span className="mx-auto mt-4 block aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
             <Image
               src="/images/mode-memorize.jpg"
               alt=""
