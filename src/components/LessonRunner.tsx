@@ -577,10 +577,7 @@ function PreviewPlayIcon() {
 
 function MemorizeModePreview() {
   return (
-    <span
-      aria-hidden="true"
-      className="mx-auto mt-4 block w-full max-w-sm rounded-xl border border-zinc-200 bg-zinc-50 p-3"
-    >
+    <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
       <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
         <span className="flex items-start justify-between gap-4">
           <span className="block">
@@ -602,10 +599,7 @@ function ChoiceModePreview() {
   const choices = ["shí", "shī", "shǐ", "shì"];
 
   return (
-    <span
-      aria-hidden="true"
-      className="mx-auto mt-4 block w-full max-w-sm rounded-xl border border-zinc-200 bg-zinc-50 p-3"
-    >
+    <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
       <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
         <span className="block text-xs font-semibold text-zinc-500">選択式チェック</span>
         <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
