@@ -147,6 +147,48 @@ function buildChoiceQuestions(selectedWords: Word[], lessonWords: Word[]): Choic
   return shuffle(questions);
 }
 
+function getStudyHanziClassName(hanzi: string): string {
+  const length = Array.from(hanzi).length;
+  if (length <= 2) return "text-5xl";
+  if (length <= 4) return "text-4xl";
+  return "text-3xl";
+}
+
+function RubyHanzi({ word }: { word: Word }) {
+  const chars = Array.from(word.hanzi);
+  const pinyinParts = word.pinyin.trim().split(/\s+/).filter(Boolean);
+  const hanziClassName = getStudyHanziClassName(word.hanzi);
+  const rubyParts = chars.map((char, index) => ({
+    char,
+    key: `${chars.slice(0, index + 1).join("")}-${pinyinParts[index] ?? ""}`,
+    pinyin: pinyinParts[index],
+  }));
+
+  if (pinyinParts.length === chars.length) {
+    return (
+      <div className="flex min-w-0 flex-wrap items-end gap-x-1 gap-y-2">
+        {rubyParts.map((part) => (
+          <span key={part.key} className="flex flex-col items-center">
+            <span className="text-sm leading-relaxed text-zinc-500">{part.pinyin}</span>
+            <span className={`font-serif ${hanziClassName} leading-tight text-zinc-900`}>
+              {part.char}
+            </span>
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-w-0">
+      <div className="break-words text-sm leading-relaxed text-zinc-500">{word.pinyin}</div>
+      <div className={`break-words font-serif ${hanziClassName} leading-tight text-zinc-900`}>
+        {word.hanzi}
+      </div>
+    </div>
+  );
+}
+
 export function LessonRunner({ lesson }: { lesson: Lesson }) {
   const [state, setState] = useState<LessonRunnerState>({
     status: "mode",
@@ -523,11 +565,9 @@ function ModeSelectView({
         <Link href="/" className="text-sm text-zinc-500" aria-label="トップへ">
           ← トップ
         </Link>
-        <div className="text-xs text-zinc-400">{lesson.words.length} 単語</div>
       </div>
 
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">覚えてから、テストで確認できます</p>
 
       <section className="mt-6 flex flex-col gap-3">
         <button
@@ -567,17 +607,33 @@ function ModeSelectView({
   );
 }
 
+function PreviewPlayIcon() {
+  return (
+    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-white shadow-sm">
+      <span className="ml-1 h-0 w-0 border-y-[8px] border-y-transparent border-l-[13px] border-l-white" />
+    </span>
+  );
+}
+
 function MemorizeModePreview() {
   return (
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
       <span className="block rounded-xl bg-zinc-50 px-4 py-4">
-        <span className="flex items-end gap-3">
-          <span className="text-6xl leading-none text-zinc-950">你</span>
-          <span className="mb-1 block">
-            <span className="block text-2xl font-semibold leading-none text-zinc-950">nǐ</span>
-            <span className="mt-1 block text-sm font-medium text-zinc-500">あなた</span>
+        <span className="flex items-end justify-between gap-4">
+          <span className="flex min-w-0 items-end gap-x-1">
+            <span className="flex flex-col items-center">
+              <span className="text-xs leading-relaxed text-zinc-500">nǐ</span>
+              <span className="font-serif text-5xl leading-tight text-zinc-950">你</span>
+            </span>
+            <span className="flex flex-col items-center">
+              <span className="text-xs leading-relaxed text-zinc-500">hǎo</span>
+              <span className="font-serif text-5xl leading-tight text-zinc-950">好</span>
+            </span>
           </span>
+          <PreviewPlayIcon />
         </span>
+        <span className="mt-3 block h-px bg-zinc-200" />
+        <span className="mt-3 block text-base leading-relaxed text-zinc-800">こんにちは！</span>
       </span>
     </span>
   );
@@ -590,8 +646,7 @@ function ChoiceModePreview() {
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
       <span className="block rounded-xl bg-zinc-50 px-4 py-4">
         <span>
-          <span className="block text-xs font-semibold text-zinc-500">音声を聞く</span>
-          <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
+          <span className="block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
         </span>
         <span className="mt-3 grid grid-cols-2 gap-2">
           {choices.map((choice) => (
@@ -753,27 +808,14 @@ function LearningView({
 
       <ProgressBar current={current} total={total} />
 
-      <section className="mt-4 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">漢字</div>
-            <div className="mt-2 break-words font-serif text-5xl leading-tight text-zinc-900">
-              {word.hanzi}
-            </div>
-            <div className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              ピンイン
-            </div>
-            <div className="mt-1 break-words text-2xl leading-snug text-zinc-900">
-              {word.pinyin}
-            </div>
-            <div className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              日本語訳
-            </div>
-            <div className="mt-1 text-base leading-relaxed text-zinc-700">{word.japanese}</div>
-          </div>
-          <div className="shrink-0">
-            <WordPlayer text={word.hanzi} />
-          </div>
+      <section className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-5 shadow-sm">
+        <div className="flex items-end justify-between gap-4">
+          <RubyHanzi word={word} />
+          <WordPlayer text={word.hanzi} />
+        </div>
+        <div className="mt-4 h-px bg-zinc-200" />
+        <div className="mt-4 break-words text-base leading-relaxed text-zinc-800">
+          {word.japanese}
         </div>
       </section>
 
