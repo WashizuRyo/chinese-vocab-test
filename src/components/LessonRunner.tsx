@@ -1250,7 +1250,6 @@ function CanvasBlock({
       </div>
       <HandwritingCanvas
         ref={canvasRef}
-        gridType="baseline"
         aspectRatio={aspectRatio}
         ariaLabel={`${label}の手書き`}
       />
