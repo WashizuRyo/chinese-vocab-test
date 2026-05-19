@@ -161,7 +161,7 @@ describe("LessonRunner", () => {
         fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
         fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
 
-        expect(screen.getByText("覚えてから、テストで確認できます")).toBeVisible();
+        expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
       });
 
       test("暗記完了画面へ遷移できること", () => {
@@ -214,7 +214,7 @@ describe("LessonRunner", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
 
-        expect(screen.getByText("覚えてから、テストで確認できます")).toBeVisible();
+        expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
       });
 
       test("テストを開始できること", () => {
