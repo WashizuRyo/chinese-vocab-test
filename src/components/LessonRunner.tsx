@@ -569,8 +569,8 @@ function ModeSelectView({
 
 function PreviewPlayIcon() {
   return (
-    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-white shadow-sm">
-      <span className="ml-1 h-0 w-0 border-y-[9px] border-y-transparent border-l-[15px] border-l-white" />
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-white shadow-sm">
+      <span className="ml-0.5 h-0 w-0 border-y-[7px] border-y-transparent border-l-[11px] border-l-white" />
     </span>
   );
 }
@@ -578,18 +578,15 @@ function PreviewPlayIcon() {
 function MemorizeModePreview() {
   return (
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
-      <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-        <span className="flex items-start justify-between gap-4">
-          <span className="block">
-            <span className="block text-xs font-semibold text-zinc-500">漢字</span>
-            <span className="mt-1 block text-5xl leading-none text-zinc-950">你</span>
+      <span className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 px-4 py-4">
+        <span className="flex items-end gap-3">
+          <span className="text-6xl leading-none text-zinc-950">你</span>
+          <span className="mb-1 block">
+            <span className="block text-2xl font-semibold leading-none text-zinc-950">nǐ</span>
+            <span className="mt-1 block text-sm font-medium text-zinc-500">あなた</span>
           </span>
-          <PreviewPlayIcon />
         </span>
-        <span className="mt-4 block text-xs font-semibold text-zinc-500">ピンイン</span>
-        <span className="mt-1 block text-2xl font-semibold text-zinc-950">nǐ</span>
-        <span className="mt-3 block text-xs font-semibold text-zinc-500">日本語訳</span>
-        <span className="mt-1 block text-lg text-zinc-900">あなた</span>
+        <PreviewPlayIcon />
       </span>
     </span>
   );
@@ -600,17 +597,19 @@ function ChoiceModePreview() {
 
   return (
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
-      <span className="block rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
-        <span className="block text-xs font-semibold text-zinc-500">選択式チェック</span>
-        <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
-        <span className="mt-4 flex justify-center">
+      <span className="block rounded-xl bg-zinc-50 px-4 py-4">
+        <span className="flex items-center justify-between gap-3">
+          <span>
+            <span className="block text-xs font-semibold text-zinc-500">音声を聞く</span>
+            <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
+          </span>
           <PreviewPlayIcon />
         </span>
-        <span className="mt-4 grid grid-cols-2 gap-2">
+        <span className="mt-3 grid grid-cols-2 gap-2">
           {choices.map((choice) => (
             <span
               key={choice}
-              className="flex h-12 items-center justify-center rounded-lg border border-zinc-200 bg-white text-xl font-semibold text-zinc-950"
+              className="flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg font-semibold text-zinc-950"
             >
               {choice}
             </span>
