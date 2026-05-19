@@ -567,18 +567,10 @@ function ModeSelectView({
   );
 }
 
-function PreviewPlayIcon() {
-  return (
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-white shadow-sm">
-      <span className="ml-0.5 h-0 w-0 border-y-[7px] border-y-transparent border-l-[11px] border-l-white" />
-    </span>
-  );
-}
-
 function MemorizeModePreview() {
   return (
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
-      <span className="flex items-center justify-between gap-4 rounded-xl bg-zinc-50 px-4 py-4">
+      <span className="block rounded-xl bg-zinc-50 px-4 py-4">
         <span className="flex items-end gap-3">
           <span className="text-6xl leading-none text-zinc-950">你</span>
           <span className="mb-1 block">
@@ -586,7 +578,6 @@ function MemorizeModePreview() {
             <span className="mt-1 block text-sm font-medium text-zinc-500">あなた</span>
           </span>
         </span>
-        <PreviewPlayIcon />
       </span>
     </span>
   );
@@ -598,12 +589,9 @@ function ChoiceModePreview() {
   return (
     <span aria-hidden="true" className="mx-auto mt-4 block w-full max-w-sm">
       <span className="block rounded-xl bg-zinc-50 px-4 py-4">
-        <span className="flex items-center justify-between gap-3">
-          <span>
-            <span className="block text-xs font-semibold text-zinc-500">音声を聞く</span>
-            <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
-          </span>
-          <PreviewPlayIcon />
+        <span>
+          <span className="block text-xs font-semibold text-zinc-500">音声を聞く</span>
+          <span className="mt-1 block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
         </span>
         <span className="mt-3 grid grid-cols-2 gap-2">
           {choices.map((choice) => (
