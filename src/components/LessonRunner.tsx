@@ -419,6 +419,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     case "learn":
       return (
         <LearningView
+          lessonTitle={lesson.title}
           words={lesson.words}
           hanziCanvasRef={hanziCanvasRef}
           pinyinCanvasRef={pinyinCanvasRef}
@@ -440,11 +441,11 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     case "choice": {
       const currentQuestion = state.questions[state.index];
       return (
-        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+        <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
           <button
             type="button"
             onClick={() => setState({ status: "mode" })}
-            className="mb-3 w-fit text-sm text-zinc-500"
+            className="mb-8 w-fit text-base text-zinc-500"
           >
             ← モード選択
           </button>
@@ -501,7 +502,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     case "test": {
       const currentResult = state.results[state.index];
       return (
-        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+        <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
           <ProgressBar current={state.index + 1} total={state.results.length} />
 
           {currentResult ? (
@@ -519,7 +520,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     case "answer": {
       const currentResult = state.results[state.index];
       return (
-        <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
+        <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
           <ProgressBar current={state.index + 1} total={state.results.length} />
 
           {currentResult ? (
@@ -562,7 +563,7 @@ function ModeSelectView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
-        <Link href="/" className="text-sm text-zinc-500" aria-label="トップへ">
+        <Link href="/" className="text-base text-zinc-500" aria-label="トップへ">
           ← トップ
         </Link>
       </div>
@@ -575,7 +576,7 @@ function ModeSelectView({
           onClick={onStartLearning}
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
-          <span className="block text-lg font-semibold text-zinc-900">暗記する</span>
+          <span className="block text-lg font-semibold text-zinc-900">暗記</span>
           <span className="mt-1 block text-sm text-zinc-500">
             見て、聞いて、書きながら単語を覚える
           </span>
@@ -586,7 +587,7 @@ function ModeSelectView({
           onClick={onOpenChoiceSetup}
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
-          <span className="block text-lg font-semibold text-zinc-900">選択式チェック</span>
+          <span className="block text-lg font-semibold text-zinc-900">クイズ</span>
           <span className="mt-1 block text-sm text-zinc-500">
             発音を聞いて、漢字とピンインを4択で確認する
           </span>
@@ -597,7 +598,7 @@ function ModeSelectView({
           onClick={onOpenTestSetup}
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
-          <span className="block text-lg font-semibold text-zinc-900">テストする</span>
+          <span className="block text-lg font-semibold text-zinc-900">テスト</span>
           <span className="mt-1 block text-sm text-zinc-500">
             発音を聞いて、漢字とピンインを書く
           </span>
@@ -680,16 +681,15 @@ function SetupView({
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
-  const modeLabel = mode === "choice" ? "選択式チェック設定" : "出題設定";
-  const startLabel = mode === "choice" ? "選択式チェックを始める" : "スタート";
+  const modeLabel = mode === "choice" ? "クイズ設定" : "出題設定";
+  const startLabel = mode === "choice" ? "クイズを始める" : "スタート";
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={onBack} className="text-sm text-zinc-500">
+        <button type="button" onClick={onBack} className="text-base text-zinc-500">
           ← モード選択
         </button>
-        <div className="text-xs text-zinc-400">{lesson.words.length} 単語</div>
       </div>
 
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
@@ -755,12 +755,14 @@ function SetupView({
 }
 
 function LearningView({
+  lessonTitle,
   words,
   hanziCanvasRef,
   pinyinCanvasRef,
   onBackToMode,
   onComplete,
 }: {
+  lessonTitle: string;
   words: Word[];
   hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
@@ -768,11 +770,23 @@ function LearningView({
   onComplete: () => void;
 }) {
   const [index, setIndex] = useState(0);
+  const [showList, setShowList] = useState(false);
   const word = words[index];
   const current = index + 1;
   const total = words.length;
 
   if (!word) return null;
+
+  if (showList) {
+    return (
+      <LearningListView
+        lessonTitle={lessonTitle}
+        words={words}
+        onBackToMode={onBackToMode}
+        onBackToLearning={() => setShowList(false)}
+      />
+    );
+  }
 
   const clearCanvases = () => {
     hanziCanvasRef.current?.clear();
@@ -799,10 +813,13 @@ function LearningView({
   };
 
   return (
-    <main className="flex flex-1 w-full flex-col px-4 pt-4 pb-28">
-      <div className="mb-3 flex items-center justify-between">
-        <button type="button" onClick={onBackToMode} className="text-sm text-zinc-500">
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+      <div className="mb-8 flex items-center justify-between">
+        <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
           ← モード選択
+        </button>
+        <button type="button" onClick={() => setShowList(true)} className="text-base text-zinc-500">
+          単語一覧
         </button>
       </div>
 
@@ -820,18 +837,7 @@ function LearningView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock
-          label="漢字を練習"
-          canvasRef={hanziCanvasRef}
-          gridType="rice"
-          aspectRatio={1}
-        />
-        <CanvasBlock
-          label="ピンインを練習"
-          canvasRef={pinyinCanvasRef}
-          gridType="baseline"
-          aspectRatio={0.32}
-        />
+        <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
       </section>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
@@ -853,6 +859,54 @@ function LearningView({
           </button>
         </div>
       </div>
+    </main>
+  );
+}
+
+function LearningListView({
+  lessonTitle,
+  words,
+  onBackToMode,
+  onBackToLearning,
+}: {
+  lessonTitle: string;
+  words: Word[];
+  onBackToMode: () => void;
+  onBackToLearning: () => void;
+}) {
+  return (
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
+          ← モード選択
+        </button>
+        <button type="button" onClick={onBackToLearning} className="text-base text-zinc-500">
+          単語カード
+        </button>
+      </div>
+
+      <header>
+        <h1 className="text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
+        <p className="mt-1 text-sm text-zinc-500">{words.length} 単語</p>
+      </header>
+
+      <section className="mt-4 flex flex-col gap-3">
+        {words.map((word) => (
+          <article
+            key={wordKey(word)}
+            className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 shadow-sm"
+          >
+            <div className="flex items-end justify-between gap-4">
+              <RubyHanzi word={word} />
+              <WordPlayer text={word.hanzi} />
+            </div>
+            <div className="mt-3 h-px bg-zinc-200" />
+            <div className="mt-3 break-words text-base leading-relaxed text-zinc-800">
+              {word.japanese}
+            </div>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }
@@ -884,7 +938,7 @@ function LearningCompleteView({
           onClick={onChoiceCheck}
           className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
         >
-          選択式チェックする
+          クイズする
         </button>
         <button
           type="button"
@@ -944,9 +998,7 @@ function ChoiceCheckView({
   return (
     <div className="mt-4 flex flex-col gap-4">
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          選択式チェック
-        </div>
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ</div>
         <h1 className="mt-1 text-xl font-bold text-zinc-900">{title}</h1>
         <div className="mt-4 flex justify-center">
           <WordPlayer text={question.word.hanzi} />
@@ -1030,9 +1082,7 @@ function ChoiceResultSummary({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <header className="mb-4">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          選択式チェック結果
-        </div>
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ結果</div>
         <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
       </header>
 
@@ -1150,15 +1200,10 @@ function TestView({
         <WordPlayer text={word.hanzi} />
       </div>
 
-      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} gridType="rice" aspectRatio={1} />
+      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
 
       <div className="mt-10">
-        <CanvasBlock
-          label="ピンイン"
-          canvasRef={pinyinCanvasRef}
-          gridType="baseline"
-          aspectRatio={0.32}
-        />
+        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} aspectRatio={0.32} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
@@ -1177,12 +1222,10 @@ function TestView({
 function CanvasBlock({
   label,
   canvasRef,
-  gridType,
   aspectRatio,
 }: {
   label: string;
   canvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  gridType: "rice" | "baseline";
   aspectRatio: number;
 }) {
   return (
@@ -1197,12 +1240,7 @@ function CanvasBlock({
           クリア
         </button>
       </div>
-      <HandwritingCanvas
-        ref={canvasRef}
-        gridType={gridType}
-        aspectRatio={aspectRatio}
-        ariaLabel={`${label}の手書き`}
-      />
+      <HandwritingCanvas ref={canvasRef} aspectRatio={aspectRatio} ariaLabel={`${label}の手書き`} />
     </div>
   );
 }

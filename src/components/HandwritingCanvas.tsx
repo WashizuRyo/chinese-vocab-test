@@ -3,8 +3,6 @@
 import type { Ref } from "react";
 import { useCallback, useImperativeHandle, useLayoutEffect, useRef } from "react";
 
-export type GridType = "rice" | "baseline" | "none";
-
 export interface HandwritingCanvasHandle {
   clear: () => void;
   getDataURL: () => string | null;
@@ -19,37 +17,19 @@ const STROKE_COLOR = "#111111";
 const GRID_COLOR = "#dcdcdc";
 const STROKE_WIDTH = 3.5;
 
-function drawGrid(
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  gridType: GridType,
-) {
+function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) {
   ctx.save();
   ctx.strokeStyle = GRID_COLOR;
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 4]);
 
-  if (gridType === "rice") {
+  const lines = 4;
+  for (let i = 1; i < lines; i++) {
+    const y = (height / lines) * i;
     ctx.beginPath();
-    ctx.moveTo(width / 2, 0);
-    ctx.lineTo(width / 2, height);
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.moveTo(0, 0);
-    ctx.lineTo(width, height);
-    ctx.moveTo(width, 0);
-    ctx.lineTo(0, height);
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
     ctx.stroke();
-  } else if (gridType === "baseline") {
-    const lines = 4;
-    for (let i = 1; i < lines; i++) {
-      const y = (height / lines) * i;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
   }
 
   ctx.setLineDash([]);
@@ -60,13 +40,11 @@ function drawGrid(
 }
 
 export function HandwritingCanvas({
-  gridType,
   aspectRatio,
   className,
   ariaLabel = "手書き入力",
   ref,
 }: {
-  gridType: GridType;
   aspectRatio: number;
   className?: string;
   ariaLabel?: string;
@@ -102,7 +80,7 @@ export function HandwritingCanvas({
     if (gctx) {
       gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       gctx.clearRect(0, 0, w, h);
-      drawGrid(gctx, w, h, gridType);
+      drawGrid(gctx, w, h);
     }
 
     const ictx = ink.getContext("2d");
@@ -114,7 +92,7 @@ export function HandwritingCanvas({
       ictx.strokeStyle = STROKE_COLOR;
       ictx.lineWidth = STROKE_WIDTH;
     }
-  }, [aspectRatio, gridType]);
+  }, [aspectRatio]);
 
   useLayoutEffect(() => {
     resizeCanvases();

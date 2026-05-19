@@ -45,7 +45,7 @@ const lesson: Lesson = {
 };
 
 function completeLearning() {
-  fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
+  fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
   expect(screen.getByText("nǐ")).toBeVisible();
   expect(screen.getByText("あなた")).toBeVisible();
 
@@ -67,9 +67,9 @@ function withDeterministicShuffle(run: () => void) {
 }
 
 function startChoiceCheck() {
-  fireEvent.click(screen.getByRole("button", { name: /選択式チェック/ }));
-  expect(screen.getByText("選択式チェック設定")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "選択式チェックを始める" }));
+  fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+  expect(screen.getByText("クイズ設定")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
 }
 
 function choiceOptions() {
@@ -131,7 +131,7 @@ describe("LessonRunner", () => {
       test("暗記中画面へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
+        fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
 
         expect(screen.getByText("nǐ")).toBeVisible();
         expect(screen.getByText("あなた")).toBeVisible();
@@ -140,17 +140,17 @@ describe("LessonRunner", () => {
       test("テスト設定画面へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
 
         expect(screen.getByText("出題設定")).toBeVisible();
       });
 
-      test("選択式チェック設定画面へ遷移できること", () => {
+      test("クイズ設定画面へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /選択式チェック/ }));
+        fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
 
-        expect(screen.getByText("選択式チェック設定")).toBeVisible();
+        expect(screen.getByText("クイズ設定")).toBeVisible();
       });
     });
 
@@ -158,16 +158,51 @@ describe("LessonRunner", () => {
       test("モード選択へ戻れること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
+        fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
         fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
 
         expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
       });
 
+      test("単語一覧を表示して暗記画面へ戻れること", () => {
+        render(<LessonRunner lesson={lesson} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
+        expect(screen.getByText("nǐ")).toBeVisible();
+        expect(screen.getByText("あなた")).toBeVisible();
+
+        fireEvent.click(screen.getByRole("button", { name: "単語一覧" }));
+
+        expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
+        expect(screen.getByText("2 単語")).toBeVisible();
+        expect(screen.getByText("nǐ")).toBeVisible();
+        expect(screen.getByText("あなた")).toBeVisible();
+        expect(screen.getByText("wǒ")).toBeVisible();
+        expect(screen.getByText("私")).toBeVisible();
+
+        fireEvent.click(screen.getByRole("button", { name: "単語カード" }));
+
+        expect(screen.getByText("nǐ")).toBeVisible();
+        expect(screen.getByText("あなた")).toBeVisible();
+        expect(screen.getByRole("button", { name: "単語一覧" })).toBeVisible();
+      });
+
+      test("単語一覧からモード選択へ戻れること", () => {
+        render(<LessonRunner lesson={lesson} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
+        fireEvent.click(screen.getByRole("button", { name: "単語一覧" }));
+        fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+
+        expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
+        expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
+        expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
+      });
+
       test("暗記完了画面へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /暗記する/ }));
+        fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
         fireEvent.click(screen.getByRole("button", { name: "完了" }));
 
@@ -195,13 +230,13 @@ describe("LessonRunner", () => {
         expect(screen.getByText("出題設定")).toBeVisible();
       });
 
-      test("選択式チェック設定へ遷移できること", () => {
+      test("クイズ設定へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
         completeLearning();
-        fireEvent.click(screen.getByRole("button", { name: "選択式チェックする" }));
+        fireEvent.click(screen.getByRole("button", { name: "クイズする" }));
 
-        expect(screen.getByText("選択式チェック設定")).toBeVisible();
+        expect(screen.getByText("クイズ設定")).toBeVisible();
       });
     });
 
@@ -209,7 +244,7 @@ describe("LessonRunner", () => {
       test("モード選択へ戻れること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         expect(screen.getByText("出題設定")).toBeVisible();
 
         fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
@@ -220,7 +255,7 @@ describe("LessonRunner", () => {
       test("テストを開始できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
         expect(screen.getByText("1 / 2")).toBeVisible();
@@ -232,7 +267,7 @@ describe("LessonRunner", () => {
       test("答え合わせ画面へ遷移できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
         fireEvent.click(screen.getByRole("button", { name: "答え合わせ" }));
 
@@ -240,7 +275,7 @@ describe("LessonRunner", () => {
       });
     });
 
-    describe("選択式チェック", () => {
+    describe("クイズ", () => {
       test("4択問題を開始できること", () => {
         withDeterministicShuffle(() => {
           render(<LessonRunner lesson={lesson} />);
@@ -248,7 +283,7 @@ describe("LessonRunner", () => {
           startChoiceCheck();
 
           expect(screen.getByText("1 / 4")).toBeVisible();
-          expect(screen.getAllByText("選択式チェック")).toHaveLength(1);
+          expect(screen.getAllByText("クイズ")).toHaveLength(1);
           expect(choiceOptions()).toHaveLength(4);
         });
       });
@@ -266,19 +301,19 @@ describe("LessonRunner", () => {
         });
       });
 
-      test("最終問題後に選択式結果を表示できること", () => {
+      test("最終問題後にクイズ結果を表示できること", () => {
         withDeterministicShuffle(() => {
           render(<LessonRunner lesson={lesson} />);
 
           startChoiceCheck();
           answerAllChoiceQuestions(3);
 
-          expect(screen.getByText("選択式チェック結果")).toBeVisible();
+          expect(screen.getByText("クイズ結果")).toBeVisible();
           expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
         });
       });
 
-      test("間違えたものだけ選択式で再挑戦できること", () => {
+      test("間違えたものだけクイズで再挑戦できること", () => {
         withDeterministicShuffle(() => {
           render(<LessonRunner lesson={lesson} />);
 
@@ -309,7 +344,7 @@ describe("LessonRunner", () => {
       test("判定を選ぶことで次の問題へ進めること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
         answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
@@ -322,7 +357,7 @@ describe("LessonRunner", () => {
       test("最終問題で結果を表示できること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
         answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
@@ -339,7 +374,7 @@ describe("LessonRunner", () => {
       test("同じ範囲で再テストできること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
         answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
@@ -356,7 +391,7 @@ describe("LessonRunner", () => {
       test("間違えたものだけで再テストできること", () => {
         render(<LessonRunner lesson={lesson} />);
 
-        fireEvent.click(screen.getByRole("button", { name: /テストする/ }));
+        fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
         fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
         answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
