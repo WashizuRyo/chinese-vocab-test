@@ -998,9 +998,7 @@ function ChoiceCheckView({
   return (
     <div className="mt-4 flex flex-col gap-4">
       <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          クイズ
-        </div>
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ</div>
         <h1 className="mt-1 text-xl font-bold text-zinc-900">{title}</h1>
         <div className="mt-4 flex justify-center">
           <WordPlayer text={question.word.hanzi} />
@@ -1084,9 +1082,7 @@ function ChoiceResultSummary({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <header className="mb-4">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          クイズ結果
-        </div>
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ結果</div>
         <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
       </header>
 
@@ -1207,11 +1203,7 @@ function TestView({
       <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
 
       <div className="mt-10">
-        <CanvasBlock
-          label="ピンイン"
-          canvasRef={pinyinCanvasRef}
-          aspectRatio={0.32}
-        />
+        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} aspectRatio={0.32} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
@@ -1248,11 +1240,7 @@ function CanvasBlock({
           クリア
         </button>
       </div>
-      <HandwritingCanvas
-        ref={canvasRef}
-        aspectRatio={aspectRatio}
-        ariaLabel={`${label}の手書き`}
-      />
+      <HandwritingCanvas ref={canvasRef} aspectRatio={aspectRatio} ariaLabel={`${label}の手書き`} />
     </div>
   );
 }
