@@ -28,26 +28,6 @@ pnpm check-types  # TypeScript 型チェック
 pnpm format       # Biome check + 自動修正
 ```
 
-## 新しい課を追加する手順
-
-1. `src/data/lessons/lessonNN.ts` を作成（既存ファイルをコピーするのが楽）
-
-   ```ts
-   import type { Lesson } from "@/lib/types";
-
-   export const lesson03: Lesson = {
-     id: "lesson03",
-     title: "第3課",
-     words: [
-       { hanzi: "新しい単語", pinyin: "xīn de dāncí", japanese: "新しい単語" },
-       // ...
-     ],
-   };
-   ```
-
-2. `src/data/lessons/index.ts` の `lessons` 配列に追加。
-3. `git push` すれば Vercel が自動でビルド & デプロイします。
-
 ## あいことば（パスワード保護）
 
 クラス内などに限定共有するため、パスワード認証を実装しています。
