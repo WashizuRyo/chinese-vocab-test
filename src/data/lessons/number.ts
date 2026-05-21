@@ -2,7 +2,7 @@ import type { Lesson } from "@/lib/types";
 
 export const number: Lesson = {
   id: "number",
-  title: "数字 1〜40",
+  title: "数字 1〜50",
   words: [
     { hanzi: "一", pinyin: "yī", japanese: "1" },
     { hanzi: "二", pinyin: "èr", japanese: "2" },
@@ -44,5 +44,15 @@ export const number: Lesson = {
     { hanzi: "三十八", pinyin: "sān shí bā", japanese: "38" },
     { hanzi: "三十九", pinyin: "sān shí jiǔ", japanese: "39" },
     { hanzi: "四十", pinyin: "sì shí", japanese: "40" },
+    { hanzi: "四十一", pinyin: "sì shí yī", japanese: "41" },
+    { hanzi: "四十二", pinyin: "sì shí èr", japanese: "42" },
+    { hanzi: "四十三", pinyin: "sì shí sān", japanese: "43" },
+    { hanzi: "四十四", pinyin: "sì shí sì", japanese: "44" },
+    { hanzi: "四十五", pinyin: "sì shí wǔ", japanese: "45" },
+    { hanzi: "四十六", pinyin: "sì shí liù", japanese: "46" },
+    { hanzi: "四十七", pinyin: "sì shí qī", japanese: "47" },
+    { hanzi: "四十八", pinyin: "sì shí bā", japanese: "48" },
+    { hanzi: "四十九", pinyin: "sì shí jiǔ", japanese: "49" },
+    { hanzi: "五十", pinyin: "wǔ shí", japanese: "50" },
   ],
 };

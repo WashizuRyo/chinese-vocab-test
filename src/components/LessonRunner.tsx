@@ -732,7 +732,7 @@ function SetupView({
           <span>
             <span className="block text-sm font-medium text-zinc-700">最後に数字問題を出す</span>
             <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
-              オンにすると、最後の2問が1〜40の数字問題になります。
+              オンにすると、最後の2問が1〜50の数字問題になります。
             </span>
           </span>
           <input
