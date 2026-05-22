@@ -22,7 +22,7 @@
 - pnpm
 - Biome for linting and formatting
 - Vitest + Testing Library for tests
-- Web Speech API for Chinese pronunciation playback (`zh-CN`)
+- MP3 audio files for Chinese pronunciation playback
 - Canvas API for handwriting input
 - Cookie-based password protection via `APP_PASSWORD`
 

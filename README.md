@@ -12,7 +12,7 @@
 - Next.js 16 (App Router) + TypeScript
 - Tailwind CSS v4
 - Biome (lint + format)
-- Web Speech API (中国語の発音再生、`zh-CN`)
+- MP3 音声ファイル (中国語の発音再生)
 - Canvas API (手書き入力)
 - pnpm
 - Vercel (デプロイ先)
@@ -46,8 +46,7 @@ pnpm dev
 
 Vercel 側では「Project → Settings → Environment Variables」で `APP_PASSWORD` を追加。
 
-## ブラウザ対応
+## 音声再生
 
-中国語の音声合成 (`zh-CN`) に対応しているブラウザが必要です。
-iOS Safari / macOS Safari / Chrome / Edge は対応しています。
-非対応の場合は画面上部に警告メッセージが表示されます。
+中国語の発音は `public/audio/words/` 配下の MP3 音声ファイルを再生します。
+各単語データの `audioSrc` は、対応する MP3 ファイルを明示的に参照します。

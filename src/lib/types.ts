@@ -2,6 +2,7 @@ export interface Word {
   hanzi: string;
   pinyin: string;
   japanese: string;
+  audioSrc: string;
 }
 
 export interface Lesson {
