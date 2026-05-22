@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { speakChinese } from "@/lib/speech";
+import { createHanziSpeech } from "@/lib/hanziSpeech";
 
 interface Props {
   text: string;
 }
 
-export function WordPlayer({ text }: Props) {
-  const [speaking, setSpeaking] = useState(false);
+const hanziSpeech = createHanziSpeech();
 
+export function WordPlayer({ text }: Props) {
   const handleReplay = () => {
-    setSpeaking(true);
-    void speakChinese(text).finally(() => setSpeaking(false));
+    hanziSpeech.speak(text);
   };
 
   return (
@@ -23,7 +21,7 @@ export function WordPlayer({ text }: Props) {
         className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-sm active:scale-95 transition-transform"
         aria-label="発音を再生"
       >
-        {speaking ? <SpeakerWaveIcon /> : <PlayIcon />}
+        <PlayIcon />
       </button>
     </div>
   );
@@ -39,20 +37,6 @@ function PlayIcon() {
       aria-hidden="true"
     >
       <path d="M8 5v14l11-7z" />
-    </svg>
-  );
-}
-
-function SpeakerWaveIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="h-4 w-4 animate-pulse"
-      aria-hidden="true"
-    >
-      <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z" />
     </svg>
   );
 }

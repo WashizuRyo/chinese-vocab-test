@@ -9,9 +9,9 @@ import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
+import { createHanziSpeech } from "@/lib/hanziSpeech";
 import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
 import { playCorrectSound } from "@/lib/sound";
-import { primeSpeechEngine, speakChinese } from "@/lib/speech";
 import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
 
 interface TestSettings {
@@ -19,6 +19,8 @@ interface TestSettings {
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
 }
+
+const hanziSpeech = createHanziSpeech();
 
 type SetupMode = "choice" | "test";
 
@@ -254,19 +256,17 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       hanziCorrect: true,
       pinyinCorrect: true,
     }));
-    primeSpeechEngine();
     setState({
       status: "test",
       results: initialResults,
       index: 0,
     });
     const firstWord = words[0];
-    if (firstWord) speakChinese(firstWord.hanzi);
+    if (firstWord) hanziSpeech.speak(firstWord.hanzi);
   };
 
   const startChoiceWithWords = (words: Word[]) => {
     const questions = buildChoiceQuestions(words, lesson.words);
-    primeSpeechEngine();
     setState({
       status: "choice",
       words,
@@ -276,7 +276,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       selectedChoice: null,
     });
     const firstQuestion = questions[0];
-    if (firstQuestion) speakChinese(firstQuestion.word.hanzi);
+    if (firstQuestion) hanziSpeech.speak(firstQuestion.word.hanzi);
   };
 
   const handleStart = () => {
@@ -290,10 +290,9 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const handleStartLearning = () => {
     clearCanvases();
-    primeSpeechEngine();
     setState({ status: "learn" });
     const firstWord = lesson.words[0];
-    if (firstWord) speakChinese(firstWord.hanzi);
+    if (firstWord) hanziSpeech.speak(firstWord.hanzi);
   };
 
   const handleOpenTestSetup = () => {
@@ -353,7 +352,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       results: state.results,
       index: state.index + 1,
     });
-    if (nextResult) speakChinese(nextResult.word.hanzi);
+    if (nextResult) hanziSpeech.speak(nextResult.word.hanzi);
   };
 
   const handleChoiceSelect = (choice: string) => {
@@ -390,7 +389,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       index: state.index + 1,
       selectedChoice: null,
     });
-    if (nextQuestion) speakChinese(nextQuestion.word.hanzi);
+    if (nextQuestion) hanziSpeech.speak(nextQuestion.word.hanzi);
   };
 
   switch (state.status) {
@@ -798,7 +797,7 @@ function LearningView({
     if (!previousWord) return;
     clearCanvases();
     setIndex((i) => i - 1);
-    speakChinese(previousWord.hanzi);
+    hanziSpeech.speak(previousWord.hanzi);
   };
 
   const handleNext = () => {
@@ -809,7 +808,7 @@ function LearningView({
       return;
     }
     setIndex((i) => i + 1);
-    speakChinese(nextWord.hanzi);
+    hanziSpeech.speak(nextWord.hanzi);
   };
 
   return (
