@@ -9,18 +9,16 @@ import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
-import { createHanziSpeech } from "@/lib/hanziSpeech";
 import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
 import { playCorrectSound } from "@/lib/sound";
 import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
+import { wordAudio } from "@/lib/wordAudio";
 
 interface TestSettings {
   count: number;
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
 }
-
-const hanziSpeech = createHanziSpeech();
 
 type SetupMode = "choice" | "test";
 
@@ -262,7 +260,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       index: 0,
     });
     const firstWord = words[0];
-    if (firstWord) hanziSpeech.speak(firstWord.hanzi);
+    if (firstWord) wordAudio.play(firstWord);
   };
 
   const startChoiceWithWords = (words: Word[]) => {
@@ -276,7 +274,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       selectedChoice: null,
     });
     const firstQuestion = questions[0];
-    if (firstQuestion) hanziSpeech.speak(firstQuestion.word.hanzi);
+    if (firstQuestion) wordAudio.play(firstQuestion.word);
   };
 
   const handleStart = () => {
@@ -292,7 +290,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     clearCanvases();
     setState({ status: "learn" });
     const firstWord = lesson.words[0];
-    if (firstWord) hanziSpeech.speak(firstWord.hanzi);
+    if (firstWord) wordAudio.play(firstWord);
   };
 
   const handleOpenTestSetup = () => {
@@ -352,7 +350,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       results: state.results,
       index: state.index + 1,
     });
-    if (nextResult) hanziSpeech.speak(nextResult.word.hanzi);
+    if (nextResult) wordAudio.play(nextResult.word);
   };
 
   const handleChoiceSelect = (choice: string) => {
@@ -389,7 +387,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       index: state.index + 1,
       selectedChoice: null,
     });
-    if (nextQuestion) hanziSpeech.speak(nextQuestion.word.hanzi);
+    if (nextQuestion) wordAudio.play(nextQuestion.word);
   };
 
   switch (state.status) {
@@ -797,7 +795,7 @@ function LearningView({
     if (!previousWord) return;
     clearCanvases();
     setIndex((i) => i - 1);
-    hanziSpeech.speak(previousWord.hanzi);
+    wordAudio.play(previousWord);
   };
 
   const handleNext = () => {
@@ -808,7 +806,7 @@ function LearningView({
       return;
     }
     setIndex((i) => i + 1);
-    hanziSpeech.speak(nextWord.hanzi);
+    wordAudio.play(nextWord);
   };
 
   return (
@@ -827,7 +825,7 @@ function LearningView({
       <section className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-5 shadow-sm">
         <div className="flex items-end justify-between gap-4">
           <RubyHanzi word={word} />
-          <WordPlayer text={word.hanzi} />
+          <WordPlayer word={word} />
         </div>
         <div className="mt-4 h-px bg-zinc-200" />
         <div className="mt-4 break-words text-base leading-relaxed text-zinc-800">
@@ -897,7 +895,7 @@ function LearningListView({
           >
             <div className="flex items-end justify-between gap-4">
               <RubyHanzi word={word} />
-              <WordPlayer text={word.hanzi} />
+              <WordPlayer word={word} />
             </div>
             <div className="mt-3 h-px bg-zinc-200" />
             <div className="mt-3 break-words text-base leading-relaxed text-zinc-800">
@@ -1000,7 +998,7 @@ function ChoiceCheckView({
         <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ</div>
         <h1 className="mt-1 text-xl font-bold text-zinc-900">{title}</h1>
         <div className="mt-4 flex justify-center">
-          <WordPlayer text={question.word.hanzi} />
+          <WordPlayer word={question.word} />
         </div>
       </section>
 
@@ -1196,7 +1194,7 @@ function TestView({
   return (
     <div className="handwriting-practice mt-4 flex flex-col gap-4">
       <div className="flex justify-center pt-1 pb-2">
-        <WordPlayer text={word.hanzi} />
+        <WordPlayer word={word} />
       </div>
 
       <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />

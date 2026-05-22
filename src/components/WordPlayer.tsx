@@ -1,16 +1,15 @@
 "use client";
 
-import { createHanziSpeech } from "@/lib/hanziSpeech";
+import type { Word } from "@/lib/types";
+import { wordAudio } from "@/lib/wordAudio";
 
 interface Props {
-  text: string;
+  word: Word;
 }
 
-const hanziSpeech = createHanziSpeech();
-
-export function WordPlayer({ text }: Props) {
+export function WordPlayer({ word }: Props) {
   const handleReplay = () => {
-    hanziSpeech.speak(text);
+    wordAudio.play(word);
   };
 
   return (
