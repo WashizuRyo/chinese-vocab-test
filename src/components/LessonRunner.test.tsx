@@ -53,6 +53,17 @@ const lesson: Lesson = {
   ],
 };
 
+const quizLesson: Lesson = {
+  id: "quiz-test",
+  title: "クイズ課",
+  words: [
+    { hanzi: "你", pinyin: "nǐ", japanese: "あなた", audioSrc: "/audio/words/你-nǐ.mp3" },
+    { hanzi: "我", pinyin: "wǒ", japanese: "私", audioSrc: "/audio/words/我-wǒ.mp3" },
+    { hanzi: "是", pinyin: "shì", japanese: "〜です", audioSrc: "/audio/words/是-shì.mp3" },
+    { hanzi: "吗", pinyin: "ma", japanese: "か", audioSrc: "/audio/words/吗-ma.mp3" },
+  ],
+};
+
 function completeLearning() {
   fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
   expect(screen.getByText("nǐ")).toBeVisible();
@@ -75,28 +86,28 @@ function withDeterministicShuffle(run: () => void) {
   }
 }
 
-function startChoiceCheck() {
+function startQuiz() {
   fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
   expect(screen.getByText("クイズ設定")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
 }
 
-function choiceOptions() {
+function quizOptions() {
   return screen.getAllByLabelText(/^選択肢:/);
 }
 
-function answerChoiceQuestion(optionIndex: number) {
-  const option = choiceOptions()[optionIndex];
-  if (!option) throw new Error(`Expected choice option ${optionIndex} to exist`);
+function answerQuestion(optionIndex: number) {
+  const option = quizOptions()[optionIndex];
+  if (!option) throw new Error(`Expected quiz option ${optionIndex} to exist`);
   fireEvent.click(option);
 }
 
-function answerAllChoiceQuestions(optionIndex: number) {
-  for (let i = 0; i < lesson.words.length * 2; i++) {
-    answerChoiceQuestion(optionIndex);
+function answerAllQuestions(optionIndex: number, totalQuestions: number) {
+  for (let i = 0; i < totalQuestions; i++) {
+    answerQuestion(optionIndex);
     fireEvent.click(
       screen.getByRole("button", {
-        name: i + 1 === lesson.words.length * 2 ? "結果を見る" : "次へ",
+        name: i + 1 === totalQuestions ? "結果を見る" : "次へ",
       }),
     );
   }
@@ -162,11 +173,21 @@ describe("LessonRunner", () => {
     });
 
     test("クイズ設定画面へ遷移できること", () => {
-      render(<LessonRunner lesson={lesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
       fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
 
       expect(screen.getByText("クイズ設定")).toBeVisible();
+      expect(screen.getByText("単語数", { exact: false })).toBeVisible();
+    });
+
+    test("クイズ設定で数字追加を選べること", () => {
+      render(<LessonRunner lesson={quizLesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
+
+      expect(screen.getByRole("checkbox", { name: /最後に数字を追加/ })).toBeChecked();
     });
   });
 
@@ -313,35 +334,35 @@ describe("LessonRunner", () => {
   describe("クイズ", () => {
     test("4択問題を開始できること", () => {
       withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={lesson} />);
+        render(<LessonRunner lesson={quizLesson} />);
 
-        startChoiceCheck();
+        startQuiz();
 
-        expect(screen.getByText("1 / 4")).toBeVisible();
+        expect(screen.getByText("1 / 8")).toBeVisible();
         expect(screen.getAllByText("クイズ")).toHaveLength(1);
-        expect(choiceOptions()).toHaveLength(4);
+        expect(quizOptions()).toHaveLength(4);
       });
     });
 
     test("正解を選ぶと結果を表示して次へ進めること", () => {
       withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={lesson} />);
+        render(<LessonRunner lesson={quizLesson} />);
 
-        startChoiceCheck();
-        answerChoiceQuestion(3);
+        startQuiz();
+        answerQuestion(3);
 
         expect(screen.getAllByText("正解")[0]).toBeVisible();
         fireEvent.click(screen.getByRole("button", { name: "次へ" }));
-        expect(screen.getByText("2 / 4")).toBeVisible();
+        expect(screen.getByText("2 / 8")).toBeVisible();
       });
     });
 
     test("最終問題後にクイズ結果を表示できること", () => {
       withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={lesson} />);
+        render(<LessonRunner lesson={quizLesson} />);
 
-        startChoiceCheck();
-        answerAllChoiceQuestions(3);
+        startQuiz();
+        answerAllQuestions(3, quizLesson.words.length * 2);
 
         expect(screen.getByText("クイズ結果")).toBeVisible();
         expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
@@ -350,26 +371,26 @@ describe("LessonRunner", () => {
 
     test("間違えたものだけクイズで再挑戦できること", () => {
       withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={lesson} />);
+        render(<LessonRunner lesson={quizLesson} />);
 
-        startChoiceCheck();
-        answerAllChoiceQuestions(0);
-        fireEvent.click(screen.getByRole("button", { name: "間違えたものだけもう一度 (2)" }));
+        startQuiz();
+        answerAllQuestions(0, quizLesson.words.length * 2);
+        fireEvent.click(screen.getByRole("button", { name: "間違えたものだけもう一度 (4)" }));
 
-        expect(screen.getByText("1 / 4")).toBeVisible();
-        expect(choiceOptions()).toHaveLength(4);
+        expect(screen.getByText("1 / 8")).toBeVisible();
+        expect(quizOptions()).toHaveLength(4);
       });
     });
 
     test("結果画面から本番形式テストへ進めること", () => {
       withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={lesson} />);
+        render(<LessonRunner lesson={quizLesson} />);
 
-        startChoiceCheck();
-        answerAllChoiceQuestions(3);
+        startQuiz();
+        answerAllQuestions(3, quizLesson.words.length * 2);
         fireEvent.click(screen.getByRole("button", { name: "本番形式テストへ進む" }));
 
-        expect(screen.getByText("1 / 2")).toBeVisible();
+        expect(screen.getByText("1 / 4")).toBeVisible();
         expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
       });
     });

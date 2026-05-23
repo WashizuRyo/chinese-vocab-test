@@ -17,17 +17,21 @@ export interface WordResult {
   pinyinCorrect: boolean;
 }
 
-export type ChoiceQuestionKind = "hanzi" | "pinyin";
+export type QuestionKind = "hanzi" | "pinyin";
 
-export interface ChoiceQuestion {
-  kind: ChoiceQuestionKind;
+export interface Question {
+  kind: QuestionKind;
   word: Word;
   answer: string;
   choices: string[];
 }
 
-export interface ChoiceResult {
-  question: ChoiceQuestion;
-  selectedChoice: string;
+export interface Quiz {
+  questions: Question[];
+}
+
+export interface QuizResult {
+  question: Question;
+  selectedAnswer: string;
   correct: boolean;
 }
