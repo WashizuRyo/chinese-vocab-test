@@ -7,11 +7,10 @@ import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/Ha
 import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
-import { lessons } from "@/data/lessons";
 import { number } from "@/data/lessons/number";
-import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
+import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
-import type { ChoiceQuestion, ChoiceResult, Lesson, Word, WordResult } from "@/lib/types";
+import type { Lesson, Question, QuizResult, Word, WordResult } from "@/lib/types";
 import { wordAudio } from "@/lib/wordAudio";
 
 interface TestSettings {
@@ -20,7 +19,7 @@ interface TestSettings {
   numberQuestionsOn: boolean;
 }
 
-type SetupMode = "choice" | "test";
+type SetupMode = "quiz" | "test";
 
 type LessonRunnerState =
   | { status: "mode" }
@@ -28,17 +27,19 @@ type LessonRunnerState =
   | { status: "learn" }
   | { status: "learnComplete" }
   | {
-      status: "choice";
-      words: Word[];
-      questions: ChoiceQuestion[];
-      results: ChoiceResult[];
+      status: "quiz";
+      lessonWords: Word[];
+      numberWords: Word[];
+      questions: Question[];
+      results: QuizResult[];
       index: number;
-      selectedChoice: string | null;
+      selectedAnswer: string | null;
     }
   | {
-      status: "choiceResult";
-      words: Word[];
-      results: ChoiceResult[];
+      status: "quizResult";
+      lessonWords: Word[];
+      numberWords: Word[];
+      results: QuizResult[];
     }
   | {
       status: "test";
@@ -70,21 +71,6 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-function buildQuestions(
-  words: Word[],
-  count: number,
-  shuffleOn: boolean,
-  numberQuestionsOn: boolean,
-) {
-  const totalCount = Math.min(count, words.length);
-  const numberCount = numberQuestionsOn ? Math.min(2, totalCount) : 0;
-  const wordCount = totalCount - numberCount;
-  const regularQuestions = (shuffleOn ? shuffle(words) : words).slice(0, wordCount);
-  const numberQuestions = shuffle(number.words).slice(0, numberCount);
-
-  return [...regularQuestions, ...numberQuestions];
-}
-
 function wordKey(word: Word): string {
   return `${word.hanzi}\u0000${word.pinyin}`;
 }
@@ -101,50 +87,6 @@ function uniqueWords(words: Word[]): Word[] {
   }
 
   return unique;
-}
-
-function buildFallbackWords(target: Word, sources: Word[][]): Word[] {
-  const targetKey = wordKey(target);
-  return uniqueWords(sources.flat()).filter((word) => wordKey(word) !== targetKey);
-}
-
-function buildHanziChoices(target: Word, selectedWords: Word[], lessonWords: Word[]): string[] {
-  const fallbackWords = buildFallbackWords(target, [
-    selectedWords,
-    lessonWords,
-    lessons.flatMap((lesson) => lesson.words),
-  ]);
-  return [target.hanzi, ...fallbackWords.map((word) => word.hanzi)]
-    .filter((value, index, values) => values.indexOf(value) === index)
-    .slice(0, 4);
-}
-
-function buildPinyinChoices(target: Word, selectedWords: Word[], lessonWords: Word[]): string[] {
-  const fallbackPinyins = buildFallbackWords(target, [
-    selectedWords,
-    lessonWords,
-    lessons.flatMap((lesson) => lesson.words),
-  ]).map((word) => word.pinyin);
-  return buildPinyinToneChoices(target.pinyin, fallbackPinyins, 4);
-}
-
-function buildChoiceQuestions(selectedWords: Word[], lessonWords: Word[]): ChoiceQuestion[] {
-  const questions = selectedWords.flatMap((word) => [
-    {
-      kind: "hanzi" as const,
-      word,
-      answer: word.hanzi,
-      choices: shuffle(buildHanziChoices(word, selectedWords, lessonWords)),
-    },
-    {
-      kind: "pinyin" as const,
-      word,
-      answer: word.pinyin,
-      choices: shuffle(buildPinyinChoices(word, selectedWords, lessonWords)),
-    },
-  ]);
-
-  return shuffle(questions);
 }
 
 function getStudyHanziClassName(hanzi: string): string {
@@ -220,32 +162,47 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     pinyinCanvasRef.current?.clear();
   };
 
+  const selectWords = (
+    words: Word[],
+    settings: TestSettings,
+    includeNumberQuestions = settings.numberQuestionsOn,
+  ) => {
+    const selectedLessonWords = (settings.shuffleOn ? shuffle(words) : words).slice(
+      0,
+      settings.count,
+    );
+    const selectedNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
+    return [...selectedLessonWords, ...selectedNumberWords];
+  };
+
   const startWithSettings = (
     words: Word[],
     settings: TestSettings,
     includeNumberQuestions = settings.numberQuestionsOn,
   ) => {
-    const subset = buildQuestions(
-      words,
-      settings.count,
-      settings.shuffleOn,
-      includeNumberQuestions,
-    );
-    startWithWords(subset);
+    startWithWords(selectWords(words, settings, includeNumberQuestions));
   };
 
-  const startChoiceWithSettings = (
+  const startQuizWithSettings = (
     words: Word[],
     settings: TestSettings,
     includeNumberQuestions = settings.numberQuestionsOn,
   ) => {
-    const subset = buildQuestions(
-      words,
-      settings.count,
-      settings.shuffleOn,
-      includeNumberQuestions,
-    );
-    startChoiceWithWords(subset);
+    const quizLessonWords = (settings.shuffleOn ? shuffle(words) : words).slice(0, settings.count);
+    const quizNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
+    const nextQuiz = createQuiz({
+      lessonWords: quizLessonWords,
+      numberWords: quizNumberWords,
+      settings: {
+        wordCount: quizLessonWords.length,
+        shuffleOn: false,
+      },
+    });
+    startQuizWithQuestions({
+      lessonWords: quizLessonWords,
+      numberWords: quizNumberWords,
+      questions: nextQuiz.questions,
+    });
   };
 
   const startWithWords = (words: Word[]) => {
@@ -263,15 +220,23 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (firstWord) wordAudio.play(firstWord);
   };
 
-  const startChoiceWithWords = (words: Word[]) => {
-    const questions = buildChoiceQuestions(words, lesson.words);
+  const startQuizWithQuestions = ({
+    lessonWords,
+    numberWords,
+    questions,
+  }: {
+    lessonWords: Word[];
+    numberWords: Word[];
+    questions: Question[];
+  }) => {
     setState({
-      status: "choice",
-      words,
+      status: "quiz",
+      lessonWords,
+      numberWords,
       questions,
       results: [],
       index: 0,
-      selectedChoice: null,
+      selectedAnswer: null,
     });
     const firstQuestion = questions[0];
     if (firstQuestion) wordAudio.play(firstQuestion.word);
@@ -279,8 +244,8 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const handleStart = () => {
     if (state.status !== "setup") return;
-    if (state.mode === "choice") {
-      startChoiceWithSettings(lesson.words, state.settings);
+    if (state.mode === "quiz") {
+      startQuizWithSettings(lesson.words, state.settings);
       return;
     }
     startWithSettings(lesson.words, state.settings);
@@ -298,9 +263,9 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     setState({ status: "setup", mode: "test", settings: initialSettings });
   };
 
-  const handleOpenChoiceSetup = () => {
+  const handleOpenQuizSetup = () => {
     clearCanvases();
-    setState({ status: "setup", mode: "choice", settings: initialSettings });
+    setState({ status: "setup", mode: "quiz", settings: initialSettings });
   };
 
   const handleSubmit = () => {
@@ -353,29 +318,30 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (nextResult) wordAudio.play(nextResult.word);
   };
 
-  const handleChoiceSelect = (choice: string) => {
-    if (state.status !== "choice" || state.selectedChoice !== null) return;
+  const handleQuizSelect = (option: string) => {
+    if (state.status !== "quiz" || state.selectedAnswer !== null) return;
     const question = state.questions[state.index];
     if (!question) return;
-    const result: ChoiceResult = {
+    const result: QuizResult = {
       question,
-      selectedChoice: choice,
-      correct: choice === question.answer,
+      selectedAnswer: option,
+      correct: option === question.answer,
     };
     if (result.correct) playCorrectSound();
     setState({
       ...state,
-      selectedChoice: choice,
+      selectedAnswer: option,
       results: [...state.results, result],
     });
   };
 
-  const handleChoiceNext = () => {
-    if (state.status !== "choice" || state.selectedChoice === null) return;
+  const handleQuizNext = () => {
+    if (state.status !== "quiz" || state.selectedAnswer === null) return;
     if (state.index + 1 >= state.questions.length) {
       setState({
-        status: "choiceResult",
-        words: state.words,
+        status: "quizResult",
+        lessonWords: state.lessonWords,
+        numberWords: state.numberWords,
         results: state.results,
       });
       return;
@@ -385,7 +351,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     setState({
       ...state,
       index: state.index + 1,
-      selectedChoice: null,
+      selectedAnswer: null,
     });
     if (nextQuestion) wordAudio.play(nextQuestion.word);
   };
@@ -396,7 +362,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
         <ModeSelectView
           lesson={lesson}
           onStartLearning={handleStartLearning}
-          onOpenChoiceSetup={handleOpenChoiceSetup}
+          onOpenQuizSetup={handleOpenQuizSetup}
           onOpenTestSetup={handleOpenTestSetup}
         />
       );
@@ -429,13 +395,13 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <LearningCompleteView
           lesson={lesson}
-          onChoiceCheck={handleOpenChoiceSetup}
+          onQuiz={handleOpenQuizSetup}
           onTest={handleOpenTestSetup}
           onRestartLearning={handleStartLearning}
         />
       );
 
-    case "choice": {
+    case "quiz": {
       const currentQuestion = state.questions[state.index];
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
@@ -448,11 +414,11 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
           </button>
           <ProgressBar current={state.index + 1} total={state.questions.length} />
           {currentQuestion ? (
-            <ChoiceCheckView
+            <QuizView
               question={currentQuestion}
-              selectedChoice={state.selectedChoice}
-              onSelect={handleChoiceSelect}
-              onNext={handleChoiceNext}
+              selectedAnswer={state.selectedAnswer}
+              onSelect={handleQuizSelect}
+              onNext={handleQuizNext}
               isLast={state.index + 1 >= state.questions.length}
             />
           ) : null}
@@ -460,22 +426,48 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       );
     }
 
-    case "choiceResult":
+    case "quizResult":
       return (
-        <ChoiceResultSummary
+        <QuizResultSummary
           results={state.results}
           lessonTitle={lesson.title}
-          onRetry={() => startChoiceWithWords(state.words)}
+          onRetry={() =>
+            startQuizWithQuestions({
+              lessonWords: state.lessonWords,
+              numberWords: state.numberWords,
+              questions: createQuiz({
+                lessonWords: state.lessonWords,
+                numberWords: state.numberWords,
+                settings: {
+                  wordCount: state.lessonWords.length,
+                  shuffleOn: false,
+                },
+              }).questions,
+            })
+          }
           onRetryWrongOnly={() => {
             const wrongWords = uniqueWords(
               state.results
                 .filter((result) => !result.correct)
                 .map((result) => result.question.word),
             );
+            const wrongLessonWords = wrongWords.filter((word) => state.lessonWords.includes(word));
+            const wrongNumberWords = wrongWords.filter((word) => state.numberWords.includes(word));
             if (wrongWords.length === 0) return;
-            startChoiceWithWords(wrongWords);
+            startQuizWithQuestions({
+              lessonWords: wrongLessonWords,
+              numberWords: wrongNumberWords,
+              questions: createQuiz({
+                lessonWords: wrongLessonWords,
+                numberWords: wrongNumberWords,
+                settings: {
+                  wordCount: wrongLessonWords.length,
+                  shuffleOn: false,
+                },
+              }).questions,
+            });
           }}
-          onStartTest={() => startWithWords(state.words)}
+          onStartTest={() => startWithWords([...state.lessonWords, ...state.numberWords])}
           onBackToMode={() => setState({ status: "mode" })}
         />
       );
@@ -549,12 +541,12 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 function ModeSelectView({
   lesson,
   onStartLearning,
-  onOpenChoiceSetup,
+  onOpenQuizSetup,
   onOpenTestSetup,
 }: {
   lesson: Lesson;
   onStartLearning: () => void;
-  onOpenChoiceSetup: () => void;
+  onOpenQuizSetup: () => void;
   onOpenTestSetup: () => void;
 }) {
   return (
@@ -581,14 +573,14 @@ function ModeSelectView({
         </button>
         <button
           type="button"
-          onClick={onOpenChoiceSetup}
+          onClick={onOpenQuizSetup}
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-5 text-left shadow-sm active:bg-zinc-50"
         >
           <span className="block text-lg font-semibold text-zinc-900">クイズ</span>
           <span className="mt-1 block text-sm text-zinc-500">
             発音を聞いて、漢字とピンインを4択で確認する
           </span>
-          <ChoiceModePreview />
+          <QuizModePreview />
         </button>
         <button
           type="button"
@@ -637,7 +629,7 @@ function MemorizeModePreview() {
   );
 }
 
-function ChoiceModePreview() {
+function QuizModePreview() {
   const choices = ["shí", "shī", "shǐ", "shì"];
 
   return (
@@ -647,12 +639,12 @@ function ChoiceModePreview() {
           <span className="block text-xl font-bold text-zinc-950">ピンインを選ぶ</span>
         </span>
         <span className="mt-3 grid grid-cols-2 gap-2">
-          {choices.map((choice) => (
+          {choices.map((option) => (
             <span
-              key={choice}
+              key={option}
               className="flex h-10 items-center justify-center rounded-lg border border-zinc-200 bg-white text-lg font-semibold text-zinc-950"
             >
-              {choice}
+              {option}
             </span>
           ))}
         </span>
@@ -678,8 +670,9 @@ function SetupView({
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
-  const modeLabel = mode === "choice" ? "クイズ設定" : "出題設定";
-  const startLabel = mode === "choice" ? "クイズを始める" : "スタート";
+  const modeLabel = mode === "quiz" ? "クイズ設定" : "出題設定";
+  const startLabel = mode === "quiz" ? "クイズを始める" : "スタート";
+  const selectedWordCount = Math.min(count, max);
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -694,7 +687,7 @@ function SetupView({
 
       <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
         <label htmlFor="count" className="text-sm font-medium text-zinc-700">
-          問題数 <span className="text-zinc-400">(1 - {max})</span>
+          単語数 <span className="text-zinc-400">(1 - {max})</span>
         </label>
         <div className="mt-2 flex items-center gap-3">
           <input
@@ -707,7 +700,7 @@ function SetupView({
             className="flex-1"
           />
           <span className="w-10 text-right text-base font-semibold tabular-nums">
-            {Math.min(count, max)}
+            {selectedWordCount}
           </span>
         </div>
       </section>
@@ -727,9 +720,9 @@ function SetupView({
       <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
         <label className="flex items-start justify-between gap-4">
           <span>
-            <span className="block text-sm font-medium text-zinc-700">最後に数字問題を出す</span>
+            <span className="block text-sm font-medium text-zinc-700">最後に数字を追加</span>
             <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
-              オンにすると、最後の2問が1〜50の数字問題になります。
+              オンにすると、選んだ単語のあとに1〜50の数字を2語追加します。
             </span>
           </span>
           <input
@@ -910,12 +903,12 @@ function LearningListView({
 
 function LearningCompleteView({
   lesson,
-  onChoiceCheck,
+  onQuiz,
   onTest,
   onRestartLearning,
 }: {
   lesson: Lesson;
-  onChoiceCheck: () => void;
+  onQuiz: () => void;
   onTest: () => void;
   onRestartLearning: () => void;
 }) {
@@ -932,7 +925,7 @@ function LearningCompleteView({
       <section className="flex flex-col gap-2">
         <button
           type="button"
-          onClick={onChoiceCheck}
+          onClick={onQuiz}
           className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
         >
           クイズする
@@ -962,31 +955,31 @@ function LearningCompleteView({
   );
 }
 
-function ChoiceCheckView({
+function QuizView({
   question,
-  selectedChoice,
+  selectedAnswer,
   onSelect,
   onNext,
   isLast,
 }: {
-  question: ChoiceQuestion;
-  selectedChoice: string | null;
-  onSelect: (choice: string) => void;
+  question: Question;
+  selectedAnswer: string | null;
+  onSelect: (option: string) => void;
   onNext: () => void;
   isLast: boolean;
 }) {
-  const answered = selectedChoice !== null;
-  const isCorrect = selectedChoice === question.answer;
+  const answered = selectedAnswer !== null;
+  const isCorrect = selectedAnswer === question.answer;
   const title = question.kind === "hanzi" ? "漢字を選ぶ" : "ピンインを選ぶ";
 
-  const choiceClassName = (choice: string) => {
+  const optionClassName = (option: string) => {
     if (!answered) {
       return "border-zinc-200 bg-white text-zinc-900 active:bg-zinc-50";
     }
-    if (choice === question.answer) {
+    if (option === question.answer) {
       return "border-emerald-600 bg-emerald-50 text-emerald-800";
     }
-    if (choice === selectedChoice) {
+    if (option === selectedAnswer) {
       return "border-rose-600 bg-rose-50 text-rose-800";
     }
     return "border-zinc-200 bg-zinc-50 text-zinc-400";
@@ -1003,18 +996,18 @@ function ChoiceCheckView({
       </section>
 
       <section className="grid grid-cols-2 gap-3">
-        {question.choices.map((choice) => (
+        {question.choices.map((option) => (
           <button
-            key={choice}
+            key={option}
             type="button"
-            aria-label={`選択肢: ${choice}`}
-            onClick={() => onSelect(choice)}
+            aria-label={`選択肢: ${option}`}
+            onClick={() => onSelect(option)}
             disabled={answered}
-            className={`flex min-h-24 items-center justify-center rounded-2xl border-2 px-3 py-3 text-center text-2xl leading-snug font-semibold break-words transition-colors ${choiceClassName(
-              choice,
+            className={`flex min-h-24 items-center justify-center rounded-2xl border-2 px-3 py-3 text-center text-2xl leading-snug font-semibold break-words transition-colors ${optionClassName(
+              option,
             )}`}
           >
-            {choice}
+            {option}
           </button>
         ))}
       </section>
@@ -1051,7 +1044,7 @@ function ChoiceCheckView({
   );
 }
 
-function ChoiceResultSummary({
+function QuizResultSummary({
   results,
   lessonTitle,
   onRetry,
@@ -1059,7 +1052,7 @@ function ChoiceResultSummary({
   onStartTest,
   onBackToMode,
 }: {
-  results: ChoiceResult[];
+  results: QuizResult[];
   lessonTitle: string;
   onRetry: () => void;
   onRetryWrongOnly: () => void;
@@ -1084,14 +1077,14 @@ function ChoiceResultSummary({
       </header>
 
       <section className="grid grid-cols-3 gap-2">
-        <ChoiceScoreTile label="総合" correct={correct} total={total} accent="zinc" />
-        <ChoiceScoreTile
+        <QuizScoreTile label="総合" correct={correct} total={total} accent="zinc" />
+        <QuizScoreTile
           label="漢字"
           correct={hanziCorrect}
           total={hanziResults.length}
           accent="emerald"
         />
-        <ChoiceScoreTile
+        <QuizScoreTile
           label="ピンイン"
           correct={pinyinCorrect}
           total={pinyinResults.length}
@@ -1152,7 +1145,7 @@ function ChoiceResultSummary({
   );
 }
 
-function ChoiceScoreTile({
+function QuizScoreTile({
   label,
   correct,
   total,
