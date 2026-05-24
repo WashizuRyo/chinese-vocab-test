@@ -369,6 +369,19 @@ describe("LessonRunner", () => {
       });
     });
 
+    test("クイズ中にモード選択へ戻れること", () => {
+      withDeterministicShuffle(() => {
+        render(<LessonRunner lesson={quizLesson} />);
+
+        startQuiz();
+        fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+
+        expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
+        expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
+        expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
+      });
+    });
+
     test("最終問題後にクイズ結果を表示できること", () => {
       withDeterministicShuffle(() => {
         render(<LessonRunner lesson={quizLesson} />);
