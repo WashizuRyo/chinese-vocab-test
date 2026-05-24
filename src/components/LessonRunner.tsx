@@ -354,7 +354,7 @@ function LearningView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.4} />
+        <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.48} />
       </section>
 
       <div className="handwriting-practice fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
