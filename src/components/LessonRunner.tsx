@@ -342,7 +342,7 @@ function LearningView({
 
       <ProgressBar current={current} total={total} />
 
-      <section className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-5 shadow-sm">
+      <section className="handwriting-practice mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-5 shadow-sm">
         <div className="flex items-end justify-between gap-4">
           <RubyHanzi word={word} />
           <WordPlayer word={word} />
@@ -353,7 +353,7 @@ function LearningView({
         </div>
       </section>
 
-      <section className="mt-4 flex flex-col gap-4">
+      <section className="handwriting-practice mt-4 flex flex-col gap-4">
         <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
       </section>
 
