@@ -57,7 +57,7 @@ export function AnswerReveal({
   isLast,
 }: Props) {
   return (
-    <div className="handwriting-practice flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
         <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">日本語訳</div>
         <div className="mt-1 text-base text-zinc-800">{word.japanese}</div>
