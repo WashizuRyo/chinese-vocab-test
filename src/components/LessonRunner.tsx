@@ -9,6 +9,7 @@ import { QuizRunner } from "@/components/QuizRunner";
 import { TestRunner } from "@/components/TestRunner";
 import { WordPlayer } from "@/components/WordPlayer";
 import type { Lesson, Word } from "@/lib/types";
+import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/wordAudio";
 
 type LessonRunnerState =
@@ -17,10 +18,6 @@ type LessonRunnerState =
   | { status: "learnComplete" }
   | { status: "test"; initialWords?: Word[] }
   | { status: "quiz" };
-
-function wordKey(word: Word): string {
-  return `${word.hanzi}\u0000${word.pinyin}`;
-}
 
 function getStudyHanziClassName(hanzi: string): string {
   const length = Array.from(hanzi).length;

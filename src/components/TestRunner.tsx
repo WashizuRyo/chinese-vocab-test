@@ -7,15 +7,17 @@ import type { HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
+import { WordSelection } from "@/components/WordSelection";
 import { number } from "@/data/lessons/number";
 import { shuffle } from "@/lib/quiz";
 import type { Lesson, Word, WordResult } from "@/lib/types";
+import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/wordAudio";
 
 interface TestSettings {
-  count: number;
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
+  selectedWordKeys: string[];
 }
 
 type TestRunnerState =
@@ -50,10 +52,9 @@ function selectWords(
   settings: TestSettings,
   includeNumberQuestions = settings.numberQuestionsOn,
 ) {
-  const selectedLessonWords = (settings.shuffleOn ? shuffle(words) : words).slice(
-    0,
-    settings.count,
-  );
+  const selectedWordKeys = new Set(settings.selectedWordKeys);
+  const selectedWords = words.filter((word) => selectedWordKeys.has(wordKey(word)));
+  const selectedLessonWords = settings.shuffleOn ? shuffle(selectedWords) : selectedWords;
   const selectedNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
   return [...selectedLessonWords, ...selectedNumberWords];
 }
@@ -70,9 +71,9 @@ export function TestRunner({
   const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
   const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
   const initialSettings = {
-    count: lesson.words.length,
     shuffleOn: false,
     numberQuestionsOn: false,
+    selectedWordKeys: lesson.words.map(wordKey),
   };
   const [state, setState] = useState<TestRunnerState>(() => {
     if (initialWords) {
@@ -260,9 +261,8 @@ function TestSetupView({
   onStart: () => void;
   onBack: () => void;
 }) {
-  const max = lesson.words.length;
-  const { count, shuffleOn, numberQuestionsOn } = settings;
-  const selectedWordCount = Math.min(count, max);
+  const { shuffleOn, numberQuestionsOn, selectedWordKeys } = settings;
+  const selectedWordCount = selectedWordKeys.length;
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -275,25 +275,11 @@ function TestSetupView({
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
       <p className="mt-1 text-sm text-zinc-500">出題設定</p>
 
-      <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
-        <label htmlFor="count" className="text-sm font-medium text-zinc-700">
-          単語数 <span className="text-zinc-400">(1 - {max})</span>
-        </label>
-        <div className="mt-2 flex items-center gap-3">
-          <input
-            id="count"
-            type="range"
-            min={1}
-            max={max}
-            value={Math.min(count, max)}
-            onChange={(e) => onChangeSettings({ count: Number(e.target.value) })}
-            className="flex-1"
-          />
-          <span className="w-10 text-right text-base font-semibold tabular-nums">
-            {selectedWordCount}
-          </span>
-        </div>
-      </section>
+      <WordSelection
+        words={lesson.words}
+        selectedWordKeys={selectedWordKeys}
+        onChange={(nextKeys) => onChangeSettings({ selectedWordKeys: nextKeys })}
+      />
 
       <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
         <label className="flex items-center justify-between">
@@ -326,7 +312,8 @@ function TestSetupView({
       <button
         type="button"
         onClick={onStart}
-        className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+        disabled={selectedWordCount === 0}
+        className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         スタート
       </button>

@@ -178,7 +178,7 @@ describe("LessonRunner", () => {
       fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
 
       expect(screen.getByText("クイズ設定")).toBeVisible();
-      expect(screen.getByText("単語数", { exact: false })).toBeVisible();
+      expect(screen.getByText("出題する単語")).toBeVisible();
     });
 
     test("クイズ設定で数字追加を選べること", () => {
@@ -188,6 +188,18 @@ describe("LessonRunner", () => {
       fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
 
       expect(screen.getByRole("checkbox", { name: /最後に数字を追加/ })).toBeChecked();
+    });
+
+    test("クイズ設定で出題する単語を選べること", () => {
+      render(<LessonRunner lesson={quizLesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "我" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "是" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "吗" }));
+      fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
+
+      expect(screen.getByText("1 / 2")).toBeVisible();
     });
   });
 
@@ -322,11 +334,22 @@ describe("LessonRunner", () => {
       render(<LessonRunner lesson={lesson} />);
 
       fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
-      fireEvent.change(screen.getByLabelText(/単語数/), { target: { value: "1" } });
+      fireEvent.click(screen.getByRole("checkbox", { name: "我" }));
       fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
       fireEvent.click(screen.getByRole("button", { name: "スタート" }));
 
       expect(screen.getByText("1 / 3")).toBeVisible();
+      expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+    });
+
+    test("テスト設定で出題する単語を選べること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "我" }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      expect(screen.getByText("1 / 1")).toBeVisible();
       expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
     });
   });
