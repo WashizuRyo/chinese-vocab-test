@@ -19,11 +19,9 @@ interface TestSettings {
   numberQuestionsOn: boolean;
 }
 
-type SetupMode = "quiz" | "test";
-
 type LessonRunnerState =
   | { status: "mode" }
-  | { status: "setup"; mode: SetupMode; settings: TestSettings }
+  | { status: "setup"; settings: TestSettings }
   | { status: "learn" }
   | { status: "learnComplete" }
   | { status: "test"; initialWords?: Word[] }
@@ -178,7 +176,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (firstQuestion) wordAudio.play(firstQuestion.word);
   };
 
-  const handleStart = () => {
+  const handleStartQuiz = () => {
     if (state.status !== "setup") return;
     startQuizWithSettings(lesson.words, state.settings);
   };
@@ -197,7 +195,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const handleOpenQuizSetup = () => {
     clearCanvases();
-    setState({ status: "setup", mode: "quiz", settings: initialSettings });
+    setState({ status: "setup", settings: initialSettings });
   };
 
   const handleQuizSelect = (option: string) => {
@@ -253,10 +251,9 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <SetupView
           lesson={lesson}
-          mode={state.mode}
           settings={state.settings}
           onChangeSettings={handleChangeSettings}
-          onStart={handleStart}
+          onStart={handleStartQuiz}
           onBack={() => setState({ status: "mode" })}
         />
       );
@@ -495,14 +492,12 @@ function QuizModePreview() {
 
 function SetupView({
   lesson,
-  mode,
   settings,
   onChangeSettings,
   onStart,
   onBack,
 }: {
   lesson: Lesson;
-  mode: SetupMode;
   settings: TestSettings;
   onChangeSettings: (settings: Partial<TestSettings>) => void;
   onStart: () => void;
@@ -510,8 +505,6 @@ function SetupView({
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
-  const modeLabel = mode === "quiz" ? "クイズ設定" : "出題設定";
-  const startLabel = mode === "quiz" ? "クイズを始める" : "スタート";
   const selectedWordCount = Math.min(count, max);
 
   return (
@@ -523,7 +516,7 @@ function SetupView({
       </div>
 
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">{modeLabel}</p>
+      <p className="mt-1 text-sm text-zinc-500">クイズ設定</p>
 
       <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
         <label htmlFor="count" className="text-sm font-medium text-zinc-700">
@@ -578,7 +571,7 @@ function SetupView({
         onClick={onStart}
         className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
       >
-        {startLabel}
+        クイズを始める
       </button>
     </main>
   );
