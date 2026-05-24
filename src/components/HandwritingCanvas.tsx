@@ -1,7 +1,7 @@
 "use client";
 
 import type { Ref } from "react";
-import { useCallback, useImperativeHandle, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
 
 export interface HandwritingCanvasHandle {
   clear: () => void;
@@ -108,6 +108,24 @@ export function HandwritingCanvas({
     };
   }, [resizeCanvases]);
 
+  useEffect(() => {
+    const canvas = inkCanvasRef.current;
+    if (!canvas) return;
+
+    const preventTouchDefault = (event: TouchEvent) => {
+      if (event.cancelable) event.preventDefault();
+    };
+
+    canvas.addEventListener("touchstart", preventTouchDefault, { passive: false });
+    canvas.addEventListener("touchmove", preventTouchDefault, { passive: false });
+    canvas.addEventListener("touchend", preventTouchDefault, { passive: false });
+    return () => {
+      canvas.removeEventListener("touchstart", preventTouchDefault);
+      canvas.removeEventListener("touchmove", preventTouchDefault);
+      canvas.removeEventListener("touchend", preventTouchDefault);
+    };
+  }, []);
+
   const getCtx = () => inkCanvasRef.current?.getContext("2d") ?? null;
 
   const eventToPoint = (e: PointerEvent | React.PointerEvent): Point | null => {
@@ -201,11 +219,16 @@ export function HandwritingCanvas({
       className={`relative w-full select-none ${className ?? ""}`}
       style={{ touchAction: "none" }}
     >
-      <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
+      <canvas
+        ref={gridCanvasRef}
+        className="disable-text-selection block w-full h-auto bg-white"
+        tabIndex={-1}
+      />
       <canvas
         ref={inkCanvasRef}
         aria-label={ariaLabel}
-        className="absolute inset-0 block w-full h-full"
+        className="disable-text-selection absolute inset-0 block w-full h-full"
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

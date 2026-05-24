@@ -12,7 +12,7 @@ export function CanvasBlock({
   aspectRatio: number;
 }) {
   return (
-    <div>
+    <div className="disable-text-selection">
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</span>
         <button

@@ -27,10 +27,11 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-.handwriting-practice {
+.disable-text-selection {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-user-drag: none;
 }
 
 input,
