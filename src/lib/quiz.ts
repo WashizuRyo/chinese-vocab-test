@@ -1,7 +1,7 @@
 import { number } from "@/data/lessons/number";
 import type { Question, Quiz, Word } from "@/lib/types";
 
-function shuffle<T>(items: T[]): T[] {
+export function shuffle<T>(items: T[]): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

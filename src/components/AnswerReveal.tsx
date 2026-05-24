@@ -4,8 +4,8 @@ import type { Word } from "@/lib/types";
 
 interface Props {
   word: Word;
-  hanziImage: string | null;
-  pinyinImage: string | null;
+  hanziImage: string;
+  pinyinImage: string;
   hanziCorrect: boolean;
   pinyinCorrect: boolean;
   onJudgeHanzi: (correct: boolean) => void;
@@ -71,17 +71,15 @@ export function AnswerReveal({
           </div>
           <JudgeButtons value={hanziCorrect} onChange={onJudgeHanzi} />
         </div>
-        {hanziImage ? (
-          <div>
-            <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
-            {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
-            <img
-              src={hanziImage}
-              alt="あなたが書いた漢字"
-              className="w-full rounded-lg border border-zinc-200"
-            />
-          </div>
-        ) : null}
+        <div>
+          <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
+          {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
+          <img
+            src={hanziImage}
+            alt="あなたが書いた漢字"
+            className="w-full rounded-lg border border-zinc-200"
+          />
+        </div>
       </div>
 
       <div className="rounded-2xl border border-zinc-200 bg-white p-4">
@@ -94,17 +92,15 @@ export function AnswerReveal({
           </div>
           <JudgeButtons value={pinyinCorrect} onChange={onJudgePinyin} />
         </div>
-        {pinyinImage ? (
-          <div>
-            <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
-            {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
-            <img
-              src={pinyinImage}
-              alt="あなたが書いたピンイン"
-              className="w-full rounded-lg border border-zinc-200"
-            />
-          </div>
-        ) : null}
+        <div>
+          <div className="mb-1 text-xs text-zinc-500">あなたの解答</div>
+          {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
+          <img
+            src={pinyinImage}
+            alt="あなたが書いたピンイン"
+            className="w-full rounded-lg border border-zinc-200"
+          />
+        </div>
       </div>
 
       <button
