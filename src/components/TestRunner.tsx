@@ -333,7 +333,7 @@ function TestView({
   pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
 }) {
   return (
-    <div className="handwriting-practice mt-4 flex flex-col gap-4">
+    <div className="disable-text-selection mt-4 flex flex-col gap-4">
       <div className="flex justify-center pt-1 pb-2">
         <WordPlayer word={word} />
       </div>

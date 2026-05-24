@@ -221,13 +221,13 @@ export function HandwritingCanvas({
     >
       <canvas
         ref={gridCanvasRef}
-        className="handwriting-practice block w-full h-auto bg-white"
+        className="disable-text-selection block w-full h-auto bg-white"
         tabIndex={-1}
       />
       <canvas
         ref={inkCanvasRef}
         aria-label={ariaLabel}
-        className="handwriting-practice absolute inset-0 block w-full h-full"
+        className="disable-text-selection absolute inset-0 block w-full h-full"
         onContextMenu={(e) => e.preventDefault()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
