@@ -338,10 +338,10 @@ function TestView({
         <WordPlayer word={word} />
       </div>
 
-      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
+      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.4} />
 
       <div className="mt-10">
-        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} aspectRatio={0.32} />
+        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} aspectRatio={0.4} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
