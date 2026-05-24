@@ -1,7 +1,7 @@
 "use client";
 
 import type { Ref } from "react";
-import { useCallback, useImperativeHandle, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
 
 export interface HandwritingCanvasHandle {
   clear: () => void;
@@ -107,6 +107,24 @@ export function HandwritingCanvas({
       window.removeEventListener("orientationchange", resizeCanvases);
     };
   }, [resizeCanvases]);
+
+  useEffect(() => {
+    const canvas = inkCanvasRef.current;
+    if (!canvas) return;
+
+    const preventTouchDefault = (event: TouchEvent) => {
+      if (event.cancelable) event.preventDefault();
+    };
+
+    canvas.addEventListener("touchstart", preventTouchDefault, { passive: false });
+    canvas.addEventListener("touchmove", preventTouchDefault, { passive: false });
+    canvas.addEventListener("touchend", preventTouchDefault, { passive: false });
+    return () => {
+      canvas.removeEventListener("touchstart", preventTouchDefault);
+      canvas.removeEventListener("touchmove", preventTouchDefault);
+      canvas.removeEventListener("touchend", preventTouchDefault);
+    };
+  }, []);
 
   const getCtx = () => inkCanvasRef.current?.getContext("2d") ?? null;
 
