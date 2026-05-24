@@ -317,6 +317,18 @@ describe("LessonRunner", () => {
       expect(screen.getByText("1 / 2")).toBeVisible();
       expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
     });
+
+    test("出題設定をテスト開始時の問題数に反映できること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.change(screen.getByLabelText(/単語数/), { target: { value: "1" } });
+      fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      expect(screen.getByText("1 / 3")).toBeVisible();
+      expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+    });
   });
 
   describe("テスト画面", () => {
@@ -388,10 +400,12 @@ describe("LessonRunner", () => {
 
         startQuiz();
         answerAllQuestions(3, quizLesson.words.length * 2);
+        const playCountBeforeStartingTest = playAudio.mock.calls.length;
         fireEvent.click(screen.getByRole("button", { name: "本番形式テストへ進む" }));
 
         expect(screen.getByText("1 / 4")).toBeVisible();
         expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+        expect(playAudio).toHaveBeenCalledTimes(playCountBeforeStartingTest + 1);
       });
     });
   });

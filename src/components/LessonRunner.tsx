@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { AnswerReveal } from "@/components/AnswerReveal";
-import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
+import { CanvasBlock } from "@/components/CanvasBlock";
+import type { HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
 import { ProgressBar } from "@/components/ProgressBar";
-import { ResultSummary } from "@/components/ResultSummary";
+import { TestRunner } from "@/components/TestRunner";
 import { WordPlayer } from "@/components/WordPlayer";
 import { number } from "@/data/lessons/number";
-import { createQuiz } from "@/lib/quiz";
+import { createQuiz, shuffle } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
-import type { Lesson, Question, QuizResult, Word, WordResult } from "@/lib/types";
+import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
 import { wordAudio } from "@/lib/wordAudio";
 
 interface TestSettings {
@@ -19,13 +19,12 @@ interface TestSettings {
   numberQuestionsOn: boolean;
 }
 
-type SetupMode = "quiz" | "test";
-
 type LessonRunnerState =
   | { status: "mode" }
-  | { status: "setup"; mode: SetupMode; settings: TestSettings }
+  | { status: "setup"; settings: TestSettings }
   | { status: "learn" }
   | { status: "learnComplete" }
+  | { status: "test"; initialWords?: Word[] }
   | {
       status: "quiz";
       lessonWords: Word[];
@@ -40,36 +39,7 @@ type LessonRunnerState =
       lessonWords: Word[];
       numberWords: Word[];
       results: QuizResult[];
-    }
-  | {
-      status: "test";
-      results: WordResult[];
-      index: number;
-    }
-  | {
-      status: "answer";
-      results: WordResult[];
-      index: number;
-      hanziImage: string | null;
-      pinyinImage: string | null;
-    }
-  | {
-      status: "result";
-      results: WordResult[];
     };
-
-function shuffle<T>(arr: T[]): T[] {
-  const out = [...arr];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const item = out[i];
-    const swap = out[j];
-    if (item === undefined || swap === undefined) continue;
-    out[i] = swap;
-    out[j] = item;
-  }
-  return out;
-}
 
 function wordKey(word: Word): string {
   return `${word.hanzi}\u0000${word.pinyin}`;
@@ -162,27 +132,6 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     pinyinCanvasRef.current?.clear();
   };
 
-  const selectWords = (
-    words: Word[],
-    settings: TestSettings,
-    includeNumberQuestions = settings.numberQuestionsOn,
-  ) => {
-    const selectedLessonWords = (settings.shuffleOn ? shuffle(words) : words).slice(
-      0,
-      settings.count,
-    );
-    const selectedNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
-    return [...selectedLessonWords, ...selectedNumberWords];
-  };
-
-  const startWithSettings = (
-    words: Word[],
-    settings: TestSettings,
-    includeNumberQuestions = settings.numberQuestionsOn,
-  ) => {
-    startWithWords(selectWords(words, settings, includeNumberQuestions));
-  };
-
   const startQuizWithSettings = (
     words: Word[],
     settings: TestSettings,
@@ -203,21 +152,6 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       numberWords: quizNumberWords,
       questions: nextQuiz.questions,
     });
-  };
-
-  const startWithWords = (words: Word[]) => {
-    const initialResults: WordResult[] = words.map((w) => ({
-      word: w,
-      hanziCorrect: true,
-      pinyinCorrect: true,
-    }));
-    setState({
-      status: "test",
-      results: initialResults,
-      index: 0,
-    });
-    const firstWord = words[0];
-    if (firstWord) wordAudio.play(firstWord);
   };
 
   const startQuizWithQuestions = ({
@@ -242,13 +176,9 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
     if (firstQuestion) wordAudio.play(firstQuestion.word);
   };
 
-  const handleStart = () => {
+  const handleStartQuiz = () => {
     if (state.status !== "setup") return;
-    if (state.mode === "quiz") {
-      startQuizWithSettings(lesson.words, state.settings);
-      return;
-    }
-    startWithSettings(lesson.words, state.settings);
+    startQuizWithSettings(lesson.words, state.settings);
   };
 
   const handleStartLearning = () => {
@@ -260,62 +190,12 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
 
   const handleOpenTestSetup = () => {
     clearCanvases();
-    setState({ status: "setup", mode: "test", settings: initialSettings });
+    setState({ status: "test" });
   };
 
   const handleOpenQuizSetup = () => {
     clearCanvases();
-    setState({ status: "setup", mode: "quiz", settings: initialSettings });
-  };
-
-  const handleSubmit = () => {
-    if (state.status !== "test") return;
-    const h = hanziCanvasRef.current?.getDataURL() ?? null;
-    const p = pinyinCanvasRef.current?.getDataURL() ?? null;
-    setState({
-      status: "answer",
-      results: state.results,
-      index: state.index,
-      hanziImage: h,
-      pinyinImage: p,
-    });
-  };
-
-  const handleJudge = (field: "hanzi" | "pinyin", correct: boolean) => {
-    setState((prev) => {
-      if (prev.status !== "answer") return prev;
-      const next = [...prev.results];
-      const cur = next[prev.index];
-      if (!cur) return prev;
-      next[prev.index] = {
-        ...cur,
-        hanziCorrect: field === "hanzi" ? correct : cur.hanziCorrect,
-        pinyinCorrect: field === "pinyin" ? correct : cur.pinyinCorrect,
-      };
-      return {
-        ...prev,
-        results: next,
-      };
-    });
-  };
-
-  const handleNext = () => {
-    if (state.status !== "answer") return;
-    if (state.index + 1 >= state.results.length) {
-      setState({
-        status: "result",
-        results: state.results,
-      });
-      return;
-    }
-    const nextResult = state.results[state.index + 1];
-    clearCanvases();
-    setState({
-      status: "test",
-      results: state.results,
-      index: state.index + 1,
-    });
-    if (nextResult) wordAudio.play(nextResult.word);
+    setState({ status: "setup", settings: initialSettings });
   };
 
   const handleQuizSelect = (option: string) => {
@@ -371,10 +251,9 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <SetupView
           lesson={lesson}
-          mode={state.mode}
           settings={state.settings}
           onChangeSettings={handleChangeSettings}
-          onStart={handleStart}
+          onStart={handleStartQuiz}
           onBack={() => setState({ status: "mode" })}
         />
       );
@@ -398,6 +277,15 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
           onQuiz={handleOpenQuizSetup}
           onTest={handleOpenTestSetup}
           onRestartLearning={handleStartLearning}
+        />
+      );
+
+    case "test":
+      return (
+        <TestRunner
+          lesson={lesson}
+          initialWords={state.initialWords}
+          onBackToMode={() => setState({ status: "mode" })}
         />
       );
 
@@ -467,69 +355,18 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
               }).questions,
             });
           }}
-          onStartTest={() => startWithWords([...state.lessonWords, ...state.numberWords])}
+          onStartTest={() => {
+            const initialWords = [...state.lessonWords, ...state.numberWords];
+            setState({
+              status: "test",
+              initialWords,
+            });
+            const firstWord = initialWords[0];
+            if (firstWord) wordAudio.play(firstWord);
+          }}
           onBackToMode={() => setState({ status: "mode" })}
         />
       );
-
-    case "result":
-      return (
-        <ResultSummary
-          results={state.results}
-          lessonTitle={lesson.title}
-          onRetry={() => startWithWords(state.results.map((r) => r.word))}
-          onRetryWrongOnly={() => {
-            const wrongWords = state.results
-              .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
-              .map((r) => r.word);
-            if (wrongWords.length === 0) return;
-            startWithWords(wrongWords);
-          }}
-        />
-      );
-
-    case "test": {
-      const currentResult = state.results[state.index];
-      return (
-        <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
-          <ProgressBar current={state.index + 1} total={state.results.length} />
-
-          {currentResult ? (
-            <TestView
-              word={currentResult.word}
-              onSubmit={handleSubmit}
-              hanziCanvasRef={hanziCanvasRef}
-              pinyinCanvasRef={pinyinCanvasRef}
-            />
-          ) : null}
-        </main>
-      );
-    }
-
-    case "answer": {
-      const currentResult = state.results[state.index];
-      return (
-        <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
-          <ProgressBar current={state.index + 1} total={state.results.length} />
-
-          {currentResult ? (
-            <div className="mt-4">
-              <AnswerReveal
-                word={currentResult.word}
-                hanziImage={state.hanziImage}
-                pinyinImage={state.pinyinImage}
-                hanziCorrect={currentResult.hanziCorrect}
-                pinyinCorrect={currentResult.pinyinCorrect}
-                onJudgeHanzi={(c) => handleJudge("hanzi", c)}
-                onJudgePinyin={(c) => handleJudge("pinyin", c)}
-                onNext={handleNext}
-                isLast={state.index + 1 >= state.results.length}
-              />
-            </div>
-          ) : null}
-        </main>
-      );
-    }
 
     default: {
       const _exhaustiveCheck: never = state;
@@ -655,14 +492,12 @@ function QuizModePreview() {
 
 function SetupView({
   lesson,
-  mode,
   settings,
   onChangeSettings,
   onStart,
   onBack,
 }: {
   lesson: Lesson;
-  mode: SetupMode;
   settings: TestSettings;
   onChangeSettings: (settings: Partial<TestSettings>) => void;
   onStart: () => void;
@@ -670,8 +505,6 @@ function SetupView({
 }) {
   const max = lesson.words.length;
   const { count, shuffleOn, numberQuestionsOn } = settings;
-  const modeLabel = mode === "quiz" ? "クイズ設定" : "出題設定";
-  const startLabel = mode === "quiz" ? "クイズを始める" : "スタート";
   const selectedWordCount = Math.min(count, max);
 
   return (
@@ -683,7 +516,7 @@ function SetupView({
       </div>
 
       <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">{modeLabel}</p>
+      <p className="mt-1 text-sm text-zinc-500">クイズ設定</p>
 
       <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
         <label htmlFor="count" className="text-sm font-medium text-zinc-700">
@@ -738,7 +571,7 @@ function SetupView({
         onClick={onStart}
         className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
       >
-        {startLabel}
+        クイズを始める
       </button>
     </main>
   );
@@ -1169,68 +1002,6 @@ function QuizScoreTile({
         {correct}
         <span className="text-sm text-zinc-400"> / {total}</span>
       </div>
-    </div>
-  );
-}
-
-function TestView({
-  word,
-  onSubmit,
-  hanziCanvasRef,
-  pinyinCanvasRef,
-}: {
-  word: Word;
-  onSubmit: () => void;
-  hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-}) {
-  return (
-    <div className="handwriting-practice mt-4 flex flex-col gap-4">
-      <div className="flex justify-center pt-1 pb-2">
-        <WordPlayer word={word} />
-      </div>
-
-      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} aspectRatio={0.32} />
-
-      <div className="mt-10">
-        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} aspectRatio={0.32} />
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
-        <button
-          type="button"
-          onClick={onSubmit}
-          className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
-        >
-          答え合わせ
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function CanvasBlock({
-  label,
-  canvasRef,
-  aspectRatio,
-}: {
-  label: string;
-  canvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  aspectRatio: number;
-}) {
-  return (
-    <div>
-      <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</span>
-        <button
-          type="button"
-          onClick={() => canvasRef.current?.clear()}
-          className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50"
-        >
-          クリア
-        </button>
-      </div>
-      <HandwritingCanvas ref={canvasRef} aspectRatio={aspectRatio} ariaLabel={`${label}の手書き`} />
     </div>
   );
 }
