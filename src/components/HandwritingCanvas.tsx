@@ -219,11 +219,15 @@ export function HandwritingCanvas({
       className={`relative w-full select-none ${className ?? ""}`}
       style={{ touchAction: "none" }}
     >
-      <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
+      <canvas
+        ref={gridCanvasRef}
+        className="handwriting-practice block w-full h-auto bg-white"
+        tabIndex={-1}
+      />
       <canvas
         ref={inkCanvasRef}
         aria-label={ariaLabel}
-        className="absolute inset-0 block w-full h-full"
+        className="handwriting-practice absolute inset-0 block w-full h-full"
         onContextMenu={(e) => e.preventDefault()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
