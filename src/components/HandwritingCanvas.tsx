@@ -206,6 +206,7 @@ export function HandwritingCanvas({
         ref={inkCanvasRef}
         aria-label={ariaLabel}
         className="absolute inset-0 block w-full h-full"
+        onContextMenu={(e) => e.preventDefault()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
