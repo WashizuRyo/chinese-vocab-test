@@ -330,7 +330,7 @@ function LearningView({
   };
 
   return (
-    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+    <main className="handwriting-practice flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
         <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
           ← モード選択
