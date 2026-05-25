@@ -14,7 +14,9 @@ describe("quiz", () => {
   test("課の単語ごとに漢字問題とピンイン問題を作ること", () => {
     const generatedQuiz = createQuiz({
       lessonWords: words,
+      lessonChoiceSourceWords: words,
       numberWords: [],
+      numberChoiceSourceWords: number.words,
     });
 
     expect(generatedQuiz.questions).toHaveLength(8);
@@ -39,7 +41,9 @@ describe("quiz", () => {
   test("数字単語を渡すと課の単語のあとに数字問題を追加すること", () => {
     const generatedQuiz = createQuiz({
       lessonWords: words.slice(0, 1),
+      lessonChoiceSourceWords: words,
       numberWords: number.words.slice(0, 2),
+      numberChoiceSourceWords: number.words,
     });
 
     expect(generatedQuiz.questions).toHaveLength(6);
