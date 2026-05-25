@@ -4,8 +4,8 @@ import { useState } from "react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { number } from "@/data/lessons/number";
-import { createQuiz, shuffle } from "@/lib/quiz";
+import { createConfiguredWords } from "@/lib/create-configured-words";
+import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
 import { wordKey } from "@/lib/word";
@@ -14,7 +14,7 @@ import { wordAudio } from "@/lib/wordAudio";
 interface QuizSettings {
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
-  selectedWordKeys: string[];
+  selectedWords: Word[];
 }
 
 type QuizRunnerState =
@@ -60,7 +60,7 @@ export function QuizRunner({
   const initialSettings = {
     shuffleOn: false,
     numberQuestionsOn: false,
-    selectedWordKeys: lesson.words.map(wordKey),
+    selectedWords: lesson.words,
   };
   const [state, setState] = useState<QuizRunnerState>({
     status: "setup",
@@ -88,26 +88,19 @@ export function QuizRunner({
     if (firstQuestion) wordAudio.play(firstQuestion.word);
   };
 
-  const startWithSettings = (
-    words: Word[],
-    settings: QuizSettings,
-    includeNumberQuestions = settings.numberQuestionsOn,
-  ) => {
-    const selectedWordKeys = new Set(settings.selectedWordKeys);
-    const selectedWords = words.filter((word) => selectedWordKeys.has(wordKey(word)));
-    const quizLessonWords = settings.shuffleOn ? shuffle(selectedWords) : selectedWords;
-    const quizNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
+  const startWithSettings = (settings: QuizSettings) => {
+    const selection = createConfiguredWords({
+      selectedWords: settings.selectedWords,
+      shuffleOn: settings.shuffleOn,
+      numberQuestionsOn: settings.numberQuestionsOn,
+    });
     const nextQuiz = createQuiz({
-      lessonWords: quizLessonWords,
-      numberWords: quizNumberWords,
-      settings: {
-        wordCount: quizLessonWords.length,
-        shuffleOn: false,
-      },
+      lessonWords: selection.lessonWords,
+      numberWords: selection.numberWords,
     });
     startWithQuestions({
-      lessonWords: quizLessonWords,
-      numberWords: quizNumberWords,
+      lessonWords: selection.lessonWords,
+      numberWords: selection.numberWords,
       questions: nextQuiz.questions,
     });
   };
@@ -127,7 +120,7 @@ export function QuizRunner({
 
   const handleStart = () => {
     if (state.status !== "setup") return;
-    startWithSettings(lesson.words, state.settings);
+    startWithSettings(state.settings);
   };
 
   const handleSelect = (option: string) => {
@@ -209,10 +202,6 @@ export function QuizRunner({
               questions: createQuiz({
                 lessonWords: state.lessonWords,
                 numberWords: state.numberWords,
-                settings: {
-                  wordCount: state.lessonWords.length,
-                  shuffleOn: false,
-                },
               }).questions,
             })
           }
@@ -231,10 +220,6 @@ export function QuizRunner({
               questions: createQuiz({
                 lessonWords: wrongLessonWords,
                 numberWords: wrongNumberWords,
-                settings: {
-                  wordCount: wrongLessonWords.length,
-                  shuffleOn: false,
-                },
               }).questions,
             });
           }}
@@ -266,8 +251,8 @@ function QuizSetupView({
   onStart: () => void;
   onBack: () => void;
 }) {
-  const { shuffleOn, numberQuestionsOn, selectedWordKeys } = settings;
-  const selectedWordCount = selectedWordKeys.length;
+  const { shuffleOn, numberQuestionsOn, selectedWords } = settings;
+  const selectedWordCount = selectedWords.length;
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -282,8 +267,8 @@ function QuizSetupView({
 
       <WordSelection
         words={lesson.words}
-        selectedWordKeys={selectedWordKeys}
-        onChange={(nextKeys) => onChangeSettings({ selectedWordKeys: nextKeys })}
+        selectedWords={selectedWords}
+        onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
       <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">

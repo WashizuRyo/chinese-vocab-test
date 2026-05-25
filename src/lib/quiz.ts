@@ -1,18 +1,6 @@
 import { number } from "@/data/lessons/number";
+import { shuffle } from "@/lib/shuffle";
 import type { Question, Quiz, Word } from "@/lib/types";
-
-export function shuffle<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const current = out[i];
-    const swap = out[j];
-    if (current === undefined || swap === undefined) continue;
-    out[i] = swap;
-    out[j] = current;
-  }
-  return out;
-}
 
 function createChoices({
   target,
@@ -54,23 +42,13 @@ function createQuestions({ words, source }: { words: Word[]; source: Word[] }): 
 export function createQuiz({
   lessonWords,
   numberWords,
-  settings,
 }: {
   lessonWords: Word[];
   numberWords: Word[];
-  settings: {
-    wordCount: number;
-    shuffleOn: boolean;
-  };
 }): Quiz {
-  const lessonTargets = (settings.shuffleOn ? shuffle(lessonWords) : lessonWords).slice(
-    0,
-    settings.wordCount,
-  );
-
   return {
     questions: [
-      ...createQuestions({ words: lessonTargets, source: lessonWords }),
+      ...createQuestions({ words: lessonWords, source: lessonWords }),
       ...createQuestions({ words: numberWords, source: number.words }),
     ],
   };

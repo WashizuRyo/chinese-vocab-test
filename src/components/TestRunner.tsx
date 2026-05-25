@@ -8,16 +8,14 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { number } from "@/data/lessons/number";
-import { shuffle } from "@/lib/quiz";
+import { createConfiguredWords } from "@/lib/create-configured-words";
 import type { Lesson, Word, WordResult } from "@/lib/types";
-import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/wordAudio";
 
 interface TestSettings {
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
-  selectedWordKeys: string[];
+  selectedWords: Word[];
 }
 
 type TestRunnerState =
@@ -47,18 +45,6 @@ function createInitialResults(words: Word[]): WordResult[] {
   }));
 }
 
-function selectWords(
-  words: Word[],
-  settings: TestSettings,
-  includeNumberQuestions = settings.numberQuestionsOn,
-) {
-  const selectedWordKeys = new Set(settings.selectedWordKeys);
-  const selectedWords = words.filter((word) => selectedWordKeys.has(wordKey(word)));
-  const selectedLessonWords = settings.shuffleOn ? shuffle(selectedWords) : selectedWords;
-  const selectedNumberWords = includeNumberQuestions ? shuffle(number.words).slice(0, 2) : [];
-  return [...selectedLessonWords, ...selectedNumberWords];
-}
-
 export function TestRunner({
   lesson,
   initialWords,
@@ -73,7 +59,7 @@ export function TestRunner({
   const initialSettings = {
     shuffleOn: false,
     numberQuestionsOn: false,
-    selectedWordKeys: lesson.words.map(wordKey),
+    selectedWords: lesson.words,
   };
   const [state, setState] = useState<TestRunnerState>(() => {
     if (initialWords) {
@@ -116,7 +102,12 @@ export function TestRunner({
 
   const handleStart = () => {
     if (state.status !== "setup") return;
-    startWithWords(selectWords(lesson.words, state.settings));
+    const selection = createConfiguredWords({
+      selectedWords: state.settings.selectedWords,
+      shuffleOn: state.settings.shuffleOn,
+      numberQuestionsOn: state.settings.numberQuestionsOn,
+    });
+    startWithWords(selection.words);
   };
 
   const handleSubmit = () => {
@@ -261,8 +252,8 @@ function TestSetupView({
   onStart: () => void;
   onBack: () => void;
 }) {
-  const { shuffleOn, numberQuestionsOn, selectedWordKeys } = settings;
-  const selectedWordCount = selectedWordKeys.length;
+  const { shuffleOn, numberQuestionsOn, selectedWords } = settings;
+  const selectedWordCount = selectedWords.length;
 
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
@@ -277,8 +268,8 @@ function TestSetupView({
 
       <WordSelection
         words={lesson.words}
-        selectedWordKeys={selectedWordKeys}
-        onChange={(nextKeys) => onChangeSettings({ selectedWordKeys: nextKeys })}
+        selectedWords={selectedWords}
+        onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
       <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">

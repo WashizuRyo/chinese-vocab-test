@@ -26,6 +26,12 @@
 - Canvas API for handwriting input
 - Cookie-based password protection via `APP_PASSWORD`
 
+## Coding Conventions
+
+- 新規ファイル名は kebab-case にする（例: `create-configured-words.ts`）。
+- React Component 名は PascalCase にする（例: `LessonRunner`）。
+- 変数名・関数名は camelCase にする（例: `createConfiguredWords`）。
+
 ## Common Commands
 
 - `pnpm install` - 依存関係をインストール
