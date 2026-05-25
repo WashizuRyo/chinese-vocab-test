@@ -1,16 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AnswerReveal } from "@/components/AnswerReveal";
-import { CanvasBlock } from "@/components/CanvasBlock";
-import type { HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
-import { ProgressBar } from "@/components/ProgressBar";
-import { ResultSummary } from "@/components/ResultSummary";
-import { WordPlayer } from "@/components/WordPlayer";
-import { WordSelection } from "@/components/WordSelection";
+import { AnswerReveal } from "@/components/answer-reveal";
+import { CanvasBlock } from "@/components/canvas-block";
+import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
+import { ProgressBar } from "@/components/progress-bar";
+import { ResultSummary } from "@/components/result-summary";
+import { WordPlayer } from "@/components/word-player";
+import { WordSelection } from "@/components/word-selection";
 import { createConfiguredWords } from "@/lib/create-configured-words";
 import type { Lesson, Word, WordResult } from "@/lib/types";
-import { wordAudio } from "@/lib/wordAudio";
+import { wordAudio } from "@/lib/word-audio";
 
 interface TestSettings {
   shuffleOn: boolean;

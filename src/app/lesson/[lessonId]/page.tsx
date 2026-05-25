@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { LessonRunner } from "@/components/LessonRunner";
+import { LessonRunner } from "@/components/lesson-runner";
 import { getLesson } from "@/data/lessons";
 
 export default async function LessonPage(props: PageProps<"/lesson/[lessonId]">) {

@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { LessonRunner } from "@/components/LessonRunner";
+import { LessonRunner } from "@/components/lesson-runner";
 import type { Lesson } from "@/lib/types";
 
 vi.mock("@/lib/sound", () => ({

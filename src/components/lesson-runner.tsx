@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LearnRunner } from "@/components/LearnRunner";
-import { QuizRunner } from "@/components/QuizRunner";
-import { TestRunner } from "@/components/TestRunner";
+import { LearnRunner } from "@/components/learn-runner";
+import { QuizRunner } from "@/components/quiz-runner";
+import { TestRunner } from "@/components/test-runner";
 import type { Lesson, Word } from "@/lib/types";
-import { wordAudio } from "@/lib/wordAudio";
+import { wordAudio } from "@/lib/word-audio";
 
 type LessonRunnerState =
   | { status: "mode" }

@@ -1,6 +1,6 @@
 "use client";
 
-import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
+import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 
 export function CanvasBlock({
   label,

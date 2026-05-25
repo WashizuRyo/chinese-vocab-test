@@ -1,4 +1,4 @@
-import { LessonCard } from "@/components/LessonCard";
+import { LessonCard } from "@/components/lesson-card";
 import { lessons } from "@/data/lessons";
 
 export default function Home() {

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ProgressBar } from "@/components/ProgressBar";
-import { WordPlayer } from "@/components/WordPlayer";
-import { WordSelection } from "@/components/WordSelection";
+import { ProgressBar } from "@/components/progress-bar";
+import { WordPlayer } from "@/components/word-player";
+import { WordSelection } from "@/components/word-selection";
 import { createConfiguredWords } from "@/lib/create-configured-words";
 import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
 import { wordKey } from "@/lib/word";
-import { wordAudio } from "@/lib/wordAudio";
+import { wordAudio } from "@/lib/word-audio";
 
 interface QuizSettings {
   shuffleOn: boolean;

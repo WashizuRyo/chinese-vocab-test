@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { CanvasBlock } from "@/components/CanvasBlock";
-import type { HandwritingCanvasHandle } from "@/components/HandwritingCanvas";
-import { ProgressBar } from "@/components/ProgressBar";
-import { WordPlayer } from "@/components/WordPlayer";
+import { CanvasBlock } from "@/components/canvas-block";
+import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
+import { ProgressBar } from "@/components/progress-bar";
+import { WordPlayer } from "@/components/word-player";
 import type { Lesson, Word } from "@/lib/types";
 import { wordKey } from "@/lib/word";
-import { wordAudio } from "@/lib/wordAudio";
+import { wordAudio } from "@/lib/word-audio";
 
 type LearnRunnerState =
   | { status: "learn"; index: number }
