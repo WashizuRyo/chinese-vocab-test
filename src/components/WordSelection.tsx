@@ -5,21 +5,20 @@ import { wordKey } from "@/lib/word";
 
 export function WordSelection({
   words,
-  selectedWordKeys,
+  selectedWords,
   onChange,
 }: {
   words: Word[];
-  selectedWordKeys: string[];
-  onChange: (selectedWordKeys: string[]) => void;
+  selectedWords: Word[];
+  onChange: (selectedWords: Word[]) => void;
 }) {
-  const selectedWordKeySet = new Set(selectedWordKeys);
+  const isSameWord = (a: Word, b: Word) => a.hanzi === b.hanzi && a.pinyin === b.pinyin;
 
   const handleToggleWord = (word: Word, checked: boolean) => {
-    const key = wordKey(word);
-    const nextKeys = checked
-      ? [...selectedWordKeys, key]
-      : selectedWordKeys.filter((selectedKey) => selectedKey !== key);
-    onChange(nextKeys);
+    const nextWords = checked
+      ? [...selectedWords, word]
+      : selectedWords.filter((selectedWord) => !isSameWord(selectedWord, word));
+    onChange(nextWords);
   };
 
   return (
@@ -27,7 +26,7 @@ export function WordSelection({
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-medium text-zinc-700">出題する単語</h2>
         <span className="text-sm font-semibold tabular-nums text-zinc-900">
-          {selectedWordKeys.length} / {words.length}
+          {selectedWords.length} / {words.length}
         </span>
       </div>
       <div className="mt-3 grid grid-cols-1 gap-2">
@@ -45,7 +44,10 @@ export function WordSelection({
             <input
               type="checkbox"
               aria-label={word.hanzi}
-              checked={selectedWordKeySet.has(wordKey(word))}
+              checked={selectedWords.some(
+                (selectedWord) =>
+                  selectedWord.hanzi === word.hanzi && selectedWord.pinyin === word.pinyin,
+              )}
               onChange={(e) => handleToggleWord(word, e.target.checked)}
               className="h-5 w-5 shrink-0"
             />
