@@ -42,23 +42,13 @@ function createQuestions({ words, source }: { words: Word[]; source: Word[] }): 
 export function createQuiz({
   lessonWords,
   numberWords,
-  settings,
 }: {
   lessonWords: Word[];
   numberWords: Word[];
-  settings: {
-    wordCount: number;
-    shuffleOn: boolean;
-  };
 }): Quiz {
-  const lessonTargets = (settings.shuffleOn ? shuffle(lessonWords) : lessonWords).slice(
-    0,
-    settings.wordCount,
-  );
-
   return {
     questions: [
-      ...createQuestions({ words: lessonTargets, source: lessonWords }),
+      ...createQuestions({ words: lessonWords, source: lessonWords }),
       ...createQuestions({ words: numberWords, source: number.words }),
     ],
   };

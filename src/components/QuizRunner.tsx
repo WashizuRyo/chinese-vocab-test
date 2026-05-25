@@ -97,10 +97,6 @@ export function QuizRunner({
     const nextQuiz = createQuiz({
       lessonWords: selection.lessonWords,
       numberWords: selection.numberWords,
-      settings: {
-        wordCount: selection.lessonWords.length,
-        shuffleOn: false,
-      },
     });
     startWithQuestions({
       lessonWords: selection.lessonWords,
@@ -206,10 +202,6 @@ export function QuizRunner({
               questions: createQuiz({
                 lessonWords: state.lessonWords,
                 numberWords: state.numberWords,
-                settings: {
-                  wordCount: state.lessonWords.length,
-                  shuffleOn: false,
-                },
               }).questions,
             })
           }
@@ -228,10 +220,6 @@ export function QuizRunner({
               questions: createQuiz({
                 lessonWords: wrongLessonWords,
                 numberWords: wrongNumberWords,
-                settings: {
-                  wordCount: wrongLessonWords.length,
-                  shuffleOn: false,
-                },
               }).questions,
             });
           }}

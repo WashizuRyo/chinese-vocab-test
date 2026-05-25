@@ -14,10 +14,6 @@ describe("quiz", () => {
   test("課の単語ごとに漢字問題とピンイン問題を作ること", () => {
     const generatedQuiz = createQuiz({
       lessonWords: words,
-      settings: {
-        wordCount: 4,
-        shuffleOn: false,
-      },
       numberWords: [],
     });
 
@@ -42,11 +38,7 @@ describe("quiz", () => {
 
   test("数字単語を渡すと課の単語のあとに数字問題を追加すること", () => {
     const generatedQuiz = createQuiz({
-      lessonWords: words,
-      settings: {
-        wordCount: 1,
-        shuffleOn: false,
-      },
+      lessonWords: words.slice(0, 1),
       numberWords: number.words.slice(0, 2),
     });
 
