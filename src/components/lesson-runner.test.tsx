@@ -394,6 +394,20 @@ describe("LessonRunner", () => {
       });
     });
 
+    test("出題する単語が2語でも課の単語から4択を作ること", () => {
+      withDeterministicShuffle(() => {
+        render(<LessonRunner lesson={quizLesson} />);
+
+        fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+        fireEvent.click(screen.getByLabelText("是"));
+        fireEvent.click(screen.getByLabelText("吗"));
+        fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
+
+        expect(screen.getByText("1 / 4")).toBeVisible();
+        expect(quizOptions()).toHaveLength(4);
+      });
+    });
+
     test("正解を選ぶと結果を表示して次へ進めること", () => {
       withDeterministicShuffle(() => {
         render(<LessonRunner lesson={quizLesson} />);
