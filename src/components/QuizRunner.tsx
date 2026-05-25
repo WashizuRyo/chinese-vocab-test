@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { createConfiguredWords } from "@/lib/configuredWords";
+import { createConfiguredWords } from "@/lib/create-configured-words";
 import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";

@@ -8,7 +8,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { createConfiguredWords } from "@/lib/configuredWords";
+import { createConfiguredWords } from "@/lib/create-configured-words";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 import { wordAudio } from "@/lib/wordAudio";
 

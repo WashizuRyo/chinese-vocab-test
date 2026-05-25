@@ -1,6 +1,6 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 import { number } from "@/data/lessons/number";
-import { createConfiguredWords } from "@/lib/configuredWords";
+import { createConfiguredWords } from "@/lib/create-configured-words";
 import type { Word } from "@/lib/types";
 
 const ni: Word = {
@@ -30,18 +30,14 @@ describe("createConfiguredWords", () => {
   });
 
   test("シャッフル設定がオンなら選択された単語を並び替えること", () => {
-    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
-    try {
-      const selection = createConfiguredWords({
-        selectedWords: words,
-        shuffleOn: true,
-        numberQuestionsOn: false,
-      });
+    const selection = createConfiguredWords({
+      selectedWords: words,
+      shuffleOn: true,
+      numberQuestionsOn: false,
+      shuffleWords: () => [wo, shi, ni],
+    });
 
-      expect(selection.words).toEqual([wo, shi, ni]);
-    } finally {
-      randomSpy.mockRestore();
-    }
+    expect(selection.words).toEqual([wo, shi, ni]);
   });
 
   test("数字追加設定がオンなら数字の単語を2件追加すること", () => {

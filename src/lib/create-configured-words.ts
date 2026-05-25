@@ -8,13 +8,15 @@ export function createConfiguredWords({
   selectedWords,
   shuffleOn,
   numberQuestionsOn,
+  shuffleWords = shuffle,
 }: {
   selectedWords: Word[];
   shuffleOn: boolean;
   numberQuestionsOn: boolean;
+  shuffleWords?: (words: Word[]) => Word[];
 }) {
-  const orderedWords = shuffleOn ? shuffle(selectedWords) : selectedWords;
-  const numberWords = numberQuestionsOn ? shuffle(number.words).slice(0, NUMBER_COUNT) : [];
+  const orderedWords = shuffleOn ? shuffleWords(selectedWords) : selectedWords;
+  const numberWords = numberQuestionsOn ? shuffleWords(number.words).slice(0, NUMBER_COUNT) : [];
 
   return {
     lessonWords: orderedWords,
