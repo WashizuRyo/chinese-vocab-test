@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { number } from "@/data/lessons/number";
-import { selectPracticeWords } from "@/lib/practiceWords";
+import { createConfiguredWords } from "@/lib/configuredWords";
 import type { Word } from "@/lib/types";
 
 const ni: Word = {
@@ -18,9 +18,9 @@ const shi: Word = {
 };
 const words: Word[] = [ni, wo, shi];
 
-describe("selectPracticeWords", () => {
-  test("選択されたVocabulary wordだけを返すこと", () => {
-    const selection = selectPracticeWords({
+describe("createConfiguredWords", () => {
+  test("選択された単語だけを返すこと", () => {
+    const selection = createConfiguredWords({
       selectedWords: [ni, shi],
       shuffleOn: false,
       numberQuestionsOn: false,
@@ -29,10 +29,10 @@ describe("selectPracticeWords", () => {
     expect(selection.words).toEqual([ni, shi]);
   });
 
-  test("shuffleOnがtrueなら選択されたVocabulary wordsを並び替えること", () => {
+  test("シャッフル設定がオンなら選択された単語を並び替えること", () => {
     const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
     try {
-      const selection = selectPracticeWords({
+      const selection = createConfiguredWords({
         selectedWords: words,
         shuffleOn: true,
         numberQuestionsOn: false,
@@ -44,8 +44,8 @@ describe("selectPracticeWords", () => {
     }
   });
 
-  test("numberQuestionsOnがtrueなら数字のVocabulary wordsを2件追加すること", () => {
-    const selection = selectPracticeWords({
+  test("数字追加設定がオンなら数字の単語を2件追加すること", () => {
+    const selection = createConfiguredWords({
       selectedWords: [ni],
       shuffleOn: false,
       numberQuestionsOn: true,
@@ -59,7 +59,7 @@ describe("selectPracticeWords", () => {
   });
 
   test("lessonWordsとnumberWordsを分けて返すこと", () => {
-    const selection = selectPracticeWords({
+    const selection = createConfiguredWords({
       selectedWords: [wo],
       shuffleOn: false,
       numberQuestionsOn: true,

@@ -8,7 +8,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { ResultSummary } from "@/components/ResultSummary";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { selectPracticeWords } from "@/lib/practiceWords";
+import { createConfiguredWords } from "@/lib/configuredWords";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 import { wordAudio } from "@/lib/wordAudio";
 
@@ -102,7 +102,7 @@ export function TestRunner({
 
   const handleStart = () => {
     if (state.status !== "setup") return;
-    const selection = selectPracticeWords({
+    const selection = createConfiguredWords({
       selectedWords: state.settings.selectedWords,
       shuffleOn: state.settings.shuffleOn,
       numberQuestionsOn: state.settings.numberQuestionsOn,

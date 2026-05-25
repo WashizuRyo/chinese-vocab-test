@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ProgressBar } from "@/components/ProgressBar";
 import { WordPlayer } from "@/components/WordPlayer";
 import { WordSelection } from "@/components/WordSelection";
-import { selectPracticeWords } from "@/lib/practiceWords";
+import { createConfiguredWords } from "@/lib/configuredWords";
 import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
@@ -89,7 +89,7 @@ export function QuizRunner({
   };
 
   const startWithSettings = (settings: QuizSettings) => {
-    const selection = selectPracticeWords({
+    const selection = createConfiguredWords({
       selectedWords: settings.selectedWords,
       shuffleOn: settings.shuffleOn,
       numberQuestionsOn: settings.numberQuestionsOn,

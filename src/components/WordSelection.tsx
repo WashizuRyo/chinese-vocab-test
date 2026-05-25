@@ -44,10 +44,7 @@ export function WordSelection({
             <input
               type="checkbox"
               aria-label={word.hanzi}
-              checked={selectedWords.some(
-                (selectedWord) =>
-                  selectedWord.hanzi === word.hanzi && selectedWord.pinyin === word.pinyin,
-              )}
+              checked={selectedWords.some((selectedWord) => isSameWord(selectedWord, word))}
               onChange={(e) => handleToggleWord(word, e.target.checked)}
               className="h-5 w-5 shrink-0"
             />
