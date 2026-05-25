@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { LearnRunner } from "@/components/LearnRunner";
+import { LearnRunner } from "@/components/learn-runner";
 import type { Lesson } from "@/lib/types";
 
 const ResizeObserverMock = vi.fn(

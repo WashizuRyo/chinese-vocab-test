@@ -1,7 +1,7 @@
 "use client";
 
 import type { Word } from "@/lib/types";
-import { wordAudio } from "@/lib/wordAudio";
+import { wordAudio } from "@/lib/word-audio";
 
 interface Props {
   word: Word;

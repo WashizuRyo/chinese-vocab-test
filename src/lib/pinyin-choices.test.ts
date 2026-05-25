@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { buildPinyinToneChoices } from "@/lib/pinyinChoices";
+import { buildPinyinToneChoices } from "@/lib/pinyin-choices";
 
 describe("buildPinyinToneChoices", () => {
   test("単音節の声調違い候補を生成すること", () => {
