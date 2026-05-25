@@ -77,15 +77,6 @@ function completeLearning() {
   expect(screen.getByText("暗記完了")).toBeVisible();
 }
 
-function withDeterministicShuffle(run: () => void) {
-  const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
-  try {
-    run();
-  } finally {
-    randomSpy.mockRestore();
-  }
-}
-
 function startQuiz() {
   fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
   expect(screen.getByText("クイズ設定")).toBeVisible();
@@ -96,18 +87,31 @@ function quizOptions() {
   return screen.getAllByLabelText(/^選択肢:/);
 }
 
-function answerQuestion(optionIndex: number) {
-  const option = quizOptions()[optionIndex];
-  if (!option) throw new Error(`Expected quiz option ${optionIndex} to exist`);
-  fireEvent.click(option);
+function quizAnswers(words: Lesson["words"]) {
+  return words.flatMap((word) => [word.hanzi, word.pinyin]);
 }
 
-function answerAllQuestions(optionIndex: number, totalQuestions: number) {
-  for (let i = 0; i < totalQuestions; i++) {
-    answerQuestion(optionIndex);
+function answerQuestion(answer: string, correct: boolean) {
+  if (correct) {
+    fireEvent.click(screen.getByRole("button", { name: `選択肢: ${answer}` }));
+    return;
+  }
+
+  const wrongOption = quizOptions().find(
+    (option) => option.getAttribute("aria-label") !== `選択肢: ${answer}`,
+  );
+  if (!wrongOption) throw new Error(`Expected wrong quiz option for ${answer} to exist`);
+  fireEvent.click(wrongOption);
+}
+
+function answerAllQuestions(answers: string[], correct: boolean) {
+  for (let i = 0; i < answers.length; i++) {
+    const answer = answers[i];
+    if (!answer) throw new Error(`Expected quiz answer ${i} to exist`);
+    answerQuestion(answer, correct);
     fireEvent.click(
       screen.getByRole("button", {
-        name: i + 1 === totalQuestions ? "結果を見る" : "次へ",
+        name: i + 1 === answers.length ? "結果を見る" : "次へ",
       }),
     );
   }
@@ -368,15 +372,13 @@ describe("LessonRunner", () => {
 
   describe("クイズ", () => {
     test("4択問題を開始できること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
+      startQuiz();
 
-        expect(screen.getByText("1 / 8")).toBeVisible();
-        expect(screen.getAllByText("クイズ")).toHaveLength(1);
-        expect(quizOptions()).toHaveLength(4);
-      });
+      expect(screen.getByText("1 / 8")).toBeVisible();
+      expect(screen.getAllByText("クイズ")).toHaveLength(1);
+      expect(quizOptions()).toHaveLength(4);
     });
 
     test("出題する単語が1語でも課の単語から4択を作ること", () => {
@@ -405,69 +407,59 @@ describe("LessonRunner", () => {
     });
 
     test("正解を選ぶと結果を表示して次へ進めること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
-        answerQuestion(3);
+      startQuiz();
+      answerQuestion("你", true);
 
-        expect(screen.getAllByText("正解")[0]).toBeVisible();
-        fireEvent.click(screen.getByRole("button", { name: "次へ" }));
-        expect(screen.getByText("2 / 8")).toBeVisible();
-      });
+      expect(screen.getAllByText("正解")[0]).toBeVisible();
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      expect(screen.getByText("2 / 8")).toBeVisible();
     });
 
     test("クイズ中にモード選択へ戻れること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
-        fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+      startQuiz();
+      fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
 
-        expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
-        expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
-        expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
-      });
+      expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
     });
 
     test("最終問題後にクイズ結果を表示できること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
-        answerAllQuestions(3, quizLesson.words.length * 2);
+      startQuiz();
+      answerAllQuestions(quizAnswers(quizLesson.words), true);
 
-        expect(screen.getByText("クイズ結果")).toBeVisible();
-        expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
-      });
+      expect(screen.getByText("クイズ結果")).toBeVisible();
+      expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
     });
 
     test("間違えたものだけクイズで再挑戦できること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
-        answerAllQuestions(0, quizLesson.words.length * 2);
-        fireEvent.click(screen.getByRole("button", { name: "間違えたものだけもう一度 (4)" }));
+      startQuiz();
+      answerAllQuestions(quizAnswers(quizLesson.words), false);
+      fireEvent.click(screen.getByRole("button", { name: "間違えたものだけもう一度 (4)" }));
 
-        expect(screen.getByText("1 / 8")).toBeVisible();
-        expect(quizOptions()).toHaveLength(4);
-      });
+      expect(screen.getByText("1 / 8")).toBeVisible();
+      expect(quizOptions()).toHaveLength(4);
     });
 
     test("結果画面から本番形式テストへ進めること", () => {
-      withDeterministicShuffle(() => {
-        render(<LessonRunner lesson={quizLesson} />);
+      render(<LessonRunner lesson={quizLesson} />);
 
-        startQuiz();
-        answerAllQuestions(3, quizLesson.words.length * 2);
-        const playCountBeforeStartingTest = playAudio.mock.calls.length;
-        fireEvent.click(screen.getByRole("button", { name: "本番形式テストへ進む" }));
+      startQuiz();
+      answerAllQuestions(quizAnswers(quizLesson.words), true);
+      const playCountBeforeStartingTest = playAudio.mock.calls.length;
+      fireEvent.click(screen.getByRole("button", { name: "本番形式テストへ進む" }));
 
-        expect(screen.getByText("1 / 4")).toBeVisible();
-        expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
-        expect(playAudio).toHaveBeenCalledTimes(playCountBeforeStartingTest + 1);
-      });
+      expect(screen.getByText("1 / 4")).toBeVisible();
+      expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+      expect(playAudio).toHaveBeenCalledTimes(playCountBeforeStartingTest + 1);
     });
   });
 
