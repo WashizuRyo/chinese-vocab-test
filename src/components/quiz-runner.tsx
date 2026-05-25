@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
+import { number } from "@/data/lessons/number";
 import { createConfiguredWords } from "@/lib/create-configured-words";
 import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
@@ -96,7 +97,9 @@ export function QuizRunner({
     });
     const nextQuiz = createQuiz({
       lessonWords: selection.lessonWords,
+      lessonChoiceSourceWords: lesson.words,
       numberWords: selection.numberWords,
+      numberChoiceSourceWords: number.words,
     });
     startWithQuestions({
       lessonWords: selection.lessonWords,
@@ -201,7 +204,9 @@ export function QuizRunner({
               numberWords: state.numberWords,
               questions: createQuiz({
                 lessonWords: state.lessonWords,
+                lessonChoiceSourceWords: lesson.words,
                 numberWords: state.numberWords,
+                numberChoiceSourceWords: number.words,
               }).questions,
             })
           }
@@ -219,7 +224,9 @@ export function QuizRunner({
               numberWords: wrongNumberWords,
               questions: createQuiz({
                 lessonWords: wrongLessonWords,
+                lessonChoiceSourceWords: lesson.words,
                 numberWords: wrongNumberWords,
+                numberChoiceSourceWords: number.words,
               }).questions,
             });
           }}

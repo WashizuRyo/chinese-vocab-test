@@ -1,4 +1,3 @@
-import { number } from "@/data/lessons/number";
 import { shuffle } from "@/lib/shuffle";
 import type { Question, Quiz, Word } from "@/lib/types";
 
@@ -41,15 +40,19 @@ function createQuestions({ words, source }: { words: Word[]; source: Word[] }): 
 
 export function createQuiz({
   lessonWords,
+  lessonChoiceSourceWords,
   numberWords,
+  numberChoiceSourceWords,
 }: {
   lessonWords: Word[];
+  lessonChoiceSourceWords: Word[];
   numberWords: Word[];
+  numberChoiceSourceWords: Word[];
 }): Quiz {
   return {
     questions: [
-      ...createQuestions({ words: lessonWords, source: lessonWords }),
-      ...createQuestions({ words: numberWords, source: number.words }),
+      ...createQuestions({ words: lessonWords, source: lessonChoiceSourceWords }),
+      ...createQuestions({ words: numberWords, source: numberChoiceSourceWords }),
     ],
   };
 }
