@@ -153,7 +153,7 @@ function LearnView({
   const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
 
   return (
-    <main className="disable-text-selection flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+    <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
         <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
           ← モード選択
@@ -184,7 +184,7 @@ function LearnView({
         />
       </section>
 
-      <div className="disable-text-selection fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <div className="mx-auto flex max-w-screen-sm gap-2">
           <button
             type="button"
