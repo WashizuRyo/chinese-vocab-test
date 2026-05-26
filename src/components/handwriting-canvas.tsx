@@ -50,7 +50,6 @@ export function HandwritingCanvas({
   ariaLabel?: string;
   ref?: Ref<HandwritingCanvasHandle>;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
@@ -102,10 +101,15 @@ export function HandwritingCanvas({
 
   const getCtx = () => inkCanvasRef.current?.getContext("2d") ?? null;
 
-  const getPointerPoint = (e: PointerEvent | React.PointerEvent): Point => {
+  const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>): Point => {
+    const canvas = e.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     return {
-      x: e.pageX,
-      y: e.pageY,
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
   };
 
@@ -140,10 +144,9 @@ export function HandwritingCanvas({
     const canvas = inkCanvasRef.current;
     if (!canvas) return;
 
-    const point = getPointerPoint(e);
-
     canvas.setPointerCapture(e.pointerId);
     drawingRef.current = true;
+    const point = getCanvasPoint(e);
     lastPointRef.current = point;
 
     drawDot(point);
@@ -154,7 +157,7 @@ export function HandwritingCanvas({
 
     e.preventDefault();
 
-    const point = getPointerPoint(e);
+    const point = getCanvasPoint(e);
     drawLineTo(point);
   };
 
@@ -208,7 +211,7 @@ export function HandwritingCanvas({
   );
 
   return (
-    <div ref={containerRef} className={`relative w-full select-none ${className ?? ""}`}>
+    <div className={`relative w-full select-none ${className ?? ""}`}>
       <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
       <canvas
         ref={inkCanvasRef}
