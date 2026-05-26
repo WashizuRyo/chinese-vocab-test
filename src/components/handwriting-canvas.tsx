@@ -112,8 +112,6 @@ export function HandwritingCanvas({
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-
     const canvas = e.currentTarget;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -133,8 +131,6 @@ export function HandwritingCanvas({
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
 
-    e.preventDefault();
-
     const ctx = e.currentTarget.getContext("2d");
     if (!ctx) return;
 
@@ -151,8 +147,6 @@ export function HandwritingCanvas({
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
-
-    e.preventDefault();
 
     drawingRef.current = false;
     lastPointRef.current = null;
