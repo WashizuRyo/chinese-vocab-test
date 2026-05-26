@@ -99,8 +99,6 @@ export function HandwritingCanvas({
     };
   }, []);
 
-  const getCtx = () => inkCanvasRef.current?.getContext("2d") ?? null;
-
   const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>): Point => {
     const canvas = e.currentTarget;
     const rect = canvas.getBoundingClientRect();
@@ -113,9 +111,17 @@ export function HandwritingCanvas({
     };
   };
 
-  const drawDot = (point: Point) => {
-    const ctx = getCtx();
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+
+    const canvas = e.currentTarget;
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    canvas.setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+    const point = getCanvasPoint(e);
+    lastPointRef.current = point;
 
     ctx.beginPath();
     ctx.moveTo(point.x, point.y);
@@ -124,10 +130,15 @@ export function HandwritingCanvas({
     ctx.fill();
   };
 
-  const drawLineTo = (point: Point) => {
-    const ctx = getCtx();
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!drawingRef.current) return;
+
+    e.preventDefault();
+
+    const ctx = e.currentTarget.getContext("2d");
     if (!ctx) return;
 
+    const point = getCanvasPoint(e);
     const last = lastPointRef.current;
 
     ctx.beginPath();
@@ -138,30 +149,7 @@ export function HandwritingCanvas({
     lastPointRef.current = point;
   };
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-
-    const canvas = inkCanvasRef.current;
-    if (!canvas) return;
-
-    canvas.setPointerCapture(e.pointerId);
-    drawingRef.current = true;
-    const point = getCanvasPoint(e);
-    lastPointRef.current = point;
-
-    drawDot(point);
-  };
-
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!drawingRef.current) return;
-
-    e.preventDefault();
-
-    const point = getCanvasPoint(e);
-    drawLineTo(point);
-  };
-
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
 
     e.preventDefault();
@@ -169,8 +157,8 @@ export function HandwritingCanvas({
     drawingRef.current = false;
     lastPointRef.current = null;
 
-    const canvas = inkCanvasRef.current;
-    if (canvas?.hasPointerCapture(e.pointerId)) {
+    const canvas = e.currentTarget;
+    if (canvas.hasPointerCapture(e.pointerId)) {
       canvas.releasePointerCapture(e.pointerId);
     }
   };
@@ -218,10 +206,10 @@ export function HandwritingCanvas({
         aria-label={ariaLabel}
         className="absolute inset-0 block w-full h-full touch-none"
         onContextMenu={(e) => e.preventDefault()}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       />
     </div>
   );
