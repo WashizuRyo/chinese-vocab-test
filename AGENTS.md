@@ -41,6 +41,14 @@
 - `pnpm check-types` - TypeScript の型チェック
 - `pnpm format` - Biome check を自動修正つきで実行
 
+## Post-Change Verification
+
+ファイルの変更が完了したら、必ず以下の3コマンドを順番に実行し、すべて通過することを確認してから結果を報告してください：
+
+1. `pnpm format`
+2. `pnpm check-types`
+3. `pnpm test`
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 

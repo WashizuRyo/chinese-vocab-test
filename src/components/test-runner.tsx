@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/answer-reveal";
-import { CanvasBlock } from "@/components/canvas-block";
-import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
+import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { ResultSummary } from "@/components/result-summary";
 import { WordPlayer } from "@/components/word-player";
@@ -175,6 +174,13 @@ export function TestRunner({
 
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+          <button
+            type="button"
+            onClick={onBackToMode}
+            className="mb-8 w-fit text-base text-zinc-500"
+          >
+            ← モード選択
+          </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <TestView word={currentResult.word} onSubmit={handleSubmit} />
         </main>
@@ -187,6 +193,13 @@ export function TestRunner({
 
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+          <button
+            type="button"
+            onClick={onBackToMode}
+            className="mb-8 w-fit text-base text-zinc-500"
+          >
+            ← モード選択
+          </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <div className="mt-4">
             <AnswerReveal
@@ -324,17 +337,17 @@ function TestView({
         <WordPlayer word={word} />
       </div>
 
-      <CanvasBlock
+      <HandwritingCanvas
         key={`${word.hanzi}-${word.pinyin}-hanzi`}
         label="漢字"
-        canvasRef={hanziCanvasRef}
+        ref={hanziCanvasRef}
       />
 
       <div className="mt-10">
-        <CanvasBlock
+        <HandwritingCanvas
           key={`${word.hanzi}-${word.pinyin}-pinyin`}
           label="ピンイン"
-          canvasRef={pinyinCanvasRef}
+          ref={pinyinCanvasRef}
         />
       </div>
 

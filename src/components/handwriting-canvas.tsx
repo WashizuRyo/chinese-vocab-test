@@ -1,16 +1,10 @@
 "use client";
 
 import type { Ref } from "react";
-import { useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 
 export interface HandwritingCanvasHandle {
-  clear: () => void;
   getDataURL: () => string | null;
-}
-
-interface Point {
-  x: number;
-  y: number;
 }
 
 const STROKE_COLOR = "#111111";
@@ -20,16 +14,20 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 288;
 
 export function HandwritingCanvas({
-  ariaLabel = "手書き入力",
+  label,
   ref,
 }: {
-  ariaLabel?: string;
+  label: string;
   ref: Ref<HandwritingCanvasHandle>;
 }) {
   const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
-  const lastPointRef = useRef<Point | null>(null);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  const [undoStack, setUndoStack] = useState<ImageData[]>([]);
+  const [redoStack, setRedoStack] = useState<ImageData[]>([]);
+  const canUndo = undoStack.length > 0;
+  const canRedo = redoStack.length > 0;
 
   useLayoutEffect(() => {
     const grid = gridCanvasRef.current;
@@ -91,7 +89,7 @@ export function HandwritingCanvas({
     };
   }, []);
 
-  const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>): Point => {
+  const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = e.currentTarget;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -107,6 +105,14 @@ export function HandwritingCanvas({
     const canvas = e.currentTarget;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const ink = inkCanvasRef.current;
+    const inkCtx = ink?.getContext("2d");
+    if (ink && inkCtx) {
+      const snapshot = inkCtx.getImageData(0, 0, ink.width, ink.height);
+      setUndoStack((stack) => [...stack, snapshot]);
+      setRedoStack([]);
+    }
 
     canvas.setPointerCapture(e.pointerId);
     drawingRef.current = true;
@@ -149,54 +155,110 @@ export function HandwritingCanvas({
     }
   };
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      clear: () => {
-        const c = inkCanvasRef.current;
-        const ctx = c?.getContext("2d");
-        if (!ctx || !c) return;
+  const handleUndo = () => {
+    const previous = undoStack.at(-1);
+    const ink = inkCanvasRef.current;
+    const ctx = ink?.getContext("2d");
+    if (!previous || !ink || !ctx) return;
 
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, c.width, c.height);
-        ctx.restore();
-      },
-      getDataURL: () => {
-        const grid = gridCanvasRef.current;
-        const ink = inkCanvasRef.current;
-        if (!grid || !ink) return null;
+    const current = ctx.getImageData(0, 0, ink.width, ink.height);
+    setUndoStack((stack) => stack.slice(0, -1));
+    setRedoStack((stack) => [...stack, current]);
+    ctx.putImageData(previous, 0, 0);
+  };
 
-        const out = document.createElement("canvas");
-        out.width = grid.width;
-        out.height = grid.height;
+  const handleRedo = () => {
+    const next = redoStack.at(-1);
+    const ink = inkCanvasRef.current;
+    const ctx = ink?.getContext("2d");
+    if (!next || !ink || !ctx) return;
 
-        const ctx = out.getContext("2d");
-        if (!ctx) return null;
+    const current = ctx.getImageData(0, 0, ink.width, ink.height);
+    setUndoStack((stack) => [...stack, current]);
+    setRedoStack((stack) => stack.slice(0, -1));
+    ctx.putImageData(next, 0, 0);
+  };
 
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, out.width, out.height);
-        ctx.drawImage(grid, 0, 0);
-        ctx.drawImage(ink, 0, 0);
-        return out.toDataURL("image/png");
-      },
-    }),
-    [],
-  );
+  const handleClear = () => {
+    const ink = inkCanvasRef.current;
+    const ctx = ink?.getContext("2d");
+    if (!ink || !ctx) return;
+
+    const snapshot = ctx.getImageData(0, 0, ink.width, ink.height);
+    setUndoStack((stack) => [...stack, snapshot]);
+    setRedoStack([]);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, ink.width, ink.height);
+    ctx.restore();
+  };
+
+  useImperativeHandle(ref, () => ({
+    getDataURL: () => {
+      const grid = gridCanvasRef.current;
+      const ink = inkCanvasRef.current;
+      if (!grid || !ink) return null;
+
+      const out = document.createElement("canvas");
+      out.width = grid.width;
+      out.height = grid.height;
+
+      const ctx = out.getContext("2d");
+      if (!ctx) return null;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, out.width, out.height);
+      ctx.drawImage(grid, 0, 0);
+      ctx.drawImage(ink, 0, 0);
+      return out.toDataURL("image/png");
+    },
+  }));
 
   return (
-    <div className="relative w-full select-none">
-      <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
-      <canvas
-        ref={inkCanvasRef}
-        aria-label={ariaLabel}
-        className="absolute inset-0 block w-full h-full touch-none"
-        onContextMenu={(e) => e.preventDefault()}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-      />
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            aria-label="元に戻す"
+            disabled={!canUndo}
+            onClick={handleUndo}
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            戻る
+          </button>
+          <button
+            type="button"
+            aria-label="やり直す"
+            disabled={!canRedo}
+            onClick={handleRedo}
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            進む
+          </button>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50"
+          >
+            クリア
+          </button>
+        </div>
+      </div>
+      <div className="relative w-full select-none">
+        <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
+        <canvas
+          ref={inkCanvasRef}
+          aria-label={`${label}の手書き`}
+          className="absolute inset-0 block w-full h-full touch-none"
+          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        />
+      </div>
     </div>
   );
 }
