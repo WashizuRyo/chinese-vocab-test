@@ -10,7 +10,7 @@ export function CanvasBlock({
   canvasRef: React.RefObject<HandwritingCanvasHandle | null>;
 }) {
   return (
-    <div className="disable-text-selection">
+    <div>
       <div className="mb-1.5 flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</span>
         <button

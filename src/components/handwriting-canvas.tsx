@@ -42,15 +42,12 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) 
 }
 
 export function HandwritingCanvas({
-  className,
   ariaLabel = "手書き入力",
   ref,
 }: {
-  className?: string;
   ariaLabel?: string;
-  ref?: Ref<HandwritingCanvasHandle>;
+  ref: Ref<HandwritingCanvasHandle>;
 }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
@@ -100,59 +97,62 @@ export function HandwritingCanvas({
     };
   }, []);
 
-  const getCtx = () => inkCanvasRef.current?.getContext("2d") ?? null;
+  const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>): Point => {
+    const canvas = e.currentTarget;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
 
-  const eventToPoint = (e: PointerEvent | React.PointerEvent): Point | null => {
-    const c = inkCanvasRef.current;
-    if (!c) return null;
-    const rect = c.getBoundingClientRect();
     return {
-      x: (e.clientX - rect.left) * (c.width / rect.width),
-      y: (e.clientY - rect.top) * (c.height / rect.height),
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
   };
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const c = inkCanvasRef.current;
-    if (!c) return;
-    c.setPointerCapture(e.pointerId);
-    const p = eventToPoint(e);
-    if (!p) return;
-    drawingRef.current = true;
-    lastPointRef.current = p;
-    const ctx = getCtx();
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = e.currentTarget;
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    canvas.setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+    const point = getCanvasPoint(e);
+    lastPointRef.current = point;
+
     ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-    ctx.arc(p.x, p.y, STROKE_WIDTH / 2, 0, Math.PI * 2);
+    ctx.moveTo(point.x, point.y);
+    ctx.arc(point.x, point.y, STROKE_WIDTH / 2, 0, Math.PI * 2);
     ctx.fillStyle = STROKE_COLOR;
     ctx.fill();
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
-    e.preventDefault();
-    const ctx = getCtx();
+
+    const ctx = e.currentTarget.getContext("2d");
     if (!ctx) return;
-    const p = eventToPoint(e);
-    if (!p) return;
+
+    const point = getCanvasPoint(e);
     const last = lastPointRef.current;
+
     ctx.beginPath();
-    if (last) ctx.moveTo(last.x, last.y);
-    else ctx.moveTo(p.x, p.y);
-    ctx.lineTo(p.x, p.y);
+    ctx.moveTo(last?.x ?? point.x, last?.y ?? point.y);
+    ctx.lineTo(point.x, point.y);
     ctx.stroke();
-    lastPointRef.current = p;
+
+    lastPointRef.current = point;
   };
 
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
-    e.preventDefault();
+
     drawingRef.current = false;
     lastPointRef.current = null;
-    const c = inkCanvasRef.current;
-    if (c?.hasPointerCapture(e.pointerId)) c.releasePointerCapture(e.pointerId);
+
+    const canvas = e.currentTarget;
+    if (canvas.hasPointerCapture(e.pointerId)) {
+      canvas.releasePointerCapture(e.pointerId);
+    }
   };
 
   useImperativeHandle(
@@ -191,25 +191,17 @@ export function HandwritingCanvas({
   );
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative w-full select-none ${className ?? ""}`}
-      style={{ touchAction: "none" }}
-    >
-      <canvas
-        ref={gridCanvasRef}
-        className="disable-text-selection block w-full h-auto bg-white"
-        tabIndex={-1}
-      />
+    <div className="relative w-full select-none">
+      <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
       <canvas
         ref={inkCanvasRef}
         aria-label={ariaLabel}
-        className="disable-text-selection absolute inset-0 block w-full h-full"
+        className="absolute inset-0 block w-full h-full touch-none"
         onContextMenu={(e) => e.preventDefault()}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       />
     </div>
   );
