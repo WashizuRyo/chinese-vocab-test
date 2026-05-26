@@ -5,11 +5,9 @@ import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/ha
 export function CanvasBlock({
   label,
   canvasRef,
-  aspectRatio,
 }: {
   label: string;
   canvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  aspectRatio: number;
 }) {
   return (
     <div className="disable-text-selection">
@@ -23,7 +21,7 @@ export function CanvasBlock({
           クリア
         </button>
       </div>
-      <HandwritingCanvas ref={canvasRef} aspectRatio={aspectRatio} ariaLabel={`${label}の手書き`} />
+      <HandwritingCanvas ref={canvasRef} ariaLabel={`${label}の手書き`} />
     </div>
   );
 }

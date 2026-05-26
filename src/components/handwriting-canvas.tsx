@@ -1,7 +1,7 @@
 "use client";
 
 import type { Ref } from "react";
-import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
+import { useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
 
 export interface HandwritingCanvasHandle {
   clear: () => void;
@@ -16,6 +16,8 @@ interface Point {
 const STROKE_COLOR = "#111111";
 const GRID_COLOR = "#dcdcdc";
 const STROKE_WIDTH = 3.5;
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 288;
 
 function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) {
   ctx.save();
@@ -40,12 +42,10 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) 
 }
 
 export function HandwritingCanvas({
-  aspectRatio,
   className,
   ariaLabel = "手書き入力",
   ref,
 }: {
-  aspectRatio: number;
   className?: string;
   ariaLabel?: string;
   ref?: Ref<HandwritingCanvasHandle>;
@@ -56,57 +56,31 @@ export function HandwritingCanvas({
   const drawingRef = useRef(false);
   const lastPointRef = useRef<Point | null>(null);
 
-  const resizeCanvases = useCallback(() => {
-    const el = containerRef.current;
+  useLayoutEffect(() => {
     const grid = gridCanvasRef.current;
     const ink = inkCanvasRef.current;
-    if (!el || !grid || !ink) return;
-
-    const rect = el.getBoundingClientRect();
-    const w = Math.floor(rect.width);
-    const h = Math.floor(w * aspectRatio);
-    if (w === 0 || h === 0) return;
-
-    const dpr = window.devicePixelRatio || 1;
+    if (!grid || !ink) return;
 
     for (const c of [grid, ink]) {
-      c.width = Math.floor(w * dpr);
-      c.height = Math.floor(h * dpr);
-      c.style.width = `${w}px`;
-      c.style.height = `${h}px`;
+      c.width = CANVAS_WIDTH;
+      c.height = CANVAS_HEIGHT;
     }
 
     const gctx = grid.getContext("2d");
     if (gctx) {
-      gctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      gctx.clearRect(0, 0, w, h);
-      drawGrid(gctx, w, h);
+      gctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      drawGrid(gctx, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
     const ictx = ink.getContext("2d");
     if (ictx) {
-      ictx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ictx.clearRect(0, 0, w, h);
+      ictx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ictx.lineCap = "round";
       ictx.lineJoin = "round";
       ictx.strokeStyle = STROKE_COLOR;
       ictx.lineWidth = STROKE_WIDTH;
     }
-  }, [aspectRatio]);
-
-  useLayoutEffect(() => {
-    resizeCanvases();
-
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => resizeCanvases());
-    ro.observe(el);
-    window.addEventListener("orientationchange", resizeCanvases);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("orientationchange", resizeCanvases);
-    };
-  }, [resizeCanvases]);
+  }, []);
 
   useEffect(() => {
     const canvas = inkCanvasRef.current;
@@ -132,7 +106,10 @@ export function HandwritingCanvas({
     const c = inkCanvasRef.current;
     if (!c) return null;
     const rect = c.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return {
+      x: (e.clientX - rect.left) * (c.width / rect.width),
+      y: (e.clientY - rect.top) * (c.height / rect.height),
+    };
   };
 
   const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
