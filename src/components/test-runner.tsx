@@ -174,6 +174,9 @@ export function TestRunner({
 
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+          <button type="button" onClick={onBackToMode} className="mb-8 w-fit text-base text-zinc-500">
+            ← モード選択
+          </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <TestView word={currentResult.word} onSubmit={handleSubmit} />
         </main>
@@ -186,6 +189,9 @@ export function TestRunner({
 
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
+          <button type="button" onClick={onBackToMode} className="mb-8 w-fit text-base text-zinc-500">
+            ← モード選択
+          </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <div className="mt-4">
             <AnswerReveal
