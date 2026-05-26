@@ -19,28 +19,6 @@ const STROKE_WIDTH = 8.5;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 288;
 
-function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  ctx.save();
-  ctx.strokeStyle = GRID_COLOR;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
-
-  const lines = 4;
-  for (let i = 1; i < lines; i++) {
-    const y = (height / lines) * i;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-
-  ctx.setLineDash([]);
-  ctx.strokeStyle = "#9ca3af";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(0.5, 0.5, width - 1, height - 1);
-  ctx.restore();
-}
-
 export function HandwritingCanvas({
   ariaLabel = "手書き入力",
   ref,
@@ -65,13 +43,29 @@ export function HandwritingCanvas({
 
     const gctx = grid.getContext("2d");
     if (gctx) {
-      gctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      drawGrid(gctx, CANVAS_WIDTH, CANVAS_HEIGHT);
+      gctx.save();
+      gctx.strokeStyle = GRID_COLOR;
+      gctx.lineWidth = 1;
+      gctx.setLineDash([4, 4]);
+
+      const lines = 4;
+      for (let i = 1; i < lines; i++) {
+        const y = (CANVAS_HEIGHT / lines) * i;
+        gctx.beginPath();
+        gctx.moveTo(0, y);
+        gctx.lineTo(CANVAS_WIDTH, y);
+        gctx.stroke();
+      }
+
+      gctx.setLineDash([]);
+      gctx.strokeStyle = "#9ca3af";
+      gctx.lineWidth = 1.5;
+      gctx.strokeRect(0.5, 0.5, CANVAS_WIDTH - 1, CANVAS_HEIGHT - 1);
+      gctx.restore();
     }
 
     const ictx = ink.getContext("2d");
     if (ictx) {
-      ictx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ictx.lineCap = "round";
       ictx.lineJoin = "round";
       ictx.strokeStyle = STROKE_COLOR;
@@ -160,26 +154,26 @@ export function HandwritingCanvas({
     () => ({
       clear: () => {
         const c = inkCanvasRef.current;
-        const ctx = c?.getContext("2d") ?? null;
+        const ctx = c?.getContext("2d");
         if (!ctx || !c) return;
+
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, c.width, c.height);
         ctx.restore();
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.strokeStyle = STROKE_COLOR;
-        ctx.lineWidth = STROKE_WIDTH;
       },
       getDataURL: () => {
         const grid = gridCanvasRef.current;
         const ink = inkCanvasRef.current;
         if (!grid || !ink) return null;
+
         const out = document.createElement("canvas");
         out.width = grid.width;
         out.height = grid.height;
+
         const ctx = out.getContext("2d");
         if (!ctx) return null;
+
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(grid, 0, 0);
