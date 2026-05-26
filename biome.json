@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/.next", "!**/node_modules", "!**/next-env.d.ts", "!**/pnpm-lock.yaml", "!**/.opencode", "!**/.ocx"]
+    "includes": [
+      "**",
+      "!**/.next",
+      "!**/node_modules",
+      "!**/next-env.d.ts",
+      "!**/pnpm-lock.yaml",
+      "!**/.opencode",
+      "!**/.ocx"
+    ]
   },
   "formatter": {
     "enabled": true,
