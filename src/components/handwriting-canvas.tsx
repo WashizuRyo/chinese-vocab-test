@@ -154,26 +154,26 @@ export function HandwritingCanvas({
     () => ({
       clear: () => {
         const c = inkCanvasRef.current;
-        const ctx = c?.getContext("2d") ?? null;
+        const ctx = c?.getContext("2d");
         if (!ctx || !c) return;
+        
         ctx.save();
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, c.width, c.height);
         ctx.restore();
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.strokeStyle = STROKE_COLOR;
-        ctx.lineWidth = STROKE_WIDTH;
       },
       getDataURL: () => {
         const grid = gridCanvasRef.current;
         const ink = inkCanvasRef.current;
         if (!grid || !ink) return null;
+        
         const out = document.createElement("canvas");
         out.width = grid.width;
         out.height = grid.height;
+        
         const ctx = out.getContext("2d");
         if (!ctx) return null;
+        
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(grid, 0, 0);
