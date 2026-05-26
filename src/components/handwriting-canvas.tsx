@@ -42,13 +42,11 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number) 
 }
 
 export function HandwritingCanvas({
-  className,
   ariaLabel = "手書き入力",
   ref,
 }: {
-  className?: string;
   ariaLabel?: string;
-  ref?: Ref<HandwritingCanvasHandle>;
+  ref: Ref<HandwritingCanvasHandle>;
 }) {
   const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const gridCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -193,7 +191,7 @@ export function HandwritingCanvas({
   );
 
   return (
-    <div className={`relative w-full select-none ${className ?? ""}`}>
+    <div className="relative w-full select-none">
       <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
       <canvas
         ref={inkCanvasRef}
