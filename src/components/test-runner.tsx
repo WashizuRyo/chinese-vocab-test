@@ -2,8 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/answer-reveal";
-import { CanvasBlock } from "@/components/canvas-block";
-import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
+import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { ResultSummary } from "@/components/result-summary";
 import { WordPlayer } from "@/components/word-player";
@@ -324,17 +323,17 @@ function TestView({
         <WordPlayer word={word} />
       </div>
 
-      <CanvasBlock
+      <HandwritingCanvas
         key={`${word.hanzi}-${word.pinyin}-hanzi`}
         label="漢字"
-        canvasRef={hanziCanvasRef}
+        ref={hanziCanvasRef}
       />
 
       <div className="mt-10">
-        <CanvasBlock
+        <HandwritingCanvas
           key={`${word.hanzi}-${word.pinyin}-pinyin`}
           label="ピンイン"
-          canvasRef={pinyinCanvasRef}
+          ref={pinyinCanvasRef}
         />
       </div>
 

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { CanvasBlock } from "@/components/canvas-block";
-import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
+import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
 import type { Lesson, Word } from "@/lib/types";
@@ -177,10 +176,10 @@ function LearnView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock
+        <HandwritingCanvas
           key={`${word.hanzi}-${word.pinyin}-practice`}
           label="手書き練習"
-          canvasRef={hanziCanvasRef}
+          ref={hanziCanvasRef}
         />
       </section>
 
