@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CanvasBlock } from "@/components/canvas-block";
+import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
 import type { Lesson, Word } from "@/lib/types";
@@ -149,6 +150,8 @@ function LearnView({
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
+
   return (
     <main className="disable-text-selection flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
@@ -174,7 +177,11 @@ function LearnView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock key={`${word.hanzi}-${word.pinyin}-practice`} label="手書き練習" />
+        <CanvasBlock
+          key={`${word.hanzi}-${word.pinyin}-practice`}
+          label="手書き練習"
+          canvasRef={hanziCanvasRef}
+        />
       </section>
 
       <div className="disable-text-selection fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
