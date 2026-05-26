@@ -8,9 +8,7 @@
   },
 
   "hooks": {
-    "postCreate": [
-      "pnpm build"
-    ],
+    "postCreate": ["pnpm build"],
     "preDelete": []
   }
 }
