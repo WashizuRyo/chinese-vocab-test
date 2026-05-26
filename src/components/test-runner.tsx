@@ -54,8 +54,6 @@ export function TestRunner({
   initialWords?: Word[];
   onBackToMode: () => void;
 }) {
-  const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
-  const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
   const initialSettings = {
     shuffleOn: false,
     numberQuestionsOn: false,
@@ -71,11 +69,6 @@ export function TestRunner({
     }
     return { status: "setup", settings: initialSettings };
   });
-
-  const clearCanvases = () => {
-    hanziCanvasRef.current?.clear();
-    pinyinCanvasRef.current?.clear();
-  };
 
   const startWithWords = (words: Word[]) => {
     setState({
@@ -110,12 +103,14 @@ export function TestRunner({
     startWithWords(selection.words);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = ({
+    hanziImage,
+    pinyinImage,
+  }: {
+    hanziImage: string;
+    pinyinImage: string;
+  }) => {
     if (state.status !== "writing") return;
-
-    const hanziImage = hanziCanvasRef.current?.getDataURL();
-    const pinyinImage = pinyinCanvasRef.current?.getDataURL();
-    if (!hanziImage || !pinyinImage) return;
 
     setState({
       status: "answer",
@@ -154,7 +149,6 @@ export function TestRunner({
       return;
     }
     const nextResult = state.results[state.index + 1];
-    clearCanvases();
     setState({
       status: "writing",
       results: state.results,
@@ -182,12 +176,7 @@ export function TestRunner({
       return (
         <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
           <ProgressBar current={state.index + 1} total={state.results.length} />
-          <TestView
-            word={currentResult.word}
-            onSubmit={handleSubmit}
-            hanziCanvasRef={hanziCanvasRef}
-            pinyinCanvasRef={pinyinCanvasRef}
-          />
+          <TestView word={currentResult.word} onSubmit={handleSubmit} />
         </main>
       );
     }
@@ -315,30 +304,44 @@ function TestSetupView({
 function TestView({
   word,
   onSubmit,
-  hanziCanvasRef,
-  pinyinCanvasRef,
 }: {
   word: Word;
-  onSubmit: () => void;
-  hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
-  pinyinCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
+  onSubmit: (answer: { hanziImage: string; pinyinImage: string }) => void;
 }) {
+  const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
+  const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
+
+  const handleSubmit = () => {
+    const hanziImage = hanziCanvasRef.current?.getDataURL();
+    const pinyinImage = pinyinCanvasRef.current?.getDataURL();
+    if (!hanziImage || !pinyinImage) return;
+    onSubmit({ hanziImage, pinyinImage });
+  };
+
   return (
     <div className="disable-text-selection mt-4 flex flex-col gap-4">
       <div className="flex justify-center pt-1 pb-2">
         <WordPlayer word={word} />
       </div>
 
-      <CanvasBlock label="漢字" canvasRef={hanziCanvasRef} />
+      <CanvasBlock
+        key={`${word.hanzi}-${word.pinyin}-hanzi`}
+        label="漢字"
+        canvasRef={hanziCanvasRef}
+      />
 
       <div className="mt-10">
-        <CanvasBlock label="ピンイン" canvasRef={pinyinCanvasRef} />
+        <CanvasBlock
+          key={`${word.hanzi}-${word.pinyin}-pinyin`}
+          label="ピンイン"
+          canvasRef={pinyinCanvasRef}
+        />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <button
           type="button"
-          onClick={onSubmit}
+          onClick={handleSubmit}
           className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
         >
           答え合わせ
