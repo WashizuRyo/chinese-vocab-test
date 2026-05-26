@@ -15,7 +15,7 @@ interface Point {
 
 const STROKE_COLOR = "#111111";
 const GRID_COLOR = "#dcdcdc";
-const STROKE_WIDTH = 5.5;
+const STROKE_WIDTH = 8.5;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 288;
 
