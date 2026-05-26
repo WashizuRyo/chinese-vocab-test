@@ -7,7 +7,6 @@ import type { HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
 import type { Lesson, Word } from "@/lib/types";
-import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/word-audio";
 
 type LearnRunnerState =
@@ -69,16 +68,8 @@ export function LearnRunner({
   onStartTest: () => void;
 }) {
   const [state, setState] = useState<LearnRunnerState>({ status: "learn", index: 0 });
-  const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
-  const pinyinCanvasRef = useRef<HandwritingCanvasHandle>(null);
-
-  const clearCanvases = () => {
-    hanziCanvasRef.current?.clear();
-    pinyinCanvasRef.current?.clear();
-  };
 
   const restartLearning = () => {
-    clearCanvases();
     setState({ status: "learn", index: 0 });
     const firstWord = lesson.words[0];
     if (firstWord) wordAudio.play(firstWord);
@@ -94,18 +85,15 @@ export function LearnRunner({
           word={word}
           current={state.index + 1}
           total={lesson.words.length}
-          hanziCanvasRef={hanziCanvasRef}
           onBackToMode={onBackToMode}
           onShowList={() => setState({ status: "list", returnIndex: state.index })}
           onPrev={() => {
             const previousWord = lesson.words[state.index - 1];
             if (!previousWord) return;
-            clearCanvases();
             setState({ status: "learn", index: state.index - 1 });
             wordAudio.play(previousWord);
           }}
           onNext={() => {
-            clearCanvases();
             const nextWord = lesson.words[state.index + 1];
             if (!nextWord) {
               setState({ status: "complete" });
@@ -149,7 +137,6 @@ function LearnView({
   word,
   current,
   total,
-  hanziCanvasRef,
   onBackToMode,
   onShowList,
   onPrev,
@@ -158,12 +145,13 @@ function LearnView({
   word: Word;
   current: number;
   total: number;
-  hanziCanvasRef: React.RefObject<HandwritingCanvasHandle | null>;
   onBackToMode: () => void;
   onShowList: () => void;
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const hanziCanvasRef = useRef<HandwritingCanvasHandle>(null);
+
   return (
     <main className="disable-text-selection flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
@@ -189,7 +177,11 @@ function LearnView({
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
-        <CanvasBlock label="手書き練習" canvasRef={hanziCanvasRef} aspectRatio={0.48} />
+        <CanvasBlock
+          key={`${word.hanzi}-${word.pinyin}-practice`}
+          label="手書き練習"
+          canvasRef={hanziCanvasRef}
+        />
       </section>
 
       <div className="disable-text-selection fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
@@ -245,7 +237,7 @@ function LearnListView({
       <section className="mt-4 flex flex-col gap-3">
         {words.map((word) => (
           <article
-            key={wordKey(word)}
+            key={`${word.hanzi}-${word.pinyin}`}
             className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 shadow-sm"
           >
             <div className="flex items-end justify-between gap-4">
