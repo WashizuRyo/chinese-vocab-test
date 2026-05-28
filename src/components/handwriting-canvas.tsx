@@ -217,14 +217,16 @@ export function HandwritingCanvas({
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</span>
+        <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          {label}
+        </span>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             aria-label="元に戻す"
             disabled={!canUndo}
             onClick={handleUndo}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:active:bg-zinc-800"
           >
             戻る
           </button>
@@ -233,14 +235,14 @@ export function HandwritingCanvas({
             aria-label="やり直す"
             disabled={!canRedo}
             onClick={handleRedo}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:active:bg-zinc-800"
           >
             進む
           </button>
           <button
             type="button"
             onClick={handleClear}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50"
+            className="rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-600 active:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:active:bg-zinc-800"
           >
             クリア
           </button>

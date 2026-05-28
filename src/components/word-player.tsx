@@ -17,7 +17,7 @@ export function WordPlayer({ word }: Props) {
       <button
         type="button"
         onClick={handleReplay}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-sm active:scale-95 transition-transform"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-white shadow-sm transition-transform active:scale-95 dark:bg-zinc-100 dark:text-zinc-950"
         aria-label="発音を再生"
       >
         <PlayIcon />
