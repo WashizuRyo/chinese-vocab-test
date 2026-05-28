@@ -22,10 +22,10 @@ export function WordSelection({
   };
 
   return (
-    <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4">
+    <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-zinc-700">出題する単語</h2>
-        <span className="text-sm font-semibold tabular-nums text-zinc-900">
+        <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">出題する単語</h2>
+        <span className="text-sm font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">
           {selectedWords.length} / {words.length}
         </span>
       </div>
@@ -33,11 +33,13 @@ export function WordSelection({
         {words.map((word) => (
           <label
             key={wordKey(word)}
-            className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 px-3 py-2"
+            className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-800"
           >
             <span className="min-w-0">
-              <span className="block text-base font-semibold text-zinc-900">{word.hanzi}</span>
-              <span className="block truncate text-xs text-zinc-500">
+              <span className="block text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                {word.hanzi}
+              </span>
+              <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
                 {word.pinyin} / {word.japanese}
               </span>
             </span>

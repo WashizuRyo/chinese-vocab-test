@@ -264,13 +264,17 @@ function QuizSetupView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={onBack} className="text-base text-zinc-500">
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-base text-zinc-500 dark:text-zinc-400"
+        >
           ← モード選択
         </button>
       </div>
 
-      <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">クイズ設定</p>
+      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{lesson.title}</h1>
+      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">クイズ設定</p>
 
       <WordSelection
         words={lesson.words}
@@ -278,9 +282,11 @@ function QuizSetupView({
         onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
-      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700">出題順をシャッフル</span>
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            出題順をシャッフル
+          </span>
           <input
             type="checkbox"
             checked={shuffleOn}
@@ -290,11 +296,13 @@ function QuizSetupView({
         </label>
       </section>
 
-      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <label className="flex items-start justify-between gap-4">
           <span>
-            <span className="block text-sm font-medium text-zinc-700">最後に数字を追加</span>
-            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+            <span className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              最後に数字を追加
+            </span>
+            <span className="mt-1 block text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
               オンにすると、選んだ単語のあとに1〜50の数字を2語追加します。
             </span>
           </span>
@@ -310,7 +318,7 @@ function QuizSetupView({
         type="button"
         onClick={onStart}
         disabled={selectedWordCount === 0}
-        className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-950"
       >
         クイズを始める
       </button>
@@ -339,7 +347,11 @@ function QuizQuestionView({
 }) {
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
-      <button type="button" onClick={onBackToMode} className="mb-8 w-fit text-base text-zinc-500">
+      <button
+        type="button"
+        onClick={onBackToMode}
+        className="mb-8 w-fit text-base text-zinc-500 dark:text-zinc-400"
+      >
         ← モード選択
       </button>
       <ProgressBar current={current} total={total} />
@@ -373,22 +385,24 @@ function QuizChoicesView({
 
   const optionClassName = (option: string) => {
     if (!answered) {
-      return "border-zinc-200 bg-white text-zinc-900 active:bg-zinc-50";
+      return "border-zinc-200 bg-white text-zinc-900 active:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:active:bg-zinc-800";
     }
     if (option === question.answer) {
-      return "border-emerald-600 bg-emerald-50 text-emerald-800";
+      return "border-emerald-600 bg-emerald-50 text-emerald-800 dark:border-emerald-500 dark:bg-emerald-950 dark:text-emerald-300";
     }
     if (option === selectedAnswer) {
-      return "border-rose-600 bg-rose-50 text-rose-800";
+      return "border-rose-600 bg-rose-50 text-rose-800 dark:border-rose-500 dark:bg-rose-950 dark:text-rose-300";
     }
-    return "border-zinc-200 bg-zinc-50 text-zinc-400";
+    return "border-zinc-200 bg-zinc-50 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-600";
   };
 
   return (
     <div className="mt-4 flex flex-col gap-4">
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ</div>
-        <h1 className="mt-1 text-xl font-bold text-zinc-900">{title}</h1>
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          クイズ
+        </div>
+        <h1 className="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-100">{title}</h1>
         <div className="mt-4 flex justify-center">
           <WordPlayer word={question.word} />
         </div>
@@ -415,18 +429,22 @@ function QuizChoicesView({
         <section
           className={`rounded-2xl border p-4 ${
             isCorrect ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"
-          }`}
+          } dark:border-zinc-800 ${isCorrect ? "dark:bg-emerald-950" : "dark:bg-rose-950"}`}
         >
           <div
-            className={`text-sm font-semibold ${isCorrect ? "text-emerald-800" : "text-rose-800"}`}
+            className={`text-sm font-semibold ${
+              isCorrect
+                ? "text-emerald-800 dark:text-emerald-300"
+                : "text-rose-800 dark:text-rose-300"
+            }`}
           >
             {isCorrect ? "正解" : "不正解"}
           </div>
           <div className="mt-2 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 text-sm">
-            <div className="text-zinc-500">正解</div>
-            <div className="font-semibold text-zinc-900">{question.answer}</div>
-            <div className="text-zinc-500">意味</div>
-            <div className="text-zinc-800">{question.word.japanese}</div>
+            <div className="text-zinc-500 dark:text-zinc-400">正解</div>
+            <div className="font-semibold text-zinc-900 dark:text-zinc-100">{question.answer}</div>
+            <div className="text-zinc-500 dark:text-zinc-400">意味</div>
+            <div className="text-zinc-800 dark:text-zinc-200">{question.word.japanese}</div>
           </div>
         </section>
       ) : null}
@@ -435,7 +453,7 @@ function QuizChoicesView({
         type="button"
         onClick={onNext}
         disabled={!answered}
-        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-2 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-950"
       >
         {isLast ? "結果を見る" : "次へ"}
       </button>
@@ -472,7 +490,7 @@ function QuizResultView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <header className="mb-4">
         <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">クイズ結果</div>
-        <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
+        <h1 className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">{lessonTitle}</h1>
       </header>
 
       <section className="grid grid-cols-3 gap-2">
@@ -492,16 +510,23 @@ function QuizResultView({
       </section>
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-zinc-700">間違えた単語 ({wrongWords.length})</h2>
+        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+          間違えた単語 ({wrongWords.length})
+        </h2>
         {wrongWords.length === 0 ? (
-          <p className="mt-2 text-sm text-zinc-500">全問正解です。</p>
+          <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">全問正解です。</p>
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {wrongWords.map((word) => (
-              <li key={wordKey(word)} className="rounded-xl border border-zinc-200 bg-white p-3">
-                <div className="font-serif text-2xl text-zinc-900">{word.hanzi}</div>
-                <div className="mt-0.5 text-sm text-zinc-700">{word.pinyin}</div>
-                <div className="text-xs text-zinc-500">{word.japanese}</div>
+              <li
+                key={wordKey(word)}
+                className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900"
+              >
+                <div className="font-serif text-2xl text-zinc-900 dark:text-zinc-100">
+                  {word.hanzi}
+                </div>
+                <div className="mt-0.5 text-sm text-zinc-700 dark:text-zinc-300">{word.pinyin}</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">{word.japanese}</div>
               </li>
             ))}
           </ul>
@@ -513,7 +538,7 @@ function QuizResultView({
           <button
             type="button"
             onClick={onRetryWrongOnly}
-            className="h-12 w-full rounded-2xl bg-zinc-900 text-sm font-semibold text-white shadow-sm"
+            className="h-12 w-full rounded-2xl bg-zinc-900 text-sm font-semibold text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-950"
           >
             間違えたものだけもう一度 ({wrongWords.length})
           </button>
@@ -521,21 +546,21 @@ function QuizResultView({
         <button
           type="button"
           onClick={onRetry}
-          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
           同じ範囲でもう一度
         </button>
         <button
           type="button"
           onClick={onStartTest}
-          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
           本番形式テストへ進む
         </button>
         <button
           type="button"
           onClick={onBackToMode}
-          className="h-12 w-full rounded-2xl text-sm font-semibold text-zinc-600"
+          className="h-12 w-full rounded-2xl text-sm font-semibold text-zinc-600 dark:text-zinc-300"
         >
           モード選択
         </button>
@@ -556,17 +581,17 @@ function QuizScoreTile({
   accent: "emerald" | "sky" | "zinc";
 }) {
   const accentClass = {
-    emerald: "text-emerald-600",
-    sky: "text-sky-600",
-    zinc: "text-zinc-900",
+    emerald: "text-emerald-600 dark:text-emerald-400",
+    sky: "text-sky-600 dark:text-sky-400",
+    zinc: "text-zinc-900 dark:text-zinc-100",
   }[accent];
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-3 text-center">
-      <div className="text-xs font-medium text-zinc-500">{label}</div>
+    <div className="rounded-2xl border border-zinc-200 bg-white p-3 text-center dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{label}</div>
       <div className={`mt-1 text-2xl font-bold ${accentClass}`}>
         {correct}
-        <span className="text-sm text-zinc-400"> / {total}</span>
+        <span className="text-sm text-zinc-400 dark:text-zinc-500"> / {total}</span>
       </div>
     </div>
   );
