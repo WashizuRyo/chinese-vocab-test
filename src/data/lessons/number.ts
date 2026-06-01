@@ -2,7 +2,7 @@ import type { Lesson } from "@/lib/types";
 
 export const number: Lesson = {
   id: "number",
-  title: "数字 1〜100",
+  title: "数字 1〜99",
   words: [
     { hanzi: "一", pinyin: "yī", japanese: "1", audioSrc: "/audio/words/一-yī.mp3" },
     { hanzi: "二", pinyin: "èr", japanese: "2", audioSrc: "/audio/words/二-èr.mp3" },
@@ -463,6 +463,5 @@ export const number: Lesson = {
       japanese: "99",
       audioSrc: "/audio/words/九十九-jiǔ-shí-jiǔ.mp3",
     },
-    { hanzi: "一百", pinyin: "yī bǎi", japanese: "100", audioSrc: "/audio/words/一百-yī-bǎi.mp3" },
   ],
 };

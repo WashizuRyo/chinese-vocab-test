@@ -43,5 +43,7 @@ Read the Chinese numbers exactly. Use standard Mainland Mandarin. Use a neutral,
 
 - Keep `audioSrc` stable; replace file contents unless the lesson data is intentionally extended.
 - For number lessons, add future ranges and generate only the new range, normally 50 numbers at a time.
+- If the user wants the most consistent number voice as the range grows, use `scripts/compose-number-audio-from-tts-base.mjs` instead of 50-item batch synthesis. It generates `1〜10` once, trims those clips, and composes `11〜99` from the components.
+- Component composition is less natural than full-number TTS, but it avoids per-range voice drift.
 - Delete temporary `public/audio/samples/` files before committing unless the user explicitly asks to keep samples.
 - The generated files are intended for browser playback from `public/audio/words/`.
