@@ -33,7 +33,7 @@ describe("quiz", () => {
         kind: "pinyin",
         word: words[0],
         answer: "nǐ",
-        choices: expect.arrayContaining(["nǐ", "wǒ", "shì", "ma"]),
+        choices: expect.arrayContaining(["nǐ", "nī", "ní", "nì"]),
       }),
     );
   });
