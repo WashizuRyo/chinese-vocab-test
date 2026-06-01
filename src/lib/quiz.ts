@@ -1,22 +1,23 @@
+import { buildPinyinToneChoices } from "@/lib/pinyin-choices";
 import { shuffle } from "@/lib/shuffle";
 import type { Question, Quiz, Word } from "@/lib/types";
 
-function createChoices({
-  target,
-  source,
-  field,
-}: {
-  target: Word;
-  source: Word[];
-  field: "hanzi" | "pinyin";
-}): string[] {
-  const correct = target[field];
+function createHanziChoices({ target, source }: { target: Word; source: Word[] }): string[] {
+  const correct = target.hanzi;
   const wrongChoices = source
-    .map((word) => word[field])
+    .map((word) => word.hanzi)
     .filter((option) => option !== correct)
     .slice(0, 3);
 
   return [correct, ...wrongChoices];
+}
+
+function createPinyinChoices({ target, source }: { target: Word; source: Word[] }): string[] {
+  const fallbackPinyins = source
+    .map((word) => word.pinyin)
+    .filter((option) => option !== target.pinyin);
+
+  return buildPinyinToneChoices(target.pinyin, fallbackPinyins);
 }
 
 function createQuestions({ words, source }: { words: Word[]; source: Word[] }): Question[] {
@@ -27,13 +28,13 @@ function createQuestions({ words, source }: { words: Word[]; source: Word[] }): 
       kind: "hanzi" as const,
       word,
       answer: word.hanzi,
-      choices: shuffle(createChoices({ target: word, source, field: "hanzi" })),
+      choices: shuffle(createHanziChoices({ target: word, source })),
     },
     {
       kind: "pinyin" as const,
       word,
       answer: word.pinyin,
-      choices: shuffle(createChoices({ target: word, source, field: "pinyin" })),
+      choices: shuffle(createPinyinChoices({ target: word, source })),
     },
   ]);
 }
