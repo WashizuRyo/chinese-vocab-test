@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google TTS Batch Audio"
+  short_description: "Batch-generate Chinese word audio"
+  default_prompt: "Generate consistent Chinese word MP3 audio from lesson data using Google TTS batch synthesis and silence cutting."
