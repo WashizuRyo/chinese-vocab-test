@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { number } from "@/data/lessons/number";
 import { createQuiz } from "@/lib/quiz";
 import type { Word } from "@/lib/types";
@@ -53,5 +53,28 @@ describe("quiz", () => {
     expect(
       generatedQuiz.questions.filter((question) => /^\d+$/.test(question.word.japanese)),
     ).toHaveLength(4);
+  });
+
+  test("漢字問題の誤答候補を課の先頭3語に固定しないこと", () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0);
+    const sourceWords: Word[] = [
+      ...words,
+      { hanzi: "好", pinyin: "hǎo", japanese: "よい", audioSrc: "/audio/words/好-hǎo.mp3" },
+    ];
+
+    try {
+      const generatedQuiz = createQuiz({
+        lessonWords: words.slice(0, 1),
+        lessonChoiceSourceWords: sourceWords,
+        numberWords: [],
+        numberChoiceSourceWords: number.words,
+      });
+
+      const hanziQuestion = generatedQuiz.questions.find((question) => question.kind === "hanzi");
+
+      expect(hanziQuestion?.choices).toContain("好");
+    } finally {
+      randomSpy.mockRestore();
+    }
   });
 });

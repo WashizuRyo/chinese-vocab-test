@@ -4,10 +4,9 @@ import type { Question, Quiz, Word } from "@/lib/types";
 
 function createHanziChoices({ target, source }: { target: Word; source: Word[] }): string[] {
   const correct = target.hanzi;
-  const wrongChoices = source
-    .map((word) => word.hanzi)
-    .filter((option) => option !== correct)
-    .slice(0, 3);
+  const wrongChoices = shuffle(
+    source.map((word) => word.hanzi).filter((option) => option !== correct),
+  ).slice(0, 3);
 
   return [correct, ...wrongChoices];
 }
