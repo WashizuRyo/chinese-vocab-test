@@ -400,6 +400,7 @@ function QuizChoicesView({
             key={option}
             type="button"
             aria-label={`選択肢: ${option}`}
+            lang={question.kind === "hanzi" ? "zh-CN" : undefined}
             onClick={() => onSelect(option)}
             disabled={answered}
             className={`flex min-h-24 items-center justify-center rounded-2xl border-2 px-3 py-3 text-center text-2xl leading-snug font-semibold break-words transition-colors ${optionClassName(
@@ -424,7 +425,12 @@ function QuizChoicesView({
           </div>
           <div className="mt-2 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 text-sm">
             <div className="text-zinc-500">正解</div>
-            <div className="font-semibold text-zinc-900">{question.answer}</div>
+            <div
+              lang={question.kind === "hanzi" ? "zh-CN" : undefined}
+              className="font-semibold text-zinc-900"
+            >
+              {question.answer}
+            </div>
             <div className="text-zinc-500">意味</div>
             <div className="text-zinc-800">{question.word.japanese}</div>
           </div>
@@ -499,7 +505,9 @@ function QuizResultView({
           <ul className="mt-2 flex flex-col gap-2">
             {wrongWords.map((word) => (
               <li key={wordKey(word)} className="rounded-xl border border-zinc-200 bg-white p-3">
-                <div className="font-serif text-2xl text-zinc-900">{word.hanzi}</div>
+                <div lang="zh-CN" className="font-serif text-2xl text-zinc-900">
+                  {word.hanzi}
+                </div>
                 <div className="mt-0.5 text-sm text-zinc-700">{word.pinyin}</div>
                 <div className="text-xs text-zinc-500">{word.japanese}</div>
               </li>
