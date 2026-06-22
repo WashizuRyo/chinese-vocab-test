@@ -161,11 +161,15 @@ function MemorizeModePreview() {
           <span className="flex min-w-0 items-end gap-x-1">
             <span className="flex flex-col items-center">
               <span className="text-xs leading-relaxed text-zinc-500">nǐ</span>
-              <span className="font-serif text-5xl leading-tight text-zinc-950">你</span>
+              <span lang="zh-CN" className="font-serif text-5xl leading-tight text-zinc-950">
+                你
+              </span>
             </span>
             <span className="flex flex-col items-center">
               <span className="text-xs leading-relaxed text-zinc-500">hǎo</span>
-              <span className="font-serif text-5xl leading-tight text-zinc-950">好</span>
+              <span lang="zh-CN" className="font-serif text-5xl leading-tight text-zinc-950">
+                好
+              </span>
             </span>
           </span>
           <PreviewPlayIcon />

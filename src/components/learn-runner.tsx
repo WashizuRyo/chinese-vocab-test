@@ -36,7 +36,10 @@ function RubyHanzi({ word }: { word: Word }) {
         {rubyParts.map((part) => (
           <span key={part.key} className="flex flex-col items-center">
             <span className="text-sm leading-relaxed text-zinc-500">{part.pinyin}</span>
-            <span className={`font-serif ${hanziClassName} leading-tight text-zinc-900`}>
+            <span
+              lang="zh-CN"
+              className={`font-serif ${hanziClassName} leading-tight text-zinc-900`}
+            >
               {part.char}
             </span>
           </span>
@@ -48,7 +51,10 @@ function RubyHanzi({ word }: { word: Word }) {
   return (
     <div className="min-w-0">
       <div className="break-words text-sm leading-relaxed text-zinc-500">{word.pinyin}</div>
-      <div className={`break-words font-serif ${hanziClassName} leading-tight text-zinc-900`}>
+      <div
+        lang="zh-CN"
+        className={`break-words font-serif ${hanziClassName} leading-tight text-zinc-900`}
+      >
         {word.hanzi}
       </div>
     </div>

@@ -67,7 +67,9 @@ export function AnswerReveal({
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">漢字</div>
-            <div className="mt-1 font-serif text-5xl text-zinc-900">{word.hanzi}</div>
+            <div lang="zh-CN" className="mt-1 font-serif text-5xl text-zinc-900">
+              {word.hanzi}
+            </div>
           </div>
           <JudgeButtons value={hanziCorrect} onChange={onJudgeHanzi} />
         </div>

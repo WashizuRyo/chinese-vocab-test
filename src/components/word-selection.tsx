@@ -36,7 +36,9 @@ export function WordSelection({
             className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 px-3 py-2"
           >
             <span className="min-w-0">
-              <span className="block text-base font-semibold text-zinc-900">{word.hanzi}</span>
+              <span lang="zh-CN" className="block text-base font-semibold text-zinc-900">
+                {word.hanzi}
+              </span>
               <span className="block truncate text-xs text-zinc-500">
                 {word.pinyin} / {word.japanese}
               </span>

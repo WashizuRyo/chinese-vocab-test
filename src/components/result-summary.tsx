@@ -44,7 +44,9 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
             {wrongResults.map((r) => (
               <li key={r.word.hanzi} className="rounded-xl border border-zinc-200 bg-white p-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <div className="font-serif text-2xl text-zinc-900">{r.word.hanzi}</div>
+                  <div lang="zh-CN" className="font-serif text-2xl text-zinc-900">
+                    {r.word.hanzi}
+                  </div>
                   <div className="flex gap-1.5 text-xs">
                     <Badge label="漢字" ok={r.hanziCorrect === true} />
                     <Badge label="ピンイン" ok={r.pinyinCorrect === true} />
