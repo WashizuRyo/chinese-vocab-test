@@ -42,9 +42,9 @@ export const lesson05: Lesson = {
     { hanzi: "书", pinyin: "shū", japanese: "本", audioSrc: "/audio/words/书-shū.mp3" },
     {
       hanzi: "喜欢",
-      pinyin: "xǐhuan",
+      pinyin: "xǐhuān",
       japanese: "好きだ",
-      audioSrc: "/audio/words/喜欢-xǐhuan.mp3",
+      audioSrc: "/audio/words/喜欢-xǐhuān.mp3",
     },
     {
       hanzi: "看",
