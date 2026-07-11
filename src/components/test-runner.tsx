@@ -177,7 +177,7 @@ export function TestRunner({
           <button
             type="button"
             onClick={onBackToMode}
-            className="mb-8 w-fit text-base text-zinc-500"
+            className="mb-8 w-fit text-base text-muted-foreground"
           >
             ← モード選択
           </button>
@@ -196,7 +196,7 @@ export function TestRunner({
           <button
             type="button"
             onClick={onBackToMode}
-            className="mb-8 w-fit text-base text-zinc-500"
+            className="mb-8 w-fit text-base text-muted-foreground"
           >
             ← モード選択
           </button>
@@ -260,13 +260,13 @@ function TestSetupView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
-        <button type="button" onClick={onBack} className="text-base text-zinc-500">
+        <button type="button" onClick={onBack} className="text-base text-muted-foreground">
           ← モード選択
         </button>
       </div>
 
-      <h1 className="text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-      <p className="mt-1 text-sm text-zinc-500">出題設定</p>
+      <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">出題設定</p>
 
       <WordSelection
         words={lesson.words}
@@ -274,9 +274,9 @@ function TestSetupView({
         onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
-      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
         <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700">出題順をシャッフル</span>
+          <span className="text-sm font-medium text-surface-foreground">出題順をシャッフル</span>
           <input
             type="checkbox"
             checked={shuffleOn}
@@ -286,11 +286,13 @@ function TestSetupView({
         </label>
       </section>
 
-      <section className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
         <label className="flex items-start justify-between gap-4">
           <span>
-            <span className="block text-sm font-medium text-zinc-700">最後に数字を追加</span>
-            <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+            <span className="block text-sm font-medium text-surface-foreground">
+              最後に数字を追加
+            </span>
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
               オンにすると、選んだ単語のあとに1〜50の数字を2語追加します。
             </span>
           </span>
@@ -306,7 +308,7 @@ function TestSetupView({
         type="button"
         onClick={onStart}
         disabled={selectedWordCount === 0}
-        className="mt-8 h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-8 h-14 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-sm active:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         スタート
       </button>
@@ -351,11 +353,11 @@ function TestView({
         />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <button
           type="button"
           onClick={handleSubmit}
-          className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+          className="h-14 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-sm active:opacity-90"
         >
           答え合わせ
         </button>

@@ -19,7 +19,7 @@ export function LoginForm({ next }: { next: string }) {
         autoComplete="current-password"
         enterKeyHint="go"
         placeholder="あいことば"
-        className="h-12 w-full rounded-xl border border-zinc-300 bg-white px-4 text-base text-zinc-900 outline-none focus:border-zinc-500"
+        className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-base text-foreground outline-none focus:border-foreground"
       />
       {state?.error ? <p className="text-sm text-rose-600">{state.error}</p> : null}
       <SubmitButton />
@@ -33,7 +33,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="h-12 w-full rounded-xl bg-zinc-900 text-base font-semibold text-white shadow-sm transition-opacity disabled:opacity-50"
+      className="h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground shadow-sm transition-opacity disabled:opacity-50"
     >
       {pending ? "確認中..." : "入る"}
     </button>

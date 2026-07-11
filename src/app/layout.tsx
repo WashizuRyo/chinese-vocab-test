@@ -22,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className="h-full">
-      <body className="min-h-dvh flex flex-col bg-white text-zinc-900 antialiased">{children}</body>
+      <body className="min-h-dvh flex flex-col bg-background text-foreground antialiased">
+        {children}
+      </body>
     </html>
   );
 }
