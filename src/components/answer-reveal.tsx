@@ -23,7 +23,7 @@ function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boole
         className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
           value === true
             ? "border-emerald-600 bg-emerald-600 text-white"
-            : "border-border bg-surface text-muted-foreground"
+            : "border-border bg-card text-muted-foreground"
         }`}
         aria-label="正解"
       >
@@ -35,7 +35,7 @@ function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boole
         className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
           value === false
             ? "border-rose-600 bg-rose-600 text-white"
-            : "border-border bg-surface text-muted-foreground"
+            : "border-border bg-card text-muted-foreground"
         }`}
         aria-label="不正解"
       >
@@ -62,10 +62,10 @@ export function AnswerReveal({
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           日本語訳
         </div>
-        <div className="mt-1 text-base text-surface-foreground">{word.japanese}</div>
+        <div className="mt-1 text-base text-card-foreground">{word.japanese}</div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -88,7 +88,7 @@ export function AnswerReveal({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

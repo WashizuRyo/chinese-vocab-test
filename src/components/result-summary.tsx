@@ -36,7 +36,7 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
       </section>
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-surface-foreground">
+        <h2 className="text-sm font-semibold text-card-foreground">
           間違えた単語 ({wrongResults.length})
         </h2>
         {wrongResults.length === 0 ? (
@@ -44,7 +44,7 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {wrongResults.map((r) => (
-              <li key={r.word.hanzi} className="rounded-xl border border-border bg-surface p-3">
+              <li key={r.word.hanzi} className="rounded-xl border border-border bg-card p-3">
                 <div className="flex items-baseline justify-between gap-3">
                   <div lang="zh-CN" className="font-serif text-2xl text-foreground">
                     {r.word.hanzi}
@@ -54,7 +54,7 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
                     <Badge label="ピンイン" ok={r.pinyinCorrect === true} />
                   </div>
                 </div>
-                <div className="mt-0.5 text-sm text-surface-foreground">{r.word.pinyin}</div>
+                <div className="mt-0.5 text-sm text-card-foreground">{r.word.pinyin}</div>
                 <div className="text-xs text-muted-foreground">{r.word.japanese}</div>
               </li>
             ))}
@@ -75,7 +75,7 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
         <button
           type="button"
           onClick={onRetry}
-          className="h-12 w-full rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           もう一度（同じ範囲）
         </button>
@@ -107,7 +107,7 @@ function ScoreTile({
     zinc: "text-foreground",
   }[accent];
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3 text-center">
+    <div className="rounded-2xl border border-border bg-card p-3 text-center">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className={`mt-1 text-2xl font-bold ${accentClass}`}>
         {correct}

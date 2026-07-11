@@ -19,7 +19,7 @@ export function LoginForm({ next }: { next: string }) {
         autoComplete="current-password"
         enterKeyHint="go"
         placeholder="あいことば"
-        className="h-12 w-full rounded-xl border border-border bg-surface px-4 text-base text-foreground outline-none focus:border-foreground"
+        className="h-12 w-full rounded-xl border border-border bg-input px-4 text-base text-foreground outline-none focus:border-ring"
       />
       {state?.error ? <p className="text-sm text-rose-600">{state.error}</p> : null}
       <SubmitButton />

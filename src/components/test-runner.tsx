@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { AnswerReveal } from "@/components/answer-reveal";
+import { BackLabel } from "@/components/back-label";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { ResultSummary } from "@/components/result-summary";
@@ -179,7 +180,7 @@ export function TestRunner({
             onClick={onBackToMode}
             className="mb-8 w-fit text-base text-muted-foreground"
           >
-            ← モード選択
+            <BackLabel>モード選択</BackLabel>
           </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <TestView word={currentResult.word} onSubmit={handleSubmit} />
@@ -198,7 +199,7 @@ export function TestRunner({
             onClick={onBackToMode}
             className="mb-8 w-fit text-base text-muted-foreground"
           >
-            ← モード選択
+            <BackLabel>モード選択</BackLabel>
           </button>
           <ProgressBar current={state.index + 1} total={state.results.length} />
           <div className="mt-4">
@@ -261,7 +262,7 @@ function TestSetupView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
         <button type="button" onClick={onBack} className="text-base text-muted-foreground">
-          ← モード選択
+          <BackLabel>モード選択</BackLabel>
         </button>
       </div>
 
@@ -274,9 +275,9 @@ function TestSetupView({
         onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
-      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-card p-4">
         <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-surface-foreground">出題順をシャッフル</span>
+          <span className="text-sm font-medium text-card-foreground">出題順をシャッフル</span>
           <input
             type="checkbox"
             checked={shuffleOn}
@@ -286,12 +287,10 @@ function TestSetupView({
         </label>
       </section>
 
-      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-card p-4">
         <label className="flex items-start justify-between gap-4">
           <span>
-            <span className="block text-sm font-medium text-surface-foreground">
-              最後に数字を追加
-            </span>
+            <span className="block text-sm font-medium text-card-foreground">最後に数字を追加</span>
             <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
               オンにすると、選んだ単語のあとに1〜50の数字を2語追加します。
             </span>
@@ -353,7 +352,7 @@ function TestView({
         />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-card/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <button
           type="button"
           onClick={handleSubmit}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BackLabel } from "@/components/back-label";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
@@ -265,7 +266,7 @@ function QuizSetupView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
         <button type="button" onClick={onBack} className="text-base text-muted-foreground">
-          ← モード選択
+          <BackLabel>モード選択</BackLabel>
         </button>
       </div>
 
@@ -278,9 +279,9 @@ function QuizSetupView({
         onChange={(nextWords) => onChangeSettings({ selectedWords: nextWords })}
       />
 
-      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-card p-4">
         <label className="flex items-center justify-between">
-          <span className="text-sm font-medium text-surface-foreground">出題順をシャッフル</span>
+          <span className="text-sm font-medium text-card-foreground">出題順をシャッフル</span>
           <input
             type="checkbox"
             checked={shuffleOn}
@@ -290,12 +291,10 @@ function QuizSetupView({
         </label>
       </section>
 
-      <section className="mt-3 rounded-2xl border border-border bg-surface p-4">
+      <section className="mt-3 rounded-2xl border border-border bg-card p-4">
         <label className="flex items-start justify-between gap-4">
           <span>
-            <span className="block text-sm font-medium text-surface-foreground">
-              最後に数字を追加
-            </span>
+            <span className="block text-sm font-medium text-card-foreground">最後に数字を追加</span>
             <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
               オンにすると、選んだ単語のあとに1〜50の数字を2語追加します。
             </span>
@@ -346,7 +345,7 @@ function QuizQuestionView({
         onClick={onBackToMode}
         className="mb-8 w-fit text-base text-muted-foreground"
       >
-        ← モード選択
+        <BackLabel>モード選択</BackLabel>
       </button>
       <ProgressBar current={current} total={total} />
       <QuizChoicesView
@@ -379,7 +378,7 @@ function QuizChoicesView({
 
   const optionClassName = (option: string) => {
     if (!answered) {
-      return "border-border bg-surface text-foreground active:bg-muted";
+      return "border-border bg-card text-foreground active:bg-muted";
     }
     if (option === question.answer) {
       return "border-emerald-600 bg-emerald-50 text-emerald-800";
@@ -392,7 +391,7 @@ function QuizChoicesView({
 
   return (
     <div className="mt-4 flex flex-col gap-4">
-      <section className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           クイズ
         </div>
@@ -440,7 +439,7 @@ function QuizChoicesView({
               {question.answer}
             </div>
             <div className="text-muted-foreground">意味</div>
-            <div className="text-surface-foreground">{question.word.japanese}</div>
+            <div className="text-card-foreground">{question.word.japanese}</div>
           </div>
         </section>
       ) : null}
@@ -508,7 +507,7 @@ function QuizResultView({
       </section>
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-surface-foreground">
+        <h2 className="text-sm font-semibold text-card-foreground">
           間違えた単語 ({wrongWords.length})
         </h2>
         {wrongWords.length === 0 ? (
@@ -516,11 +515,11 @@ function QuizResultView({
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {wrongWords.map((word) => (
-              <li key={wordKey(word)} className="rounded-xl border border-border bg-surface p-3">
+              <li key={wordKey(word)} className="rounded-xl border border-border bg-card p-3">
                 <div lang="zh-CN" className="font-serif text-2xl text-foreground">
                   {word.hanzi}
                 </div>
-                <div className="mt-0.5 text-sm text-surface-foreground">{word.pinyin}</div>
+                <div className="mt-0.5 text-sm text-card-foreground">{word.pinyin}</div>
                 <div className="text-xs text-muted-foreground">{word.japanese}</div>
               </li>
             ))}
@@ -541,14 +540,14 @@ function QuizResultView({
         <button
           type="button"
           onClick={onRetry}
-          className="h-12 w-full rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           同じ範囲でもう一度
         </button>
         <button
           type="button"
           onClick={onStartTest}
-          className="h-12 w-full rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           本番形式テストへ進む
         </button>
@@ -582,7 +581,7 @@ function QuizScoreTile({
   }[accent];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-3 text-center">
+    <div className="rounded-2xl border border-border bg-card p-3 text-center">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className={`mt-1 text-2xl font-bold ${accentClass}`}>
         {correct}

@@ -11,7 +11,7 @@ export function LessonCard({ lesson }: Props) {
   return (
     <Link
       href={`/lesson/${lesson.id}`}
-      className="block rounded-2xl border border-border bg-surface p-4 shadow-sm active:bg-muted"
+      className="block rounded-2xl border border-border bg-card p-4 shadow-sm active:bg-muted"
     >
       <div className="flex items-center justify-between">
         <div>

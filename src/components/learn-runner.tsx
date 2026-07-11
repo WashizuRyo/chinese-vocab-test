@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { BackLabel } from "@/components/back-label";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
@@ -161,7 +162,7 @@ function LearnView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
         <button type="button" onClick={onBackToMode} className="text-base text-muted-foreground">
-          ← モード選択
+          <BackLabel>モード選択</BackLabel>
         </button>
         <button type="button" onClick={onShowList} className="text-base text-muted-foreground">
           単語一覧
@@ -170,13 +171,13 @@ function LearnView({
 
       <ProgressBar current={current} total={total} />
 
-      <section className="mt-4 rounded-2xl border border-border bg-surface px-4 py-5 shadow-sm">
+      <section className="mt-4 rounded-2xl border border-border bg-card px-4 py-5 shadow-sm">
         <div className="flex items-end justify-between gap-4">
           <RubyHanzi word={word} />
           <WordPlayer word={word} />
         </div>
         <div className="mt-4 h-px bg-border" />
-        <div className="mt-4 break-words text-base leading-relaxed text-surface-foreground">
+        <div className="mt-4 break-words text-base leading-relaxed text-card-foreground">
           {word.japanese}
         </div>
       </section>
@@ -189,13 +190,13 @@ function LearnView({
         />
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-surface/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-card/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <div className="mx-auto flex max-w-screen-sm gap-2">
           <button
             type="button"
             onClick={onPrev}
             disabled={current === 1}
-            className="h-14 w-24 rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+            className="h-14 w-24 rounded-2xl border border-border bg-card text-sm font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-30"
           >
             前へ
           </button>
@@ -227,7 +228,7 @@ function LearnListView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between gap-3">
         <button type="button" onClick={onBackToMode} className="text-base text-muted-foreground">
-          ← モード選択
+          <BackLabel>モード選択</BackLabel>
         </button>
         <button
           type="button"
@@ -247,14 +248,14 @@ function LearnListView({
         {words.map((word) => (
           <article
             key={`${word.hanzi}-${word.pinyin}`}
-            className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-sm"
+            className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
           >
             <div className="flex items-end justify-between gap-4">
               <RubyHanzi word={word} />
               <WordPlayer word={word} />
             </div>
             <div className="mt-3 h-px bg-border" />
-            <div className="mt-3 break-words text-base leading-relaxed text-surface-foreground">
+            <div className="mt-3 break-words text-base leading-relaxed text-card-foreground">
               {word.japanese}
             </div>
           </article>
@@ -298,14 +299,14 @@ function LearnCompleteView({
         <button
           type="button"
           onClick={onTest}
-          className="h-12 w-full rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           この課をテストする
         </button>
         <button
           type="button"
           onClick={onRestartLearning}
-          className="h-12 w-full rounded-2xl border border-border bg-surface text-sm font-semibold text-foreground"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           もう一周する
         </button>

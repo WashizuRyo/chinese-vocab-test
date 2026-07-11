@@ -22,9 +22,9 @@ export function WordSelection({
   };
 
   return (
-    <section className="mt-6 rounded-2xl border border-border bg-surface p-4">
+    <section className="mt-6 rounded-2xl border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-surface-foreground">出題する単語</h2>
+        <h2 className="text-sm font-medium text-card-foreground">出題する単語</h2>
         <span className="text-sm font-semibold tabular-nums text-foreground">
           {selectedWords.length} / {words.length}
         </span>

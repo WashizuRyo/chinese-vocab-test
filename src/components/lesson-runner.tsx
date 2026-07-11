@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BackLabel } from "@/components/back-label";
 import { LearnRunner } from "@/components/learn-runner";
 import { QuizRunner } from "@/components/quiz-runner";
 import { TestRunner } from "@/components/test-runner";
@@ -101,7 +102,7 @@ function ModeSelectView({
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between">
         <Link href="/" className="text-base text-muted-foreground" aria-label="トップへ">
-          ← トップ
+          <BackLabel>トップ</BackLabel>
         </Link>
       </div>
 
@@ -111,7 +112,7 @@ function ModeSelectView({
         <button
           type="button"
           onClick={onStartLearning}
-          className="w-full rounded-2xl border border-border bg-surface px-4 py-5 text-left shadow-sm active:bg-muted"
+          className="w-full rounded-2xl border border-border bg-card px-4 py-5 text-left shadow-sm active:bg-muted"
         >
           <span className="block text-lg font-semibold text-foreground">暗記</span>
           <span className="mt-1 block text-sm text-muted-foreground">
@@ -122,7 +123,7 @@ function ModeSelectView({
         <button
           type="button"
           onClick={onOpenQuizSetup}
-          className="w-full rounded-2xl border border-border bg-surface px-4 py-5 text-left shadow-sm active:bg-muted"
+          className="w-full rounded-2xl border border-border bg-card px-4 py-5 text-left shadow-sm active:bg-muted"
         >
           <span className="block text-lg font-semibold text-foreground">クイズ</span>
           <span className="mt-1 block text-sm text-muted-foreground">
@@ -133,7 +134,7 @@ function ModeSelectView({
         <button
           type="button"
           onClick={onOpenTestSetup}
-          className="w-full rounded-2xl border border-border bg-surface px-4 py-5 text-left shadow-sm active:bg-muted"
+          className="w-full rounded-2xl border border-border bg-card px-4 py-5 text-left shadow-sm active:bg-muted"
         >
           <span className="block text-lg font-semibold text-foreground">テスト</span>
           <span className="mt-1 block text-sm text-muted-foreground">
@@ -175,7 +176,7 @@ function MemorizeModePreview() {
           <PreviewPlayIcon />
         </span>
         <span className="mt-3 block h-px bg-border" />
-        <span className="mt-3 block text-base leading-relaxed text-surface-foreground">
+        <span className="mt-3 block text-base leading-relaxed text-card-foreground">
           こんにちは！
         </span>
       </span>
@@ -196,7 +197,7 @@ function QuizModePreview() {
           {choices.map((option) => (
             <span
               key={option}
-              className="flex h-10 items-center justify-center rounded-lg border border-border bg-surface text-lg font-semibold text-foreground"
+              className="flex h-10 items-center justify-center rounded-lg border border-border bg-card text-lg font-semibold text-foreground"
             >
               {option}
             </span>
