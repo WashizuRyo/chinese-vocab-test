@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
+import { themeInitializationScript } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,7 +19,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -27,7 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${geistSans.variable} h-full`}>
+    <html lang="ja" className={`${geistSans.variable} h-full`} suppressHydrationWarning>
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: This static script applies the saved theme before the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
+      </head>
       <body className="min-h-dvh flex flex-col bg-background text-foreground antialiased">
         {children}
       </body>
