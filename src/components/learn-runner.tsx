@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { BackLabel } from "@/components/back-label";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
 import { WordPlayer } from "@/components/word-player";
@@ -35,10 +36,10 @@ function RubyHanzi({ word }: { word: Word }) {
       <div className="flex min-w-0 flex-wrap items-end gap-x-1 gap-y-2">
         {rubyParts.map((part) => (
           <span key={part.key} className="flex flex-col items-center">
-            <span className="text-sm leading-relaxed text-zinc-500">{part.pinyin}</span>
+            <span className="text-sm leading-relaxed text-muted-foreground">{part.pinyin}</span>
             <span
               lang="zh-CN"
-              className={`font-serif ${hanziClassName} leading-tight text-zinc-900`}
+              className={`font-serif ${hanziClassName} leading-tight text-foreground`}
             >
               {part.char}
             </span>
@@ -50,10 +51,10 @@ function RubyHanzi({ word }: { word: Word }) {
 
   return (
     <div className="min-w-0">
-      <div className="break-words text-sm leading-relaxed text-zinc-500">{word.pinyin}</div>
+      <div className="break-words text-sm leading-relaxed text-muted-foreground">{word.pinyin}</div>
       <div
         lang="zh-CN"
-        className={`break-words font-serif ${hanziClassName} leading-tight text-zinc-900`}
+        className={`break-words font-serif ${hanziClassName} leading-tight text-foreground`}
       >
         {word.hanzi}
       </div>
@@ -160,23 +161,23 @@ function LearnView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-28">
       <div className="mb-8 flex items-center justify-between">
-        <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
-          ← モード選択
+        <button type="button" onClick={onBackToMode} className="text-base text-muted-foreground">
+          <BackLabel>モード選択</BackLabel>
         </button>
-        <button type="button" onClick={onShowList} className="text-base text-zinc-500">
+        <button type="button" onClick={onShowList} className="text-base text-muted-foreground">
           単語一覧
         </button>
       </div>
 
       <ProgressBar current={current} total={total} />
 
-      <section className="mt-4 rounded-2xl border border-zinc-200 bg-white px-4 py-5 shadow-sm">
+      <section className="mt-4 rounded-2xl border border-border bg-card px-4 py-5 shadow-sm">
         <div className="flex items-end justify-between gap-4">
           <RubyHanzi word={word} />
           <WordPlayer word={word} />
         </div>
-        <div className="mt-4 h-px bg-zinc-200" />
-        <div className="mt-4 break-words text-base leading-relaxed text-zinc-800">
+        <div className="mt-4 h-px bg-border" />
+        <div className="mt-4 break-words text-base leading-relaxed text-card-foreground">
           {word.japanese}
         </div>
       </section>
@@ -189,20 +190,20 @@ function LearnView({
         />
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-card/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
         <div className="mx-auto flex max-w-screen-sm gap-2">
           <button
             type="button"
             onClick={onPrev}
             disabled={current === 1}
-            className="h-14 w-24 rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-30"
+            className="h-14 w-24 rounded-2xl border border-border bg-card text-sm font-semibold text-foreground disabled:cursor-not-allowed disabled:opacity-30"
           >
             前へ
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="h-14 flex-1 rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+            className="h-14 flex-1 rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-sm active:opacity-90"
           >
             {current === total ? "完了" : "次へ"}
           </button>
@@ -226,31 +227,35 @@ function LearnListView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <button type="button" onClick={onBackToMode} className="text-base text-zinc-500">
-          ← モード選択
+        <button type="button" onClick={onBackToMode} className="text-base text-muted-foreground">
+          <BackLabel>モード選択</BackLabel>
         </button>
-        <button type="button" onClick={onBackToLearning} className="text-base text-zinc-500">
+        <button
+          type="button"
+          onClick={onBackToLearning}
+          className="text-base text-muted-foreground"
+        >
           単語カード
         </button>
       </div>
 
       <header>
-        <h1 className="text-2xl font-bold text-zinc-900">{lessonTitle}</h1>
-        <p className="mt-1 text-sm text-zinc-500">{words.length} 単語</p>
+        <h1 className="text-2xl font-bold text-foreground">{lessonTitle}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{words.length} 単語</p>
       </header>
 
       <section className="mt-4 flex flex-col gap-3">
         {words.map((word) => (
           <article
             key={`${word.hanzi}-${word.pinyin}`}
-            className="rounded-2xl border border-zinc-200 bg-white px-4 py-4 shadow-sm"
+            className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
           >
             <div className="flex items-end justify-between gap-4">
               <RubyHanzi word={word} />
               <WordPlayer word={word} />
             </div>
-            <div className="mt-3 h-px bg-zinc-200" />
-            <div className="mt-3 break-words text-base leading-relaxed text-zinc-800">
+            <div className="mt-3 h-px bg-border" />
+            <div className="mt-3 break-words text-base leading-relaxed text-card-foreground">
               {word.japanese}
             </div>
           </article>
@@ -274,9 +279,11 @@ function LearnCompleteView({
   return (
     <main className="flex flex-1 w-full flex-col px-4 pt-6 pb-10">
       <header className="mb-6">
-        <div className="text-xs font-medium uppercase tracking-wide text-zinc-500">暗記完了</div>
-        <h1 className="mt-1 text-2xl font-bold text-zinc-900">{lesson.title}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-500">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          暗記完了
+        </div>
+        <h1 className="mt-1 text-2xl font-bold text-foreground">{lesson.title}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {lesson.words.length} 単語を一周しました。続けてテストで確認できます。
         </p>
       </header>
@@ -285,27 +292,27 @@ function LearnCompleteView({
         <button
           type="button"
           onClick={onQuiz}
-          className="h-14 w-full rounded-2xl bg-zinc-900 text-base font-semibold text-white shadow-sm active:opacity-90"
+          className="h-14 w-full rounded-2xl bg-primary text-base font-semibold text-primary-foreground shadow-sm active:opacity-90"
         >
           クイズする
         </button>
         <button
           type="button"
           onClick={onTest}
-          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           この課をテストする
         </button>
         <button
           type="button"
           onClick={onRestartLearning}
-          className="h-12 w-full rounded-2xl border border-zinc-300 bg-white text-sm font-semibold text-zinc-900"
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           もう一周する
         </button>
         <Link
           href="/"
-          className="flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-zinc-600"
+          className="flex h-12 w-full items-center justify-center rounded-2xl text-sm font-semibold text-muted-foreground"
         >
           トップへ戻る
         </Link>

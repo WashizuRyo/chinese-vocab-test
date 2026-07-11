@@ -231,7 +231,7 @@ describe("LessonRunner", () => {
       render(<LessonRunner lesson={lesson} />);
 
       fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
-      fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
 
       expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
     });
@@ -264,7 +264,7 @@ describe("LessonRunner", () => {
 
       fireEvent.click(screen.getByRole("button", { name: /暗記/ }));
       fireEvent.click(screen.getByRole("button", { name: "単語一覧" }));
-      fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
 
       expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
       expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
@@ -319,7 +319,7 @@ describe("LessonRunner", () => {
       fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
       expect(screen.getByText("出題設定")).toBeVisible();
 
-      fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
 
       expect(screen.getByRole("heading", { name: "状態遷移課" })).toBeVisible();
     });
@@ -421,7 +421,7 @@ describe("LessonRunner", () => {
       render(<LessonRunner lesson={quizLesson} />);
 
       startQuiz();
-      fireEvent.click(screen.getByRole("button", { name: "← モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
 
       expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
       expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
