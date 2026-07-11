@@ -25,6 +25,14 @@
   --border: oklch(0.92 0 0);
   --input: oklch(0.94 0 0);
   --ring: oklch(0 0 0);
+  --correct: oklch(0.43 0.1 167);
+  --correct-foreground: oklch(1 0 0);
+  --correct-muted: oklch(0.98 0.02 166);
+  --correct-muted-foreground: oklch(0.38 0.09 167);
+  --incorrect: oklch(0.51 0.22 17);
+  --incorrect-foreground: oklch(1 0 0);
+  --incorrect-muted: oklch(0.97 0.02 12);
+  --incorrect-muted-foreground: oklch(0.46 0.19 14);
   --font-sans:
     var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Hiragino Sans",
     "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, "PingFang SC", "Microsoft YaHei", "Segoe UI",
@@ -47,6 +55,14 @@
     --border: oklch(0.26 0 0);
     --input: oklch(0.32 0 0);
     --ring: oklch(0.72 0 0);
+    --correct: oklch(0.85 0.14 165);
+    --correct-foreground: oklch(0.13 0.03 166);
+    --correct-muted: oklch(0.22 0.04 166);
+    --correct-muted-foreground: oklch(0.85 0.14 165);
+    --incorrect: oklch(0.81 0.12 12);
+    --incorrect-foreground: oklch(0.14 0.03 15);
+    --incorrect-muted: oklch(0.22 0.05 14);
+    --incorrect-muted-foreground: oklch(0.81 0.12 12);
   }
   /* biome-ignore-end lint/suspicious/noDuplicateProperties lint/suspicious/noDuplicateCustomProperties: Dark theme token overrides end here. */
 }
@@ -63,6 +79,14 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-correct: var(--correct);
+  --color-correct-foreground: var(--correct-foreground);
+  --color-correct-muted: var(--correct-muted);
+  --color-correct-muted-foreground: var(--correct-muted-foreground);
+  --color-incorrect: var(--incorrect);
+  --color-incorrect-foreground: var(--incorrect-foreground);
+  --color-incorrect-muted: var(--incorrect-muted);
+  --color-incorrect-muted-foreground: var(--incorrect-muted-foreground);
 
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);

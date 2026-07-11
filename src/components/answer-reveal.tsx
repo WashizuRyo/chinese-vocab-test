@@ -22,7 +22,7 @@ function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boole
         onClick={() => onChange(true)}
         className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
           value === true
-            ? "border-emerald-600 bg-emerald-600 text-white"
+            ? "border-correct bg-correct-muted text-correct-muted-foreground"
             : "border-border bg-card text-muted-foreground"
         }`}
         aria-label="正解"
@@ -34,7 +34,7 @@ function JudgeButtons({ value, onChange }: { value: boolean; onChange: (v: boole
         onClick={() => onChange(false)}
         className={`flex h-11 w-16 items-center justify-center rounded-full border-2 text-xl font-bold transition-colors ${
           value === false
-            ? "border-rose-600 bg-rose-600 text-white"
+            ? "border-incorrect bg-incorrect-muted text-incorrect-muted-foreground"
             : "border-border bg-card text-muted-foreground"
         }`}
         aria-label="不正解"
@@ -79,12 +79,10 @@ export function AnswerReveal({
         </div>
         <div>
           <div className="mb-1 text-xs text-muted-foreground">あなたの解答</div>
-          {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
-          <img
-            src={hanziImage}
-            alt="あなたが書いた漢字"
-            className="w-full rounded-lg border border-border"
-          />
+          <div className="overflow-hidden rounded-lg border border-border">
+            {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
+            <img src={hanziImage} alt="あなたが書いた漢字" className="w-full dark:invert" />
+          </div>
         </div>
       </div>
 
@@ -100,12 +98,10 @@ export function AnswerReveal({
         </div>
         <div>
           <div className="mb-1 text-xs text-muted-foreground">あなたの解答</div>
-          {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
-          <img
-            src={pinyinImage}
-            alt="あなたが書いたピンイン"
-            className="w-full rounded-lg border border-border"
-          />
+          <div className="overflow-hidden rounded-lg border border-border">
+            {/* biome-ignore lint/performance/noImgElement: data URL canvas snapshot */}
+            <img src={pinyinImage} alt="あなたが書いたピンイン" className="w-full dark:invert" />
+          </div>
         </div>
       </div>
 

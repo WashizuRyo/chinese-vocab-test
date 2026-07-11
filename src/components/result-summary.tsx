@@ -30,7 +30,7 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
       </header>
 
       <section className="grid grid-cols-3 gap-2">
-        <ScoreTile label="漢字" correct={hanziCorrect} total={total} accent="emerald" />
+        <ScoreTile label="漢字" correct={hanziCorrect} total={total} accent="correct" />
         <ScoreTile label="ピンイン" correct={pinyinCorrect} total={total} accent="sky" />
         <ScoreTile label="両方正解" correct={bothCorrect} total={total} accent="zinc" />
       </section>
@@ -99,10 +99,10 @@ function ScoreTile({
   label: string;
   correct: number;
   total: number;
-  accent: "emerald" | "sky" | "zinc";
+  accent: "correct" | "sky" | "zinc";
 }) {
   const accentClass = {
-    emerald: "text-emerald-600",
+    correct: "text-correct",
     sky: "text-sky-600",
     zinc: "text-foreground",
   }[accent];
@@ -121,7 +121,7 @@ function Badge({ label, ok }: { label: string; ok: boolean }) {
   return (
     <span
       className={`rounded-full px-2 py-0.5 ${
-        ok ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+        ok ? "bg-correct text-correct-foreground" : "bg-incorrect text-incorrect-foreground"
       }`}
     >
       {label} {ok ? "○" : "×"}
