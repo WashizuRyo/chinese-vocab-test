@@ -248,7 +248,7 @@ export function HandwritingCanvas({
           </button>
         </div>
       </div>
-      <div className="relative w-full select-none">
+      <div className="relative w-full select-none dark:invert">
         <canvas ref={gridCanvasRef} className="block w-full h-auto bg-white" tabIndex={-1} />
         <canvas
           ref={inkCanvasRef}

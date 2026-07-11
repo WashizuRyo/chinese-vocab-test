@@ -381,10 +381,10 @@ function QuizChoicesView({
       return "border-border bg-card text-foreground active:bg-muted";
     }
     if (option === question.answer) {
-      return "border-emerald-600 bg-emerald-50 text-emerald-800";
+      return "border-correct bg-correct-muted text-correct-muted-foreground";
     }
     if (option === selectedAnswer) {
-      return "border-rose-600 bg-rose-50 text-rose-800";
+      return "border-incorrect bg-incorrect-muted text-incorrect-muted-foreground";
     }
     return "border-border bg-muted text-muted-foreground";
   };
@@ -421,25 +421,20 @@ function QuizChoicesView({
 
       {answered ? (
         <section
-          className={`rounded-2xl border p-4 ${
-            isCorrect ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"
+          className={`rounded-2xl border-2 p-4 ${
+            isCorrect
+              ? "border-correct bg-correct-muted text-correct-muted-foreground"
+              : "border-incorrect bg-incorrect-muted text-incorrect-muted-foreground"
           }`}
         >
-          <div
-            className={`text-sm font-semibold ${isCorrect ? "text-emerald-800" : "text-rose-800"}`}
-          >
-            {isCorrect ? "正解" : "不正解"}
-          </div>
+          <div className="text-sm font-semibold">{isCorrect ? "正解" : "不正解"}</div>
           <div className="mt-2 grid grid-cols-[5rem_1fr] gap-x-2 gap-y-1 text-sm">
-            <div className="text-muted-foreground">正解</div>
-            <div
-              lang={question.kind === "hanzi" ? "zh-CN" : undefined}
-              className="font-semibold text-foreground"
-            >
+            <div className="opacity-70">正解</div>
+            <div lang={question.kind === "hanzi" ? "zh-CN" : undefined} className="font-semibold">
               {question.answer}
             </div>
-            <div className="text-muted-foreground">意味</div>
-            <div className="text-card-foreground">{question.word.japanese}</div>
+            <div className="opacity-70">意味</div>
+            <div>{question.word.japanese}</div>
           </div>
         </section>
       ) : null}
@@ -496,7 +491,7 @@ function QuizResultView({
           label="漢字"
           correct={hanziCorrect}
           total={hanziResults.length}
-          accent="emerald"
+          accent="correct"
         />
         <QuizScoreTile
           label="ピンイン"
@@ -572,10 +567,10 @@ function QuizScoreTile({
   label: string;
   correct: number;
   total: number;
-  accent: "emerald" | "sky" | "zinc";
+  accent: "correct" | "sky" | "zinc";
 }) {
   const accentClass = {
-    emerald: "text-emerald-600",
+    correct: "text-correct",
     sky: "text-sky-600",
     zinc: "text-foreground",
   }[accent];
