@@ -7,20 +7,15 @@ import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
 import { number } from "@/data/lessons/number";
 import { createConfiguredWords } from "@/lib/create-configured-words";
+import { type LessonSettings, saveQuizSettings } from "@/lib/lesson-settings";
 import { createQuiz } from "@/lib/quiz";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
 import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/word-audio";
 
-interface QuizSettings {
-  shuffleOn: boolean;
-  numberQuestionsOn: boolean;
-  selectedWords: Word[];
-}
-
 type QuizRunnerState =
-  | { status: "setup"; settings: QuizSettings }
+  | { status: "setup"; settings: LessonSettings }
   | {
       status: "question";
       lessonWords: Word[];
@@ -52,18 +47,15 @@ function uniqueWords(words: Word[]): Word[] {
 
 export function QuizRunner({
   lesson,
+  initialSettings,
   onBackToMode,
   onStartTest,
 }: {
   lesson: Lesson;
+  initialSettings: LessonSettings;
   onBackToMode: () => void;
   onStartTest: (initialWords: Word[]) => void;
 }) {
-  const initialSettings = {
-    shuffleOn: false,
-    numberQuestionsOn: false,
-    selectedWords: lesson.words,
-  };
   const [state, setState] = useState<QuizRunnerState>({
     status: "setup",
     settings: initialSettings,
@@ -90,7 +82,7 @@ export function QuizRunner({
     if (firstQuestion) wordAudio.play(firstQuestion.word);
   };
 
-  const startWithSettings = (settings: QuizSettings) => {
+  const startWithSettings = (settings: LessonSettings) => {
     const selection = createConfiguredWords({
       selectedWords: settings.selectedWords,
       shuffleOn: settings.shuffleOn,
@@ -109,17 +101,15 @@ export function QuizRunner({
     });
   };
 
-  const handleChangeSettings = (settings: Partial<QuizSettings>) => {
-    setState((prev) => {
-      if (prev.status !== "setup") return prev;
-      return {
-        ...prev,
-        settings: {
-          ...prev.settings,
-          ...settings,
-        },
-      };
-    });
+  const handleChangeSettings = (settings: Partial<LessonSettings>) => {
+    if (state.status !== "setup") return;
+
+    const nextSettings = {
+      ...state.settings,
+      ...settings,
+    };
+    saveQuizSettings(lesson, nextSettings);
+    setState({ ...state, settings: nextSettings });
   };
 
   const handleStart = () => {
@@ -254,8 +244,8 @@ function QuizSetupView({
   onBack,
 }: {
   lesson: Lesson;
-  settings: QuizSettings;
-  onChangeSettings: (settings: Partial<QuizSettings>) => void;
+  settings: LessonSettings;
+  onChangeSettings: (settings: Partial<LessonSettings>) => void;
   onStart: () => void;
   onBack: () => void;
 }) {

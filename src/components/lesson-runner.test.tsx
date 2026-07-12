@@ -147,6 +147,7 @@ function answerCurrentQuestion({
 describe("LessonRunner", () => {
   afterEach(() => {
     cleanup();
+    localStorage.clear();
     vi.clearAllMocks();
   });
 
@@ -204,6 +205,24 @@ describe("LessonRunner", () => {
       fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
 
       expect(screen.getByText("1 / 2")).toBeVisible();
+    });
+
+    test("クイズ開始後に出題設定が保持されること", () => {
+      render(<LessonRunner lesson={quizLesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "我" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "出題順をシャッフル" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
+      fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+
+      expect(screen.getByRole("checkbox", { name: "我" })).not.toBeChecked();
+      expect(screen.getByRole("checkbox", { name: "你" })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: "出題順をシャッフル" })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /最後に数字を追加/ })).toBeChecked();
     });
   });
 
@@ -355,6 +374,24 @@ describe("LessonRunner", () => {
 
       expect(screen.getByText("1 / 1")).toBeVisible();
       expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+    });
+
+    test("テスト開始後に出題設定が保持されること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "我" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "出題順をシャッフル" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: /最後に数字を追加/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "モード選択" }));
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+
+      expect(screen.getByRole("checkbox", { name: "我" })).not.toBeChecked();
+      expect(screen.getByRole("checkbox", { name: "你" })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: "出題順をシャッフル" })).toBeChecked();
+      expect(screen.getByRole("checkbox", { name: /最後に数字を追加/ })).toBeChecked();
     });
   });
 
