@@ -13,6 +13,9 @@ export function WordSelection({
   onChange: (selectedWords: Word[]) => void;
 }) {
   const isSameWord = (a: Word, b: Word) => a.hanzi === b.hanzi && a.pinyin === b.pinyin;
+  const allSelected =
+    words.length > 0 &&
+    words.every((word) => selectedWords.some((selectedWord) => isSameWord(selectedWord, word)));
 
   const handleToggleWord = (word: Word, checked: boolean) => {
     const nextWords = checked
@@ -29,7 +32,16 @@ export function WordSelection({
           {selectedWords.length} / {words.length}
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-2">
+      <label className="mt-3 flex items-center justify-between gap-4 border-y border-border py-3">
+        <span className="text-sm font-medium text-card-foreground">すべて選択</span>
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={(e) => onChange(e.target.checked ? words : [])}
+          className="h-5 w-5 shrink-0"
+        />
+      </label>
+      <div className="mt-6 grid grid-cols-1 gap-2">
         {words.map((word) => (
           <label
             key={wordKey(word)}

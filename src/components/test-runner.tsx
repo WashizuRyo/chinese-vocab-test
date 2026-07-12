@@ -9,17 +9,12 @@ import { ResultSummary } from "@/components/result-summary";
 import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
 import { createConfiguredWords } from "@/lib/create-configured-words";
+import { type LessonSettings, saveTestSettings } from "@/lib/lesson-settings";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 import { wordAudio } from "@/lib/word-audio";
 
-interface TestSettings {
-  shuffleOn: boolean;
-  numberQuestionsOn: boolean;
-  selectedWords: Word[];
-}
-
 type TestRunnerState =
-  | { status: "setup"; settings: TestSettings }
+  | { status: "setup"; settings: LessonSettings }
   | {
       status: "writing";
       results: WordResult[];
@@ -48,17 +43,14 @@ function createInitialResults(words: Word[]): WordResult[] {
 export function TestRunner({
   lesson,
   initialWords,
+  initialSettings,
   onBackToMode,
 }: {
   lesson: Lesson;
   initialWords?: Word[];
+  initialSettings: LessonSettings;
   onBackToMode: () => void;
 }) {
-  const initialSettings = {
-    shuffleOn: false,
-    numberQuestionsOn: false,
-    selectedWords: lesson.words,
-  };
   const [state, setState] = useState<TestRunnerState>(() => {
     if (initialWords) {
       return {
@@ -67,7 +59,10 @@ export function TestRunner({
         index: 0,
       };
     }
-    return { status: "setup", settings: initialSettings };
+    return {
+      status: "setup",
+      settings: initialSettings,
+    };
   });
 
   const startWithWords = (words: Word[]) => {
@@ -80,17 +75,15 @@ export function TestRunner({
     if (firstWord) wordAudio.play(firstWord);
   };
 
-  const handleChangeSettings = (settings: Partial<TestSettings>) => {
-    setState((prev) => {
-      if (prev.status !== "setup") return prev;
-      return {
-        ...prev,
-        settings: {
-          ...prev.settings,
-          ...settings,
-        },
-      };
-    });
+  const handleChangeSettings = (settings: Partial<LessonSettings>) => {
+    if (state.status !== "setup") return;
+
+    const nextSettings = {
+      ...state.settings,
+      ...settings,
+    };
+    saveTestSettings(lesson, nextSettings);
+    setState({ ...state, settings: nextSettings });
   };
 
   const handleStart = () => {
@@ -250,8 +243,8 @@ function TestSetupView({
   onBack,
 }: {
   lesson: Lesson;
-  settings: TestSettings;
-  onChangeSettings: (settings: Partial<TestSettings>) => void;
+  settings: LessonSettings;
+  onChangeSettings: (settings: Partial<LessonSettings>) => void;
   onStart: () => void;
   onBack: () => void;
 }) {
