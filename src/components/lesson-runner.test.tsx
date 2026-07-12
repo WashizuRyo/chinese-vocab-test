@@ -477,6 +477,22 @@ describe("LessonRunner", () => {
       expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
     });
 
+    test("ランダム出題がオンなら再挑戦時に単語の出題順を再シャッフルすること", () => {
+      vi.mocked(shuffle).mockReturnValueOnce([...quizLesson.words]);
+      render(<LessonRunner lesson={quizLesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "出題順をシャッフル" }));
+      fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
+      answerAllQuestions(quizAnswers(quizLesson.words), true);
+
+      vi.mocked(shuffle).mockReturnValueOnce([...quizLesson.words].reverse());
+      fireEvent.click(screen.getByRole("button", { name: "同じ範囲でもう一度" }));
+      answerQuestion("吗", true);
+
+      expect(screen.getAllByText("正解")[0]).toBeVisible();
+    });
+
     test("間違えたものだけクイズで再挑戦できること", () => {
       render(<LessonRunner lesson={quizLesson} />);
 

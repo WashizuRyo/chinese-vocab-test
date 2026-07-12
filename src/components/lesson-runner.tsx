@@ -6,7 +6,6 @@ import { BackLabel } from "@/components/back-label";
 import { LearnRunner } from "@/components/learn-runner";
 import { QuizRunner } from "@/components/quiz-runner";
 import { TestRunner } from "@/components/test-runner";
-import { type LessonSettings, loadQuizSettings } from "@/lib/lesson-settings";
 import type { Lesson, Word } from "@/lib/types";
 import { wordAudio } from "@/lib/word-audio";
 
@@ -14,7 +13,7 @@ type LessonRunnerState =
   | { status: "mode" }
   | { status: "learn" }
   | { status: "test"; initialWords?: Word[] }
-  | { status: "quiz"; initialSettings: LessonSettings };
+  | { status: "quiz" };
 
 export function LessonRunner({ lesson }: { lesson: Lesson }) {
   const [state, setState] = useState<LessonRunnerState>({
@@ -32,10 +31,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
   };
 
   const handleOpenQuizSetup = () => {
-    setState({
-      status: "quiz",
-      initialSettings: loadQuizSettings(lesson),
-    });
+    setState({ status: "quiz" });
   };
 
   switch (state.status) {
@@ -72,7 +68,6 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
       return (
         <QuizRunner
           lesson={lesson}
-          initialSettings={state.initialSettings}
           onBackToMode={() => setState({ status: "mode" })}
           onStartTest={(initialWords) => {
             setState({

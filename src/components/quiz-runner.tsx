@@ -7,15 +7,16 @@ import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
 import { number } from "@/data/lessons/number";
 import { createConfiguredWords } from "@/lib/create-configured-words";
-import { type LessonSettings, saveQuizSettings } from "@/lib/lesson-settings";
+import { type LessonSettings, loadQuizSettings, saveQuizSettings } from "@/lib/lesson-settings";
 import { createQuiz } from "@/lib/quiz";
+import { shuffle } from "@/lib/shuffle";
 import { playCorrectSound } from "@/lib/sound";
 import type { Lesson, Question, QuizResult, Word } from "@/lib/types";
 import { wordKey } from "@/lib/word";
 import { wordAudio } from "@/lib/word-audio";
 
 type QuizRunnerState =
-  | { status: "setup"; settings: LessonSettings }
+  | { status: "setup" }
   | {
       status: "question";
       lessonWords: Word[];
@@ -47,18 +48,16 @@ function uniqueWords(words: Word[]): Word[] {
 
 export function QuizRunner({
   lesson,
-  initialSettings,
   onBackToMode,
   onStartTest,
 }: {
   lesson: Lesson;
-  initialSettings: LessonSettings;
   onBackToMode: () => void;
   onStartTest: (initialWords: Word[]) => void;
 }) {
+  const [settings, setSettings] = useState(() => loadQuizSettings(lesson));
   const [state, setState] = useState<QuizRunnerState>({
     status: "setup",
-    settings: initialSettings,
   });
 
   const startWithQuestions = ({
@@ -101,20 +100,20 @@ export function QuizRunner({
     });
   };
 
-  const handleChangeSettings = (settings: Partial<LessonSettings>) => {
+  const handleChangeSettings = (changes: Partial<LessonSettings>) => {
     if (state.status !== "setup") return;
 
     const nextSettings = {
-      ...state.settings,
       ...settings,
+      ...changes,
     };
+    setSettings(nextSettings);
     saveQuizSettings(lesson, nextSettings);
-    setState({ ...state, settings: nextSettings });
   };
 
   const handleStart = () => {
     if (state.status !== "setup") return;
-    startWithSettings(state.settings);
+    startWithSettings(settings);
   };
 
   const handleSelect = (option: string) => {
@@ -158,7 +157,7 @@ export function QuizRunner({
       return (
         <QuizSetupView
           lesson={lesson}
-          settings={state.settings}
+          settings={settings}
           onChangeSettings={handleChangeSettings}
           onStart={handleStart}
           onBack={onBackToMode}
@@ -189,18 +188,19 @@ export function QuizRunner({
         <QuizResultView
           results={state.results}
           lessonTitle={lesson.title}
-          onRetry={() =>
+          onRetry={() => {
+            const lessonWords = settings.shuffleOn ? shuffle(state.lessonWords) : state.lessonWords;
             startWithQuestions({
-              lessonWords: state.lessonWords,
+              lessonWords,
               numberWords: state.numberWords,
               questions: createQuiz({
-                lessonWords: state.lessonWords,
+                lessonWords,
                 lessonChoiceSourceWords: lesson.words,
                 numberWords: state.numberWords,
                 numberChoiceSourceWords: number.words,
               }).questions,
-            })
-          }
+            });
+          }}
           onRetryWrongOnly={() => {
             const wrongWords = uniqueWords(
               state.results
