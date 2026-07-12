@@ -35,7 +35,7 @@
 ## Common Commands
 
 - `pnpm install` - 依存関係をインストール
-- `pnpm dev` - 開発サーバーを起動
+- `portless <worktree-name> pnpm dev` - worktree名のURLで開発サーバーを起動
 - `pnpm build` - 本番ビルド
 - `pnpm test` - Vitest を一度だけ実行
 - `pnpm check-types` - TypeScript の型チェック
