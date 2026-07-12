@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { LessonRunner } from "@/components/lesson-runner";
 import type { Lesson } from "@/lib/types";
@@ -531,6 +531,49 @@ describe("LessonRunner", () => {
   });
 
   describe("結果画面", () => {
+    test("モード選択画面へ戻れること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択に戻る" }));
+
+      expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
+    });
+
+    test("間違えた単語を音声と採点結果付きの単語カードで表示すること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
+
+      const wordCard = screen.getByRole("article", { name: "你の単語カード" });
+      expect(within(wordCard).getByText("nǐ")).toBeVisible();
+      expect(within(wordCard).getByText("あなた")).toBeVisible();
+      expect(within(wordCard).getByText("漢字")).toBeVisible();
+      expect(within(wordCard).getByText("ピンイン")).toBeVisible();
+      expect(within(wordCard).getByText("○")).toBeVisible();
+      expect(within(wordCard).getByText("×")).toBeVisible();
+      expect(within(wordCard).getByText("正解")).toBeInTheDocument();
+      expect(within(wordCard).getByText("不正解")).toBeInTheDocument();
+
+      const playCountBeforeReplay = playAudio.mock.calls.length;
+      fireEvent.click(within(wordCard).getByRole("button", { name: "発音を再生" }));
+      expect(playAudio).toHaveBeenCalledTimes(playCountBeforeReplay + 1);
+    });
+
     test("同じ範囲で再テストできること", () => {
       render(<LessonRunner lesson={lesson} />);
 

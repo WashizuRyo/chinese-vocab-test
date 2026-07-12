@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { BackLabel } from "@/components/back-label";
 import { HandwritingCanvas, type HandwritingCanvasHandle } from "@/components/handwriting-canvas";
 import { ProgressBar } from "@/components/progress-bar";
-import { WordPlayer } from "@/components/word-player";
+import { WordCard } from "@/components/word-card";
 import type { Lesson, Word } from "@/lib/types";
 import { wordAudio } from "@/lib/word-audio";
 
@@ -13,54 +13,6 @@ type LearnRunnerState =
   | { status: "learn"; index: number }
   | { status: "list"; returnIndex: number }
   | { status: "complete" };
-
-function getStudyHanziClassName(hanzi: string): string {
-  const length = Array.from(hanzi).length;
-  if (length <= 2) return "text-5xl";
-  if (length <= 4) return "text-4xl";
-  return "text-3xl";
-}
-
-function RubyHanzi({ word }: { word: Word }) {
-  const chars = Array.from(word.hanzi);
-  const pinyinParts = word.pinyin.trim().split(/\s+/).filter(Boolean);
-  const hanziClassName = getStudyHanziClassName(word.hanzi);
-  const rubyParts = chars.map((char, index) => ({
-    char,
-    key: `${chars.slice(0, index + 1).join("")}-${pinyinParts[index] ?? ""}`,
-    pinyin: pinyinParts[index],
-  }));
-
-  if (pinyinParts.length === chars.length) {
-    return (
-      <div className="flex min-w-0 flex-wrap items-end gap-x-1 gap-y-2">
-        {rubyParts.map((part) => (
-          <span key={part.key} className="flex flex-col items-center">
-            <span className="text-sm leading-relaxed text-muted-foreground">{part.pinyin}</span>
-            <span
-              lang="zh-CN"
-              className={`font-serif ${hanziClassName} leading-tight text-foreground`}
-            >
-              {part.char}
-            </span>
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-w-0">
-      <div className="break-words text-sm leading-relaxed text-muted-foreground">{word.pinyin}</div>
-      <div
-        lang="zh-CN"
-        className={`break-words font-serif ${hanziClassName} leading-tight text-foreground`}
-      >
-        {word.hanzi}
-      </div>
-    </div>
-  );
-}
 
 export function LearnRunner({
   lesson,
@@ -171,15 +123,8 @@ function LearnView({
 
       <ProgressBar current={current} total={total} />
 
-      <section className="mt-4 rounded-2xl border border-border bg-card px-4 py-5 shadow-sm">
-        <div className="flex items-end justify-between gap-4">
-          <RubyHanzi word={word} />
-          <WordPlayer word={word} />
-        </div>
-        <div className="mt-4 h-px bg-border" />
-        <div className="mt-4 break-words text-base leading-relaxed text-card-foreground">
-          {word.japanese}
-        </div>
+      <section className="mt-4">
+        <WordCard word={word} />
       </section>
 
       <section className="mt-4 flex flex-col gap-4">
@@ -246,19 +191,7 @@ function LearnListView({
 
       <section className="mt-4 flex flex-col gap-3">
         {words.map((word) => (
-          <article
-            key={`${word.hanzi}-${word.pinyin}`}
-            className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
-          >
-            <div className="flex items-end justify-between gap-4">
-              <RubyHanzi word={word} />
-              <WordPlayer word={word} />
-            </div>
-            <div className="mt-3 h-px bg-border" />
-            <div className="mt-3 break-words text-base leading-relaxed text-card-foreground">
-              {word.japanese}
-            </div>
-          </article>
+          <WordCard key={`${word.hanzi}-${word.pinyin}`} word={word} />
         ))}
       </section>
     </main>

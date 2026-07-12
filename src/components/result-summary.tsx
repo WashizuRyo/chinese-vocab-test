@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { WordCard } from "@/components/word-card";
 import type { WordResult } from "@/lib/types";
 
 interface Props {
@@ -8,9 +9,16 @@ interface Props {
   lessonTitle: string;
   onRetry: () => void;
   onRetryWrongOnly: () => void;
+  onBackToMode: () => void;
 }
 
-export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly }: Props) {
+export function ResultSummary({
+  results,
+  lessonTitle,
+  onRetry,
+  onRetryWrongOnly,
+  onBackToMode,
+}: Props) {
   const total = results.length;
   const hanziCorrect = results.filter((r) => r.hanziCorrect === true).length;
   const pinyinCorrect = results.filter((r) => r.pinyinCorrect === true).length;
@@ -44,18 +52,16 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {wrongResults.map((r) => (
-              <li key={r.word.hanzi} className="rounded-xl border border-border bg-card p-3">
-                <div className="flex items-baseline justify-between gap-3">
-                  <div lang="zh-CN" className="font-serif text-2xl text-foreground">
-                    {r.word.hanzi}
-                  </div>
-                  <div className="flex gap-1.5 text-xs">
-                    <Badge label="漢字" ok={r.hanziCorrect === true} />
-                    <Badge label="ピンイン" ok={r.pinyinCorrect === true} />
-                  </div>
-                </div>
-                <div className="mt-0.5 text-sm text-card-foreground">{r.word.pinyin}</div>
-                <div className="text-xs text-muted-foreground">{r.word.japanese}</div>
+              <li key={`${r.word.hanzi}-${r.word.pinyin}`}>
+                <WordCard
+                  word={r.word}
+                  footer={
+                    <dl className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                      <ResultStatus label="漢字" correct={r.hanziCorrect === true} />
+                      <ResultStatus label="ピンイン" correct={r.pinyinCorrect === true} />
+                    </dl>
+                  }
+                />
               </li>
             ))}
           </ul>
@@ -78,6 +84,13 @@ export function ResultSummary({ results, lessonTitle, onRetry, onRetryWrongOnly 
           className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
           もう一度（同じ範囲）
+        </button>
+        <button
+          type="button"
+          onClick={onBackToMode}
+          className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
+        >
+          モード選択に戻る
         </button>
         <Link
           href="/"
@@ -117,14 +130,14 @@ function ScoreTile({
   );
 }
 
-function Badge({ label, ok }: { label: string; ok: boolean }) {
+function ResultStatus({ label, correct }: { label: string; correct: boolean }) {
   return (
-    <span
-      className={`rounded-full px-2 py-0.5 ${
-        ok ? "bg-correct text-correct-foreground" : "bg-incorrect text-incorrect-foreground"
-      }`}
-    >
-      {label} {ok ? "○" : "×"}
-    </span>
+    <div className="flex items-center gap-2 text-sm">
+      <dt className="font-medium text-muted-foreground">{label}</dt>
+      <dd className={`text-lg font-bold ${correct ? "text-correct" : "text-incorrect"}`}>
+        <span aria-hidden="true">{correct ? "○" : "×"}</span>
+        <span className="sr-only">{correct ? "正解" : "不正解"}</span>
+      </dd>
+    </div>
   );
 }

@@ -218,6 +218,7 @@ export function TestRunner({
           results={state.results}
           lessonTitle={lesson.title}
           onRetry={() => startWithWords(state.results.map((r) => r.word))}
+          onBackToMode={onBackToMode}
           onRetryWrongOnly={() => {
             const wrongWords = state.results
               .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
