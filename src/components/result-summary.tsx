@@ -83,7 +83,7 @@ export function ResultSummary({
           onClick={onRetry}
           className="h-12 w-full rounded-2xl border border-border bg-card text-sm font-semibold text-foreground"
         >
-          もう一度（同じ範囲）
+          もう一度(同じ出題設定)
         </button>
         <button
           type="button"

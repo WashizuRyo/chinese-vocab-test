@@ -6,14 +6,14 @@ import { BackLabel } from "@/components/back-label";
 import { LearnRunner } from "@/components/learn-runner";
 import { QuizRunner } from "@/components/quiz-runner";
 import { TestRunner } from "@/components/test-runner";
-import { type LessonSettings, loadQuizSettings, loadTestSettings } from "@/lib/lesson-settings";
+import { type LessonSettings, loadQuizSettings } from "@/lib/lesson-settings";
 import type { Lesson, Word } from "@/lib/types";
 import { wordAudio } from "@/lib/word-audio";
 
 type LessonRunnerState =
   | { status: "mode" }
   | { status: "learn" }
-  | { status: "test"; initialWords?: Word[]; initialSettings: LessonSettings }
+  | { status: "test"; initialWords?: Word[] }
   | { status: "quiz"; initialSettings: LessonSettings };
 
 export function LessonRunner({ lesson }: { lesson: Lesson }) {
@@ -28,10 +28,7 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
   };
 
   const handleOpenTestSetup = () => {
-    setState({
-      status: "test",
-      initialSettings: loadTestSettings(lesson),
-    });
+    setState({ status: "test" });
   };
 
   const handleOpenQuizSetup = () => {
@@ -67,7 +64,6 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
         <TestRunner
           lesson={lesson}
           initialWords={state.initialWords}
-          initialSettings={state.initialSettings}
           onBackToMode={() => setState({ status: "mode" })}
         />
       );
@@ -82,7 +78,6 @@ export function LessonRunner({ lesson }: { lesson: Lesson }) {
             setState({
               status: "test",
               initialWords,
-              initialSettings: loadTestSettings(lesson),
             });
             const firstWord = initialWords[0];
             if (firstWord) wordAudio.play(firstWord);
