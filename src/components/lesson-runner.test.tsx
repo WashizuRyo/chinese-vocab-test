@@ -1,12 +1,14 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { LessonRunner } from "@/components/lesson-runner";
+import { shuffle } from "@/lib/shuffle";
 import type { Lesson } from "@/lib/types";
 
 vi.mock("@/lib/sound", () => ({
   playCorrectSound: vi.fn(),
 }));
+vi.mock("@/lib/shuffle", { spy: true });
 
 const ResizeObserverMock = vi.fn(
   class {
@@ -475,6 +477,22 @@ describe("LessonRunner", () => {
       expect(screen.getByRole("button", { name: "同じ範囲でもう一度" })).toBeVisible();
     });
 
+    test("ランダム出題がオンなら再挑戦時に単語の出題順を再シャッフルすること", () => {
+      vi.mocked(shuffle).mockReturnValueOnce([...quizLesson.words]);
+      render(<LessonRunner lesson={quizLesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /クイズ/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "出題順をシャッフル" }));
+      fireEvent.click(screen.getByRole("button", { name: "クイズを始める" }));
+      answerAllQuestions(quizAnswers(quizLesson.words), true);
+
+      vi.mocked(shuffle).mockReturnValueOnce([...quizLesson.words].reverse());
+      fireEvent.click(screen.getByRole("button", { name: "同じ範囲でもう一度" }));
+      answerQuestion("吗", true);
+
+      expect(screen.getAllByText("正解")[0]).toBeVisible();
+    });
+
     test("間違えたものだけクイズで再挑戦できること", () => {
       render(<LessonRunner lesson={quizLesson} />);
 
@@ -526,12 +544,29 @@ describe("LessonRunner", () => {
       fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
 
       expect(screen.getByText("結果")).toBeVisible();
-      expect(screen.getByRole("button", { name: "もう一度（同じ範囲）" })).toBeVisible();
+      expect(screen.getByRole("button", { name: "もう一度(同じ出題設定)" })).toBeVisible();
     });
   });
 
   describe("結果画面", () => {
-    test("同じ範囲で再テストできること", () => {
+    test("モード選択画面へ戻れること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
+      fireEvent.click(screen.getByRole("button", { name: "モード選択に戻る" }));
+
+      expect(screen.getByRole("button", { name: /暗記/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /クイズ/ })).toBeVisible();
+      expect(screen.getByRole("button", { name: /テスト/ })).toBeVisible();
+    });
+
+    test("間違えた単語を音声と採点結果付きの単語カードで表示すること", () => {
       render(<LessonRunner lesson={lesson} />);
 
       fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
@@ -542,10 +577,59 @@ describe("LessonRunner", () => {
       answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
       fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
 
-      fireEvent.click(screen.getByRole("button", { name: "もう一度（同じ範囲）" }));
+      const wordCard = screen.getByRole("article", { name: "你の単語カード" });
+      expect(within(wordCard).getByText("nǐ")).toBeVisible();
+      expect(within(wordCard).getByText("あなた")).toBeVisible();
+      expect(within(wordCard).getByText("漢字")).toBeVisible();
+      expect(within(wordCard).getByText("ピンイン")).toBeVisible();
+      expect(within(wordCard).getByText("○")).toBeVisible();
+      expect(within(wordCard).getByText("×")).toBeVisible();
+      expect(within(wordCard).getByText("正解")).toBeInTheDocument();
+      expect(within(wordCard).getByText("不正解")).toBeInTheDocument();
+
+      const playCountBeforeReplay = playAudio.mock.calls.length;
+      fireEvent.click(within(wordCard).getByRole("button", { name: "発音を再生" }));
+      expect(playAudio).toHaveBeenCalledTimes(playCountBeforeReplay + 1);
+    });
+
+    test("同じ出題設定で再テストできること", () => {
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: false });
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "もう一度(同じ出題設定)" }));
 
       expect(screen.getByText("1 / 2")).toBeVisible();
       expect(screen.getByRole("button", { name: "答え合わせ" })).toBeVisible();
+    });
+
+    test("ランダム出題がオンなら再テスト時に出題順を変えること", () => {
+      vi.mocked(shuffle)
+        .mockReturnValueOnce([...lesson.words])
+        .mockReturnValueOnce([...lesson.words].reverse());
+
+      render(<LessonRunner lesson={lesson} />);
+
+      fireEvent.click(screen.getByRole("button", { name: /テスト/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "出題順をシャッフル" }));
+      fireEvent.click(screen.getByRole("button", { name: "スタート" }));
+
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      expect(screen.getByText("你")).toBeVisible();
+      fireEvent.click(screen.getByRole("button", { name: "次へ" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+      fireEvent.click(screen.getByRole("button", { name: "結果を見る" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "もう一度(同じ出題設定)" }));
+      answerCurrentQuestion({ hanziCorrect: true, pinyinCorrect: true });
+
+      expect(screen.getByText("我")).toBeVisible();
     });
 
     test("間違えたものだけで再テストできること", () => {

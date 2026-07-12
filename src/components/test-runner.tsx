@@ -9,12 +9,13 @@ import { ResultSummary } from "@/components/result-summary";
 import { WordPlayer } from "@/components/word-player";
 import { WordSelection } from "@/components/word-selection";
 import { createConfiguredWords } from "@/lib/create-configured-words";
-import { type LessonSettings, saveTestSettings } from "@/lib/lesson-settings";
+import { type LessonSettings, loadTestSettings, saveTestSettings } from "@/lib/lesson-settings";
+import { shuffle } from "@/lib/shuffle";
 import type { Lesson, Word, WordResult } from "@/lib/types";
 import { wordAudio } from "@/lib/word-audio";
 
 type TestRunnerState =
-  | { status: "setup"; settings: LessonSettings }
+  | { status: "setup" }
   | {
       status: "writing";
       results: WordResult[];
@@ -43,14 +44,13 @@ function createInitialResults(words: Word[]): WordResult[] {
 export function TestRunner({
   lesson,
   initialWords,
-  initialSettings,
   onBackToMode,
 }: {
   lesson: Lesson;
   initialWords?: Word[];
-  initialSettings: LessonSettings;
   onBackToMode: () => void;
 }) {
+  const [settings, setSettings] = useState(() => loadTestSettings(lesson));
   const [state, setState] = useState<TestRunnerState>(() => {
     if (initialWords) {
       return {
@@ -61,7 +61,6 @@ export function TestRunner({
     }
     return {
       status: "setup",
-      settings: initialSettings,
     };
   });
 
@@ -75,23 +74,23 @@ export function TestRunner({
     if (firstWord) wordAudio.play(firstWord);
   };
 
-  const handleChangeSettings = (settings: Partial<LessonSettings>) => {
+  const handleChangeSettings = (changes: Partial<LessonSettings>) => {
     if (state.status !== "setup") return;
 
     const nextSettings = {
-      ...state.settings,
       ...settings,
+      ...changes,
     };
+    setSettings(nextSettings);
     saveTestSettings(lesson, nextSettings);
-    setState({ ...state, settings: nextSettings });
   };
 
   const handleStart = () => {
     if (state.status !== "setup") return;
     const selection = createConfiguredWords({
-      selectedWords: state.settings.selectedWords,
-      shuffleOn: state.settings.shuffleOn,
-      numberQuestionsOn: state.settings.numberQuestionsOn,
+      selectedWords: settings.selectedWords,
+      shuffleOn: settings.shuffleOn,
+      numberQuestionsOn: settings.numberQuestionsOn,
     });
     startWithWords(selection.words);
   };
@@ -155,7 +154,7 @@ export function TestRunner({
       return (
         <TestSetupView
           lesson={lesson}
-          settings={state.settings}
+          settings={settings}
           onChangeSettings={handleChangeSettings}
           onStart={handleStart}
           onBack={onBackToMode}
@@ -217,7 +216,11 @@ export function TestRunner({
         <ResultSummary
           results={state.results}
           lessonTitle={lesson.title}
-          onRetry={() => startWithWords(state.results.map((r) => r.word))}
+          onRetry={() => {
+            const words = state.results.map((r) => r.word);
+            startWithWords(settings.shuffleOn ? shuffle(words) : words);
+          }}
+          onBackToMode={onBackToMode}
           onRetryWrongOnly={() => {
             const wrongWords = state.results
               .filter((r) => r.hanziCorrect !== true || r.pinyinCorrect !== true)
