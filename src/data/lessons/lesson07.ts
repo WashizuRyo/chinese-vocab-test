@@ -1,0 +1,137 @@
+import type { Lesson } from "@/lib/types";
+
+export const lesson07: Lesson = {
+  id: "lesson07",
+  title: "第7課",
+  words: [
+    {
+      hanzi: "请客",
+      pinyin: "qǐngkè",
+      japanese: "おごる；ご馳走する",
+      audioSrc: "/audio/words/请客-qǐngkè.mp3",
+    },
+    {
+      hanzi: "想",
+      pinyin: "xiǎng",
+      japanese: "〜したいと思う",
+      audioSrc: "/audio/words/想-xiǎng.mp3",
+    },
+    { hanzi: "吃", pinyin: "chī", japanese: "食べる", audioSrc: "/audio/words/吃-chī.mp3" },
+    {
+      hanzi: "担担面",
+      pinyin: "dàndànmiàn",
+      japanese: "担々麺",
+      audioSrc: "/audio/words/担担面-dàndànmiàn.mp3",
+    },
+    {
+      hanzi: "不太",
+      pinyin: "bú tài",
+      japanese: "あまり〜ない",
+      audioSrc: "/audio/words/不太-bú-tài.mp3",
+    },
+    {
+      hanzi: "小笼包",
+      pinyin: "xiǎolóngbāo",
+      japanese: "小籠包",
+      audioSrc: "/audio/words/小笼包-xiǎolóngbāo.mp3",
+    },
+    {
+      hanzi: "家",
+      pinyin: "jiā",
+      japanese: "軒（店の単位）",
+      audioSrc: "/audio/words/家-jiā.mp3",
+    },
+    { hanzi: "店", pinyin: "diàn", japanese: "店", audioSrc: "/audio/words/店-diàn.mp3" },
+    {
+      hanzi: "好吃",
+      pinyin: "hǎochī",
+      japanese: "美味しい（食べ物）",
+      audioSrc: "/audio/words/好吃-hǎochī.mp3",
+    },
+    {
+      hanzi: "好的",
+      pinyin: "hǎo de",
+      japanese: "いいですね",
+      audioSrc: "/audio/words/好的-hǎo-de.mp3",
+    },
+    {
+      hanzi: "那儿",
+      pinyin: "nàr",
+      japanese: "そこ；あそこ",
+      audioSrc: "/audio/words/那儿-nàr.mp3",
+    },
+    {
+      hanzi: "欢迎光临",
+      pinyin: "huānyíng guānglín",
+      japanese: "いらっしゃいませ",
+      audioSrc: "/audio/words/欢迎光临-huānyíng-guānglín.mp3",
+    },
+    {
+      hanzi: "您几位",
+      pinyin: "nín jǐ wèi",
+      japanese: "何名様",
+      audioSrc: "/audio/words/您几位-nín-jǐ-wèi.mp3",
+    },
+    { hanzi: "来", pinyin: "lái", japanese: "〜をください", audioSrc: "/audio/words/来-lái.mp3" },
+    {
+      hanzi: "份",
+      pinyin: "fèn",
+      japanese: "〜人前",
+      audioSrc: "/audio/words/份-fèn.mp3",
+    },
+    {
+      hanzi: "个",
+      pinyin: "gè",
+      japanese: "個（人と物の単位）",
+      audioSrc: "/audio/words/个-gè.mp3",
+    },
+    {
+      hanzi: "回锅肉",
+      pinyin: "huíguōròu",
+      japanese: "ホイコーロー",
+      audioSrc: "/audio/words/回锅肉-huíguōròu.mp3",
+    },
+    {
+      hanzi: "再",
+      pinyin: "zài",
+      japanese: "また；それから",
+      audioSrc: "/audio/words/再-zài.mp3",
+    },
+    {
+      hanzi: "杯",
+      pinyin: "bēi",
+      japanese: "杯（飲み物の単位）",
+      audioSrc: "/audio/words/杯-bēi.mp3",
+    },
+    {
+      hanzi: "乌龙茶",
+      pinyin: "wūlóngchá",
+      japanese: "ウーロン茶",
+      audioSrc: "/audio/words/乌龙茶-wūlóngchá.mp3",
+    },
+    {
+      hanzi: "干杯",
+      pinyin: "gān bēi",
+      japanese: "乾杯",
+      audioSrc: "/audio/words/干杯-gān-bēi.mp3",
+    },
+    {
+      hanzi: "太……了",
+      pinyin: "tài……le",
+      japanese: "とても；非常に",
+      audioSrc: "/audio/words/太……了-tài……le.mp3",
+    },
+    {
+      hanzi: "这儿",
+      pinyin: "zhèr",
+      japanese: "ここ",
+      audioSrc: "/audio/words/这儿-zhèr.mp3",
+    },
+    {
+      hanzi: "好喝",
+      pinyin: "hǎohē",
+      japanese: "美味しい（飲み物）",
+      audioSrc: "/audio/words/好喝-hǎohē.mp3",
+    },
+  ],
+};
