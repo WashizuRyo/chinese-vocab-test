@@ -5,6 +5,7 @@ import { lesson03 } from "./lesson03";
 import { lesson04 } from "./lesson04";
 import { lesson05 } from "./lesson05";
 import { lesson06 } from "./lesson06";
+import { lesson07 } from "./lesson07";
 import { number } from "./number";
 
 export const lessons: Lesson[] = [
@@ -15,6 +16,7 @@ export const lessons: Lesson[] = [
   lesson04,
   lesson05,
   lesson06,
+  lesson07,
 ];
 
 export function getLesson(id: string): Lesson | undefined {
